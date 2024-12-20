@@ -17,10 +17,19 @@ export default {
   css: [
      '~/assets/main.css'
   ],
+  image: {
+    provider: 'static', 
+    domains: ['https://images.ctfassets.net'],
+    static: {
+      dir: 'assets/images'
+    }
+  },
   plugins: [],
   components: true,
   buildModules: [],
-  modules: [],
+  modules: [
+    '@nuxt/image'
+  ],
   layers: [
     // '@nuxtjs/tailwindcss',
     '~/custom-layer'
