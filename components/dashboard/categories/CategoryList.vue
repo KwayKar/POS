@@ -2,11 +2,11 @@
   <div class="category-list flex space-x-4 pt-4 pb-4 pr-4">
     <button
       v-for="category in categories"
-      :key="category"
+      :key="category.id"
       @click="$emit('select-category', category)"
       class="custom-button"
     >
-      {{ category }}
+      {{ category.name }}
     </button>
   </div>
 </template>
@@ -24,7 +24,7 @@ export default {
 
 <style scoped>
 .custom-button {
-  background-color: #87b49a;
+  background-color: var(--primary-btn-color);
   color: white;
   padding: 8px 16px;
   border-radius: 8px;

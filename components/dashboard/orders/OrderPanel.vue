@@ -3,16 +3,17 @@
     <h3 class="text-white mb-4">Create Order</h3>
     <div v-if="localOrder.length" class="space-y-4">
       <div
-        v-for="(item, index) in localOrder"
+        v-for="(order, index) in localOrder"
         :key="index"
         class="p-4 bg-gray-700 text-white rounded"
+        @click="openEditModal(order.item)"
       >
-        <h4 class="text-lg font-bold">{{ item.title }}</h4>
+        <h4 class="text-lg font-bold">{{ order.title }}</h4>
         <p class="text-sm">
-          <strong>Quantity:</strong> {{ item.quantity }}
+          <strong>Quantity:</strong> {{ order.quantity }}
         </p>
         <p class="text-xs text-gray-300">
-          <strong>Preferences:</strong> {{ item.preferences || 'None' }}
+          <strong>Preferences:</strong> {{ order.preferences || 'None' }}
         </p>
       </div>
     </div>
@@ -42,5 +43,10 @@ export default {
       },
     },
   },
+  methods: {
+    openEditModal(item) {
+      this.$emit('edit-order', item);
+    }
+  } 
 };
 </script>

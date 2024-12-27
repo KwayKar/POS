@@ -4,7 +4,7 @@
     @click.self="close"
   >
     <div
-      class="bg-white p-3 rounded shadow-lg relative overflow-none"
+      class="bg-white rounded shadow-lg relative overflow-none"
       :style="computedModalStyles"
       style="position: relative; top: -5%"
     >

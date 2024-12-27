@@ -1,3 +1,4 @@
+
 export default {
   head: {
     title: 'firstest',
@@ -34,5 +35,5 @@ export default {
     // '@nuxtjs/tailwindcss',
     '~/custom-layer'
   ],
-  build: {}
+  build: {},
 }

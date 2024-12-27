@@ -1,5 +1,5 @@
 <template>
-  <div class="container mx-auto py-4">
+  <div class="w-full py-4">
     <CategoryList :categories="uniqueCategories" @select-category="filterItems" />
 
     <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -27,33 +27,41 @@ export default {
   components: {
     CategoryList,
   },
+  props: {
+    items: {
+      type: Array,
+      required: true,
+      default: () => [],
+    },
+    categories: {
+      type: Array,
+      required: true,
+      default: () => [],
+    },
+  },
   data() {
     return {
-      items: [
-        { id: 1, title: "Item 1", category: "Salads", image: "https://images.ctfassets.net/eum7w7yri3zr/3Z3fW9JhznhFDphzlHNmRx/d6410c46ffb8fc2c4c19c736a7f8d920/SG_Web_Image_Salad_Guacamole_Greens.png?w=600&fm=avif&q=75" },
-        { id: 2, title: "Item 2", category: "Drinks", image: "https://images.ctfassets.net/eum7w7yri3zr/3Z3fW9JhznhFDphzlHNmRx/d6410c46ffb8fc2c4c19c736a7f8d920/SG_Web_Image_Salad_Guacamole_Greens.png?w=600&fm=avif&q=75" },
-        { id: 3, title: "Item 3", category: "Salads", image: "https://images.ctfassets.net/eum7w7yri3zr/3Z3fW9JhznhFDphzlHNmRx/d6410c46ffb8fc2c4c19c736a7f8d920/SG_Web_Image_Salad_Guacamole_Greens.png?w=600&fm=avif&q=75" },
-        { id: 4, title: "Item 4", category: "Desserts", image: "https://images.ctfassets.net/eum7w7yri3zr/3Z3fW9JhznhFDphzlHNmRx/d6410c46ffb8fc2c4c19c736a7f8d920/SG_Web_Image_Salad_Guacamole_Greens.png?w=600&fm=avif&q=75" }
-      ],
-      selectedCategory: null,
+      items: this.items,
+      categories: this.categories
     };
   },
   computed: {
     uniqueCategories() {
-      return [...new Set(this.items.map((item) => item.category))];
+      return [{id: 'all', name: "All"}, ...new Set(this.categories.map((item) => item))];
     },
     filteredItems() {
-      return this.selectedCategory
-        ? this.items.filter((item) => item.category === this.selectedCategory)
+      console.log(this.selectedCategory)
+      return this.selectedCategory && this.selectedCategory != "all"
+        ? this.items.filter((item) => item.category.id === this.selectedCategory)
         : this.items;
     },
   },
   methods: {
     filterItems(category) {
-      this.selectedCategory = category;
+      this.selectedCategory = category.id;
     },
     selectItem(item) {
-      this.$emit('select-item', item);
+      this.$emit('select-item', 'edit', item);
     },
   },
 };

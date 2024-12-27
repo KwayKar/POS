@@ -18,9 +18,6 @@
         </label>
         <QuantitySelector
           :value="quantity"
-          :min="1"
-          :max="10"
-          :step="1"
           @updateValue="updateQuantity"
         />
       </div>
@@ -50,6 +47,9 @@
       >
         Add
       </Button>
+      <Button @click="removeItemFromOrder(item.id)">
+        Delete
+      </Button>
     </div>
   </div>
 </template>
@@ -70,12 +70,16 @@ export default {
       type: Object,
       required: true,
     },
+    quantity: {
+      type: Number,
+      default: 1,
+    },
   },
   data() {
     return {
       isModalOpen: false,
       selectedItem: null,
-      quantity: 1,
+      quantity: this.quantity,
       preferences: "",
     };
   },
@@ -94,7 +98,10 @@ export default {
         quantity: this.quantity,
         preferences: this.preferences,
       };
-      this.$emit("update-order", order);
+      this.$emit("update-order-item", order);
+    },
+    removeItemFromOrder(id) {
+      this.$emit("delete-order-item", id);
     },
     updateQuantity(newQuantity) {
       this.quantity = newQuantity;
