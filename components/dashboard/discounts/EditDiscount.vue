@@ -1,6 +1,7 @@
 <template>
   <div class="p-4">
     <h2 v-if="mode === 'edit'" class="text-xl font-bold mb-4">Edit Discount</h2>
+    <h2 v-if="mode === 'create'" class="text-xl font-bold mb-4">Create Discount</h2>
     <form @submit.prevent="submitForm">
       <div class="mb-6">
         <label class="block text-sm font-medium mb-1 pb-2">Discount Name</label>

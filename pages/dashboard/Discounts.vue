@@ -67,7 +67,7 @@
       @close="closeModal"
     >
       <EditDiscount
-        :mode="modalType === 'edit'"
+        :mode="modalType"
         :discount="selectedDiscount"
         @save-discount="updateDiscount"
         @close="closeModal"
@@ -117,12 +117,8 @@ export default {
     };
   },
   methods: {
-    createDiscount() {
-      this.closeModal();
-    },
     updateDiscount(item) {
       if (this.modalType === "create") {
-        console.log(item);
         this.discounts = [...this.discounts, item];
       } else {
         const index = this.discounts.findIndex(
@@ -153,7 +149,5 @@ export default {
 </script>
 
 <style scoped>
-.container {
-  max-width: 800px;
-}
+
 </style>
