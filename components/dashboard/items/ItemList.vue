@@ -2,7 +2,7 @@
   <div class="w-full py-4">
     <CategoryList :categories="uniqueCategories" @select-category="filterItems" />
 
-    <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    <div class="gap-4" :class="gridClass">
       <div
         v-for="item in filteredItems"
         :key="item.id"
@@ -42,15 +42,22 @@ export default {
   data() {
     return {
       items: this.items,
-      categories: this.categories
+      categories: this.categories,
+      gridClass: ""
     };
+  },
+  mounted() {
+    this.updateGridClass();
+    window.addEventListener("resize", this.updateGridClass);
+  },
+  beforeDestroy() {
+    window.removeEventListener("resize", this.updateGridClass);
   },
   computed: {
     uniqueCategories() {
       return [{id: 'all', name: "All"}, ...new Set(this.categories.map((item) => item))];
     },
     filteredItems() {
-      console.log(this.selectedCategory)
       return this.selectedCategory && this.selectedCategory != "all"
         ? this.items.filter((item) => item.category.id === this.selectedCategory)
         : this.items;
@@ -62,6 +69,20 @@ export default {
     },
     selectItem(item) {
       this.$emit('select-item', 'edit', item);
+    },
+    updateGridClass() {
+      const width = window.innerWidth;
+      if (width < 640) {
+        this.gridClass = "grid grid-cols-2";
+      } else if (width < 768) {
+        this.gridClass = "grid grid-cols-3";
+      } else if (width < 1024) {
+        this.gridClass = "grid grid-cols-4";
+      } else if (width < 1300) {
+        this.gridClass = "grid grid-cols-3";
+      } else {
+        this.gridClass = "grid grid-cols-4";
+      }
     },
   },
 };
