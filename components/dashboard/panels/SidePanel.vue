@@ -1,66 +1,54 @@
 <template>
   <nav class="w-[100px] flex flex-col items-center py-4 space-y-6">
-    <button class="text-white hover:bg-gray-700 p-3 rounded w-[80px]">
+    <button
+      v-for="item in filteredNavigation"
+      :key="item.title"
+      class="text-white hover:bg-gray-700 p-3 rounded w-[80px]"
+      :title="item.title"
+    >
       <div class="flex flex-col items-center">
         <div class="w-[30px] h-[30px] flex items-center justify-center">
-          <svg viewBox="0 0 24 24" title="ShoppingCartOutlined" fill="#fff">
-            <path d="M15.55 13c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.37-.66-.11-1.48-.87-1.48H5.21l-.94-2H1v2h2l3.6 7.59-1.35 2.44C4.52 15.37 5.48 17 7 17h12v-2H7l1.1-2zM6.16 6h12.15l-2.76 5H8.53zM7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2m10 0c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2"></path>
-          </svg>
+          <NavSvgIcon :icon="item.icon" />
         </div>
       </div>
-      <span class="text-xs mt-1">Order</span>
-    </button>
-    
-    <button class="text-white hover:bg-gray-700 p-3 rounded w-[80px]">
-      <div class="flex flex-col items-center">
-        <div class="w-[30px] h-[30px] flex items-center justify-center">
-          <svg
-            viewBox="0 0 24 24"
-            class="fill-white"
-            tabindex="-1"
-            title="People"
-            fill="#fff"
-          >
-            <path
-              d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3m-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3m0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5m8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5"
-            ></path>
-          </svg>
-        </div>
-      </div>
-      <span class="text-xs mt-1">Customers</span>
-    </button>
-
-    <button class="text-white hover:bg-gray-700 p-3 rounded w-[80px]">
-      <div class="flex flex-col items-center">
-        <div class="w-[30px] h-[30px] flex items-center justify-center">
-          <svg viewBox="0 0 24 24" tabindex="-1" title="Receipt" fill="#fff">
-            <path
-              d="M18 17H6v-2h12zm0-4H6v-2h12zm0-4H6V7h12zM3 22l1.5-1.5L6 22l1.5-1.5L9 22l1.5-1.5L12 22l1.5-1.5L15 22l1.5-1.5L18 22l1.5-1.5L21 22V2l-1.5 1.5L18 2l-1.5 1.5L15 2l-1.5 1.5L12 2l-1.5 1.5L9 2 7.5 3.5 6 2 4.5 3.5 3 2z"
-            ></path>
-          </svg>
-        </div>
-      </div>
-      <span class="text-xs mt-1">Orders</span>
-    </button>
-
-    <button class="text-white hover:bg-gray-700 p-3 rounded w-[80px]">
-      <div class="flex flex-col items-center">
-        <div class="w-[30px] h-[30px] flex items-center justify-center">
-          <svg viewBox="0 0 24 24" tabindex="-1" title="Loyalty" fill="#fff">
-            <path
-              d="m21.41 11.58-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58s1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41s-.23-1.06-.59-1.42M5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7m11.77 8.27L13 19.54l-4.27-4.27C8.28 14.81 8 14.19 8 13.5c0-1.38 1.12-2.5 2.5-2.5.69 0 1.32.28 1.77.74l.73.72.73-.73c.45-.45 1.08-.73 1.77-.73 1.38 0 2.5 1.12 2.5 2.5 0 .69-.28 1.32-.73 1.77"
-            ></path>
-          </svg>
-        </div>
-      </div>
-      <span class="text-xs mt-1">Loyalty</span>
-    </button>
-
-    <button class="text-white hover:bg-gray-700 p-3 rounded">
-      <i class="fas fa-users"></i>
+      <span class="text-xs mt-1">{{ item.title }}</span>
     </button>
   </nav>
 </template>
+
+<script>
+import NavSvgIcon from "./NavSvgIcon";
+
+export default {
+  components: { NavSvgIcon },
+  data() {
+    return {
+      userRole: "waiter", 
+      navigationItems: {
+        manager: [
+          { title: "Order", icon: "ShoppingCartOutlined", path: "/orders" },
+          { title: "Customers", icon: "People", path: "/customers" },
+          { title: "Orders", icon: "Receipt", path: "/all-orders" },
+          { title: "Loyalty", icon: "Loyalty", path: "/loyalty" },
+        ],
+        waiter: [
+          { title: "Order", icon: "ShoppingCartOutlined", path: "/orders" },
+          { title: "Customers", icon: "People", path: "/customers" },
+        ],
+        cashier: [
+          { title: "Orders", icon: "Receipt", path: "/all-orders" },
+          { title: "Loyalty", icon: "Loyalty", path: "/loyalty" },
+        ],
+      },
+    };
+  },
+  computed: {
+    filteredNavigation() {
+      return this.navigationItems[this.userRole] || [];
+    },
+  },
+};
+</script>
 
 <style>
 .icon-container {

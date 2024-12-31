@@ -56,6 +56,7 @@
           type="date"
           class="border rounded w-full p-2"
           :min="currentDate"
+          @input="formatDate"
         />
       </div>
       <div class="flex justify-end space-x-2">
@@ -108,6 +109,12 @@ export default {
     submitForm() {
       if (!this.errorMessage) {
         this.$emit("save-discount", { ...this.form });
+      }
+    },
+    formatDate() {
+      if (this.form.expiry) {
+        const [year, month, day] = this.form.expiry.split("-");
+        this.formattedExpiry = `${day}-${month}-${year}`;
       }
     },
   },

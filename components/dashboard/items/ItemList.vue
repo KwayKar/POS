@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full py-4">
+  <div class="w-full py-4" style="min-height: 100vh">
     <CategoryList :categories="uniqueCategories" @select-category="filterItems" />
 
     <div class="gap-4" :class="gridClass">

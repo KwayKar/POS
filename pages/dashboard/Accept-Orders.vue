@@ -35,8 +35,8 @@
 
 <script>
 import ItemList from "~/components/dashboard/items/ItemList.vue";
-import AddOrderInfo from "~/components/dashboard/orders/AddOrderInfo.vue";
-import OrderPanel from "~/components/dashboard/orders/OrderPanel.vue";
+import AddOrderInfo from "~/components/dashboard/acceptOrder/AddOrderInfo.vue";
+import OrderPanel from "~/components/dashboard/acceptOrder/OrderPanel.vue";
 import Modal from "~/components/reuse/ui/Modal.vue";
 import DashboardLayout from "~/layouts/DashboardLayout.vue";
 

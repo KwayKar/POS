@@ -79,7 +79,7 @@
     <Modal
       v-if="modal.isOpen && modal.type === 'delete'"
       width="420px"
-      height="170px"
+      height="auto"
       @close="closeModal"
     >
       <ConfirmDelete @remove-item="removeStaff" @close="closeModal">

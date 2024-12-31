@@ -157,8 +157,6 @@ export default {
     createItem() {
       if (this.selectedItem.title.trim() === "") {
         this.errors.title = true;
-
-        console.log("emit");
         return;
       }
       this.errors.title = false;
