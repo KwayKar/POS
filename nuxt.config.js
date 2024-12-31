@@ -34,5 +34,9 @@ export default {
     // '@nuxtjs/tailwindcss',
     '~/custom-layer'
   ],
+
+  modules: ['@nuxtjs/tailwindcss'],
+  // other configurations
+
   build: {}
 }
