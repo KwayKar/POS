@@ -2,7 +2,7 @@
     <div style="width: 100%">
       <textarea
         :id="id"
-        :value="preferences"
+        :value="value"
         :rows="rows"
         @input="updateValue"
         class="custom-textarea"
@@ -15,21 +15,16 @@
   export default {
     name: 'Textarea',
     props: {
-      modelValue: {
+      value: {
         type: String,
         required: true,
       },
       placeholder: {
         type: String,
-        default: 'Enter..',
       },
       rows: {
         type: Number,
         default: 3,
-      },
-      placeholder: {
-        type: String,
-        default: 'Enter your preferences...',
       },
     },
     data() {
@@ -54,9 +49,10 @@
   .custom-textarea {
     width: 100% !important;
     resize: none;
+    padding: 0.5rem;     
     box-sizing: border-box;
     outline: none;
-    padding: 0.5rem;     
+    border: 1px solid var(--gray-1);
   }
   </style>
   

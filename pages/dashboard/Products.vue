@@ -55,10 +55,10 @@ export default {
   data() {
     return {
       items: [
-        { id: 1, title: "Item 1", category: {id: 1, name: "Main"}, price: 30, description: "Description goes here", image: "https://images.ctfassets.net/eum7w7yri3zr/3Z3fW9JhznhFDphzlHNmRx/d6410c46ffb8fc2c4c19c736a7f8d920/SG_Web_Image_Salad_Guacamole_Greens.png?w=600&fm=avif&q=75" },
-        { id: 2, title: "Item 2", category: {id: 2, name: "Salads"}, price: 20, description: "Description goes here", image: "https://images.ctfassets.net/eum7w7yri3zr/3Z3fW9JhznhFDphzlHNmRx/d6410c46ffb8fc2c4c19c736a7f8d920/SG_Web_Image_Salad_Guacamole_Greens.png?w=600&fm=avif&q=75" },
-        { id: 3, title: "Item 3", category: {id: 3, name: "Drinks"}, price: 40, description: "Description goes here", image: "https://images.ctfassets.net/eum7w7yri3zr/3Z3fW9JhznhFDphzlHNmRx/d6410c46ffb8fc2c4c19c736a7f8d920/SG_Web_Image_Salad_Guacamole_Greens.png?w=600&fm=avif&q=75" },
-        { id: 4, title: "Item 4", category: {id: 4, name: "Desserts"}, price: 30, description: "Description goes here", image: "https://images.ctfassets.net/eum7w7yri3zr/3Z3fW9JhznhFDphzlHNmRx/d6410c46ffb8fc2c4c19c736a7f8d920/SG_Web_Image_Salad_Guacamole_Greens.png?w=600&fm=avif&q=75" }
+        { id: 1, title: "Item 1", category: "Main", price: 30, description: "Description goes here", image: "https://images.ctfassets.net/eum7w7yri3zr/3Z3fW9JhznhFDphzlHNmRx/d6410c46ffb8fc2c4c19c736a7f8d920/SG_Web_Image_Salad_Guacamole_Greens.png?w=600&fm=avif&q=75" },
+        { id: 2, title: "Item 2", category: "Salads", price: 20, description: "Description goes here", image: "https://images.ctfassets.net/eum7w7yri3zr/3Z3fW9JhznhFDphzlHNmRx/d6410c46ffb8fc2c4c19c736a7f8d920/SG_Web_Image_Salad_Guacamole_Greens.png?w=600&fm=avif&q=75" },
+        { id: 3, title: "Item 3", category: "Drinks", price: 40, description: "Description goes here", image: "https://images.ctfassets.net/eum7w7yri3zr/3Z3fW9JhznhFDphzlHNmRx/d6410c46ffb8fc2c4c19c736a7f8d920/SG_Web_Image_Salad_Guacamole_Greens.png?w=600&fm=avif&q=75" },
+        { id: 4, title: "Item 4", category: "Desserts", price: 30, description: "Description goes here", image: "https://images.ctfassets.net/eum7w7yri3zr/3Z3fW9JhznhFDphzlHNmRx/d6410c46ffb8fc2c4c19c736a7f8d920/SG_Web_Image_Salad_Guacamole_Greens.png?w=600&fm=avif&q=75" }
       ],
       modal: {
         type: null,

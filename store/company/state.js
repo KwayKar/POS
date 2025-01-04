@@ -3,7 +3,7 @@ export default {
 
   },
   staff: {
-    name: "",
+    name: "Aung",
     id: null,
     role: "waiter"  
   }

@@ -1,15 +1,28 @@
 <template>
-  <div class="quantity-selector">
-    <button @click="decrement" :disabled="value <= min">-</button>
+  <div class="quantity-selector w-full flex items-center bg-white">
+    <button 
+      @click="decrement" 
+      :disabled="value <= min"
+      class="button ml-2 my-2"
+    >
+    -
+    </button>
     <input 
-      type="number" 
+      type="text" 
       :value="value" 
       @input="onInput" 
       :min="min" 
       :max="max" 
       :step="step"
+      class="quantity-input w-full rounded px-2 py-1 text-center"
     />
-    <button @click="increment" :disabled="value >= max">+</button>
+    <button 
+      @click="increment" 
+      :disabled="value >= max"
+      class="button mr-2 my-2"
+    >
+      +
+    </button>
   </div>
 </template>
 
@@ -34,6 +47,9 @@ export default {
       default: 1,
     },
   },
+  mounted() {
+    console.log(this.value)
+  },
   methods: {
     increment() {
       if (this.value + this.step <= this.max) {
@@ -57,3 +73,21 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.quantity-selector {
+  border-radius: 22px;
+  border: 1px solid var(--gray-1);
+}
+.button {
+  width: 40px;
+  height: 30px;
+  border: 1px solid var(--gray-2);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-self: center;
+  font-size: 1.2rem;
+  box-sizing: border-box;
+}
+</style>

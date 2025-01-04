@@ -1,18 +1,25 @@
 <template>
   <DashboardLayout>
     <NavPanel
-      class="fixed top-0 left-0 lg:left-[100px] w-full lg:w-[calc(100%-100px)] h-16 bg-white shadow"
+      class="fixed top-0 left-0 lg:left-[100px] w-full lg:w-[calc(100%-100px)] h-16 bg-white shadow" style="z-index:  9999;"
     />
 
+    <div 
+      class="flex-shrink-0 overflow-y-auto"
+      :style="{ width: 'calc(100% - 400px)' }"
+    >
+      <div class="w-full">
+        <OrderList
+          :orders="filteredOrders"
+          @select-order="selectOrder"
+          @edit-order="openModal"
+          @filter-order="filterByOrderStatus"
+        />
+      </div>
 
-    <OrderList
-      :orders="filteredOrders"
-      @select-order="openModal"
-      @filter-order="filterByOrderStatus"
-    />
-
-    <div style="color: var(--primary-btn-color)">
-        {{ currentStaff.role }}
+      <div class="fixed top-16 right-0 w-full lg:w-[400px] h-[calc(100vh-16px)] bg-gray-50 border-l border-gray-300 p-4 overflow-y-auto">
+        <OrderDetails :order="selectedOrder" />
+      </div>
     </div>
 
     <Modal
@@ -20,7 +27,7 @@
       @close="closeModal"
       :minHeight="'400px'"
     >
-      <OrderInfo
+      <EditOrderInfo
         :order="selectedOrder"
         @edit-order="updateOrder"
       />
@@ -40,7 +47,7 @@
 </template>
 
 <script>
-import OrderInfo from "~/components/dashboard/orders/OrderInfo.vue";
+import EditOrderInfo from "~/components/dashboard/orders/EditOrderInfo.vue";
 import OrderList from "~/components/dashboard/orders/OrderList.vue";
 import NavPanel from "~/components/dashboard/panels/NavPanel.vue";
 import ConfirmDelete from "~/components/reuse/ui/ConfirmDelete.vue";
@@ -48,6 +55,7 @@ import Modal from "~/components/reuse/ui/Modal.vue";
 import DashboardLayout from "~/layouts/DashboardLayout.vue";
 import { mapState } from 'vuex';
 import { mapGetters } from "vuex";
+import OrderDetails from "~/components/dashboard/orders/OrderDetails.vue";
 
 export default {
   components: {
@@ -55,7 +63,8 @@ export default {
     NavPanel,
     Modal,
     OrderList,
-    OrderInfo,
+    OrderDetails,
+    EditOrderInfo,
     ConfirmDelete,
   },
   data() {
@@ -70,6 +79,24 @@ export default {
           address: "Address goes here",
           date: "6/12/2025",
           orderStatus: "new",
+          "dishes": [
+            {
+              "id": 1,
+              "name": "Spaghetti Bolognese",
+              "quantity": 2,
+              "comments": "Extra cheese, no mushrooms",
+              "chef": "Chef John",
+              "status": "in-progress"
+            },
+            {
+              "id": 2,
+              "name": "Caesar Salad",
+              "quantity": 1,
+              "comments": "Dressing on the side",
+              "chef": "Chef Sarah",
+              "status": "completed"
+            }
+          ],
         },
         {
           id: 2,
@@ -77,7 +104,7 @@ export default {
           email: "koo@gmail.com",
           address: "Address 1 here",
           date: "8/12/2025",
-          orderStatus: "old",
+          orderStatus: "completed",
         },
         {
           id: 3,
@@ -95,10 +122,12 @@ export default {
     };
   },
   methods: {
+    selectOrder(item) {
+      this.selectedOrder = item;
+    },
     updateOrder(item) {
       const index = this.orders.findIndex((order) => order.id === item.id);
       if (index !== -1) {
-        // this.orders[index] = { ...item };
         const updatedOrders = [...this.orders];
         updatedOrders[index] = { ...item };
         this.orders = updatedOrders;
@@ -135,7 +164,6 @@ export default {
         (order) => order.orderStatus === this.filterStatus
       );
     },
-    // ...mapState("company", ["staff"]),
     ...mapGetters("company", ["currentStaff"]),
     // ...mapState({
     //   staff: (state) => "ss", // Custom mapping

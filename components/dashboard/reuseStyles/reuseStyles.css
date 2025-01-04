@@ -1,0 +1,11 @@
+.sidePanel {
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+.sidePanel-title {
+  font-size: 1.35rem;
+  font-weight: bold;
+  margin: 12px 0 20px;
+  color: var(--white-1);
+}

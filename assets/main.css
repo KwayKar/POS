@@ -2,6 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-    --primary-btn-color: #68a182;
+html {
+    font-size: calc(1vw);
 }
+
+@media screen and (max-width: 1000px) {
+    html {
+      font-size: 16px; 
+    }
+  }
+
+:root {
+    --primary-bg-color-1: #f1f1e4;
+    --primary-btn-color: #68a182;
+    --primary-btn-color-2: #89aa8c;
+    --primary-text-color-1: #232323;
+
+    --site-border-radius: 24px;
+
+    --full-width-panel-size: calc(100% - 40px);
+
+    --white-1: #fff;
+    --black-1: #232323;
+    --gray-1: #b5b5b5;
+    --gray-2: #a49f9f;
+    --red-1: #f47777;
+    --pale-gray-1: #bebebe;
+}
+

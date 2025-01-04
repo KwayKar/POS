@@ -43,7 +43,8 @@ export default {
     return {
       items: this.items,
       categories: this.categories,
-      gridClass: ""
+      gridClass: "",
+      selectedCategory: "All"
     };
   },
   mounted() {
@@ -58,17 +59,17 @@ export default {
       return [{id: 'all', name: "All"}, ...new Set(this.categories.map((item) => item))];
     },
     filteredItems() {
-      return this.selectedCategory && this.selectedCategory != "all"
-        ? this.items.filter((item) => item.category.id === this.selectedCategory)
+      return this.selectedCategory && this.selectedCategory !== "All"
+        ? this.items.filter((item) => item.category == this.selectedCategory)
         : this.items;
     },
   },
   methods: {
     filterItems(category) {
-      this.selectedCategory = category.id;
+      this.selectedCategory = category.name;
     },
     selectItem(item) {
-      this.$emit('select-item', 'edit', item);
+      this.$emit('select-item', item);
     },
     updateGridClass() {
       const width = window.innerWidth;

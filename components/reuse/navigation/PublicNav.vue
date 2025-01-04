@@ -1,43 +1,30 @@
 <template>
-  <header class="bg-white shadow-md rounded-full">
-    <div class="container mx-auto px-4 py-6">
-      <div class="flex items-center justify-between">
-        <!-- Logo -->
+  <header
+    class="header bg-white fixed top-5 left-0 right-0 mx-6 box-border max-w-[var(--full-width-panel-size)]"
+    style="border-radius: var(--site-border-radius); z-index: 9999"
+  >
+    <div class="container m-auto max-w-[calc(100%-20px)] p-4">
+      <div class="flex items-center justify-between" style="width: 100%">
+        <!-- Company Name -->
         <div class="text-xl font-bold text-black-600 w-[200px]">
-          <NuxtLink to="/">CodaClone</NuxtLink>
+          <NuxtLink to="/">Kway Kar</NuxtLink>
         </div>
 
         <!-- Desktop Nav Links -->
         <nav class="hidden md:flex flex-1">
-          <!-- Centered Links (Home, About, Pricing) -->
-          <div class="flex justify-center space-x-8 flex-1">
-            <NuxtLink
-              to="/"
-              class="flex items-center justify-center px-4 py-2 text-gray-600 hover:text-blue-600 transition duration-200 ease-in-out ">
-              Home
-            </NuxtLink>
-            <NuxtLink
-              to="/about"
-              class="flex items-center justify-center px-4 py-2 text-gray-600 hover:text-blue-600 transition duration-200 ease-in-out ">
-              About
-            </NuxtLink>
-            <NuxtLink
-              to="/pricing"
-              class="flex items-center justify-center px-4 py-2 text-gray-600 hover:text-blue-600 transition duration-200 ease-in-out ">
-              Pricing
-            </NuxtLink>
+          <div class="flex justify-center space-x-12 flex-1">
+            <NuxtLink to="/" class="navLinks"> Home </NuxtLink>
+            <NuxtLink to="/about" class="navLinks"> About </NuxtLink>
+            <NuxtLink to="/pricing" class="navLinks"> Pricing </NuxtLink>
           </div>
 
           <!-- Right-aligned Links (Contact, Get Started) -->
           <div class="flex space-x-8">
-            <NuxtLink
-              to="/contact"
-              class="px-4 py-2 text-gray-600 hover:text-blue-600 transition duration-200 ease-in-out ">
-              Contact
-            </NuxtLink>
+            <NuxtLink to="/contact" class="navLinks"> Contact </NuxtLink>
             <NuxtLink
               to="/getstarted"
-              class="px-4 py-2 bg-black text-white hover:text-blue-600 rounded-full transition duration-200 ease-in-out ">
+              class="px-4 py-2 bg-black text-white hover:text-blue-600 rounded-full transition duration-200 ease-in-out"
+            >
               Get Started
             </NuxtLink>
           </div>
@@ -126,58 +113,23 @@ export default {
     },
     closeMenu() {
       this.isMenuOpen = false;
-    }
-  }
-};
-</script>
-
-<style scoped>
-/* Add custom styles here if necessary */
-</style>
-
-
-
-<script>
-export default {
-  data() {
-    return {
-      isMenuOpen: false,
-    };
-  },
-  methods: {
-    toggleMenu() {
-      this.isMenuOpen = !this.isMenuOpen;
     },
-    closeMenu() {
-      this.isMenuOpen = false;
-    }
-  }
-};
-</script>
-
-<style scoped>
-/* Add custom styles here if necessary */
-</style>
-
-
-<script>
-export default {
-  data() {
-    return {
-      isMenuOpen: false,
-    };
   },
-  methods: {
-    toggleMenu() {
-      this.isMenuOpen = !this.isMenuOpen;
-    },
-    closeMenu() {
-      this.isMenuOpen = false;
-    }
-  }
 };
 </script>
 
 <style scoped>
-/* Add custom styles here if necessary */
+.header {
+  width: 100%;
+  background: #fff;
+  margin: 0 auto;
+  max-width: var(--full-width-panel-size);
+}
+.navLinks {
+  font-size: 1.15rem;
+  color: var(--primary-text-color-1);
+  display: flex;
+  margin: 0 1px;
+  align-items: center;
+}
 </style>

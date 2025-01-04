@@ -8,7 +8,10 @@
         :style="{ width: panelWidth.itemPanel + 'px' }"
         class="bg-gray-100 p-4 overflow-y-auto"
       >
-        <ItemList :items="items" @select-item="openModal" />
+        <ItemList 
+          :items="items" 
+          :categories="categories"
+          @select-item="openModal" />
       </div>
       <div 
         v-if="panelWidth.itemPanel > 400" 
@@ -21,10 +24,11 @@
       >
         <OrderPanel :order="order" @edit-order="openModal" />
       </div>
-      <Modal v-if="isModalOpen" @close="closeModal" :minHeight="'500px'">
+      <Modal v-if="modal.isOpen" @close="closeModal">
         <AddOrderInfo
           :item="selectedItem"
-          :quantity="quantity"
+          :orderForm="orderForm"
+          :modalType="modal.type"
           @update-order-item="handleUpdateOrderItem"
           @delete-order-item="handleDeleteOrderItem"
         />
@@ -39,10 +43,12 @@ import AddOrderInfo from "~/components/dashboard/acceptOrder/AddOrderInfo.vue";
 import OrderPanel from "~/components/dashboard/acceptOrder/OrderPanel.vue";
 import Modal from "~/components/reuse/ui/Modal.vue";
 import DashboardLayout from "~/layouts/DashboardLayout.vue";
+import NavPanel from "~/components/dashboard/panels/NavPanel.vue";
 
 export default {
   components: {
     DashboardLayout,
+    NavPanel,
     ItemList,
     OrderPanel,
     AddOrderInfo,
@@ -50,6 +56,11 @@ export default {
   },
   data() {
     return {
+      categories: [
+        { id: 1, name: "Salads" },
+        { id: 2, name: "Drinks" },
+        { id: 3, name: "Desserts" },
+      ],
       items: [
         {
           id: 1,
@@ -84,14 +95,25 @@ export default {
           category: "Desserts",
           price: 30,
           description: "Description goes here",
+          sizes: [
+            {id: "1", display: "Small"},
+            {id: "2", display: "Medium"},
+            {id: "3", display: "Large"}
+          ],
           image:
             "https://images.ctfassets.net/eum7w7yri3zr/3Z3fW9JhznhFDphzlHNmRx/d6410c46ffb8fc2c4c19c736a7f8d920/SG_Web_Image_Salad_Guacamole_Greens.png?w=600&fm=avif&q=75",
         },
       ],
-      isModalOpen: false,
+      modal: {
+        isOpen: false,
+        type: null
+      },
       selectedItem: null,
+      orderForm: {
+        quantity: 1,
+        preferences: null
+      },
       order: [],
-      quantity: 1,
       panelWidth: {
         windowPanel: 0,
         navPanel: 100,
@@ -128,22 +150,27 @@ export default {
       if (existingOrderIndex !== -1) {
         const updateItem = {
           ...this.order[existingOrderIndex],
-          quantity: updatedOrder.quantity,
+          ...updatedOrder
         };
         this.order.splice(existingOrderIndex, 1, updateItem);
       } else {
         this.order.push(updatedOrder);
       }
 
-      this.isModalOpen = false;
-      this.selectedItem = null;
+      this.modal = { 
+        isOpen: false, 
+        type: null 
+      };
     },
     handleDeleteOrderItem(itemId) {
       const index = this.order.findIndex((order) => order.item.id === itemId);
       if (index !== -1) {
         this.order.splice(index, 1);
       }
-      this.isModalOpen = false;
+      this.modal = { 
+        isOpen: false, 
+        type: null 
+      }
       this.selectedItem = null;
     },
     // Modal
@@ -152,16 +179,25 @@ export default {
         (order) => order.item.id === item.id
       );
       if (existingOrder) {
-        this.quantity = existingOrder.quantity;
+        this.orderForm = existingOrder;
       } else {
-        this.quantity = 1;
+        this.orderForm = {
+          ...this.orderForm,
+          ...existingOrder
+        }
       }
 
       this.selectedItem = item;
-      this.isModalOpen = true;
+      this.modal = { 
+        isOpen: true, 
+        type: existingOrder ? "edit" : "create"  
+      }
     },
     closeModal() {
-      this.isModalOpen = false;
+      this.modal = { 
+        isOpen: false, 
+        type: null 
+      }
       this.selectedItem = null;
     },
   },
