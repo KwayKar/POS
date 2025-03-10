@@ -1,7 +1,11 @@
 <template>
   <div class="sidePanel">
     <h3 class="text-white mb-4 sidePanel-title">Create Order</h3>
-    <div v-if="localOrder.length" class="space-y-4">
+    <div 
+      v-if="localOrder.length" 
+      class="space-y-4 order-items" 
+      style="overflow-y: auto; height: calc(100% - 120px)"
+    >
       <div
         v-for="(order, index) in localOrder"
         :key="index"
@@ -33,7 +37,7 @@
 
             <div>
               <p class="text-m">
-                {{ (order.quantity * order.item.price) | currency }}
+                {{ (order.quantity * order.item.price) }}
               </p>
             </div>
           </div>
@@ -46,47 +50,60 @@
       </div>
     </div>
     <p v-else class="text-m text-gray-400">No orders available.</p>
+
+    <div class="submit-order absolute bottom-0 left-0 w-full bg-gray-800 shadow-lg">
+      <SubmitOrder :pricingInfo="pricingInfo" />
+    </div>
   </div>
 </template>
 
 <script>
-import "~/components/dashboard/reuseStyles/reuseStyles.css"
+import "~/components/dashboard/reuse/reuseStyles.css"
+import SubmitOrder from "./SubmitOrder.vue";
 
 export default {
+  components: {
+    SubmitOrder
+  },
   props: {
     order: {
       type: Array,
       required: true,
       default: () => [],
     },
+    pricingInfo: {
+      type: Object,
+    }
   },
-  data() {
-    return {
-      localOrder: [...this.order],
-    };
-  },
-  watch: {
-    order: {
-      immediate: true,
-      handler(newOrder) {
-        this.localOrder = [...newOrder];
-      },
+  computed: {
+    localOrder() {
+      return [...this.order];
     },
-  },
+  },  
   methods: {
     openEditModal(item) {
       this.$emit("edit-order", item);
-    },
-  },
-  filters: {
-    currency(value) {
-      return `$${parseFloat(value).toFixed(2)}`;
     },
   },
 };
 </script>
 
 <style scoped>
+.sidePanel {
+  height: 100%; 
+  position: relative;
+}
+
+.order-items {
+  overflow: scroll;
+  scrollbar-width: none; 
+  -ms-overflow-style: none;
+}
+
+.order-items::-webkit-scrollbar {
+  display: none; 
+}
+
 .order-item {
   border-radius: 6px;
 }
@@ -109,5 +126,9 @@ p strong {
 
 .text-m  {
   font-size: 1rem;
+}
+
+.submit-order {
+  z-index: 9999; 
 }
 </style>

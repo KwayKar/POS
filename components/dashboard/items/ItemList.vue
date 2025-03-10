@@ -41,8 +41,6 @@ export default {
   },
   data() {
     return {
-      items: this.items,
-      categories: this.categories,
       gridClass: "",
       selectedCategory: "All"
     };

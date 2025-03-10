@@ -1,7 +1,7 @@
 <template>
   <DashboardLayout>
     <NavPanel
-      class="fixed top-0 left-0 lg:left-[100px] w-full lg:w-[calc(100%-100px)] h-16 bg-white shadow" style="z-index:  9999;"
+      class="fixed top-0 left-0 lg:left-[100px] w-full lg:w-[calc(100%-100px)] h-16 bg-white shadow" style="z-index: 99;"
     />
 
     <div 
@@ -25,11 +25,14 @@
     <Modal
       v-if="modal.isOpen && modal.type === 'edit'"
       @close="closeModal"
+      width="460px"
       :minHeight="'400px'"
     >
       <EditOrderInfo
         :order="selectedOrder"
+        :mode="modal.type"
         @edit-order="updateOrder"
+        @close="closeModal"
       />
     </Modal>
 
@@ -53,8 +56,6 @@ import NavPanel from "~/components/dashboard/panels/NavPanel.vue";
 import ConfirmDelete from "~/components/reuse/ui/ConfirmDelete.vue";
 import Modal from "~/components/reuse/ui/Modal.vue";
 import DashboardLayout from "~/layouts/DashboardLayout.vue";
-import { mapState } from 'vuex';
-import { mapGetters } from "vuex";
 import OrderDetails from "~/components/dashboard/orders/OrderDetails.vue";
 
 export default {
@@ -78,7 +79,9 @@ export default {
           email: "bobo@gmail.com",
           address: "Address goes here",
           date: "6/12/2025",
+          time: "1:30",
           orderStatus: "new",
+          orderType: "Eat In",
           "dishes": [
             {
               "id": 1,
@@ -104,7 +107,19 @@ export default {
           email: "koo@gmail.com",
           address: "Address 1 here",
           date: "8/12/2025",
+          time: "12:40",
           orderStatus: "completed",
+          orderType: "Take Away",
+          "dishes": [
+            {
+              "id": 1,
+              "name": "Spaghetti Bolognese",
+              "quantity": 2,
+              "comments": "Extra cheese, no mushrooms",
+              "chef": "Chef John",
+              "status": "in-progress"
+            },
+          ]
         },
         {
           id: 3,
@@ -112,7 +127,19 @@ export default {
           email: "looa@gmail.com",
           address: "Address 2 here",
           date: "7/12/2025",
+          time: "11:10",
           orderStatus: "processing",
+          orderType: "Delivery",
+          "dishes": [
+            {
+              "id": 1,
+              "name": "Spaghetti Bolognese",
+              "quantity": 2,
+              "comments": "Extra cheese, no mushrooms",
+              "chef": "Chef John",
+              "status": "in-progress"
+            },
+          ]
         },
       ],
       modal: {
@@ -127,6 +154,7 @@ export default {
     },
     updateOrder(item) {
       const index = this.orders.findIndex((order) => order.id === item.id);
+      console.log(item)
       if (index !== -1) {
         const updatedOrders = [...this.orders];
         updatedOrders[index] = { ...item };
@@ -138,6 +166,7 @@ export default {
       this.orders = this.orders.filter(
         (user) => user.id !== this.selectedOrder.id
       );
+      this.selectedOrder = null;
       this.closeModal();
     },
     filterByOrderStatus(status) {
@@ -164,11 +193,6 @@ export default {
         (order) => order.orderStatus === this.filterStatus
       );
     },
-    ...mapGetters("company", ["currentStaff"]),
-    // ...mapState({
-    //   staff: (state) => "ss", // Custom mapping
-    // //   business: 'business.type', // Shorthand for state.business.type
-    // }),
   },
 };
 </script>

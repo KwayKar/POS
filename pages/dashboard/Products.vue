@@ -4,25 +4,28 @@
       class="fixed top-0 left-0 lg:left-[100px] w-full lg:w-[calc(100%-100px)] h-16 bg-white shadow"
     >
       <div>
-        <button 
+        <Button 
           class="create-btn" 
           style="background-color: var(--primary-btn-color, #4caf50)"
           @click="openModal('create')"
         >
           Create Product
-        </button>
+        </Button>
       </div>
     </NavPanel>
     <div class="flex flex-col lg:flex-row h-full">
       <div class="p-4 bg-gray-100 h-full overflow-y-auto">
         <ItemList :items="items" :categories="categories" @select-item="openModal" />
       </div>
+      
       <Modal v-if="modal.isOpen && modal.type === 'edit'" @close="closeModal" :minHeight="'400px'">
         <ProductInfo :item="selectedItem" @edit-item="updateItem" @remove-item="removeItem" />
       </Modal>
+      
       <Modal v-if="modal.isOpen && modal.type === 'create'" @close="closeModal" :minHeight="'400px'">
         <CreateProduct @create-item="createItem" @open-category-modal="openCategoryModal" />
       </Modal>
+      
       <Modal v-if="modal.isOpen && modal.type === 'category'" @close="closeModal" :minHeight="'400px'">
         <CreateCategory 
           :categories="categories"
@@ -41,6 +44,7 @@ import CreateProduct from "~/components/dashboard/products/CreateProduct.vue";
 import Modal from "~/components/reuse/ui/Modal.vue";
 import DashboardLayout from "~/layouts/DashboardLayout.vue";
 import CreateCategory from "~/components/dashboard/products/categories/CreateCategory.vue";
+import Button from "~/components/reuse/ui/Button.vue";
 
 export default {
   components: {
@@ -50,7 +54,8 @@ export default {
     ProductInfo,
     NavPanel,
     CreateProduct,
-    CreateCategory
+    CreateCategory,
+    Button
   },
   data() {
     return {

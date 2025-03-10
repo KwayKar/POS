@@ -8,26 +8,34 @@
         :style="{ width: panelWidth.itemPanel + 'px' }"
         class="bg-gray-100 p-4 overflow-y-auto"
       >
-        <ItemList 
-          :items="items" 
+        <ItemList
+          :items="items"
           :categories="categories"
-          @select-item="openModal" />
+          @select-item="openModal"
+        />
       </div>
-      <div 
-        v-if="panelWidth.itemPanel > 400" 
-        class="bg-gray-800 p-4 overflow-y-auto" 
+      <div
+        v-if="panelWidth.itemPanel > 400"
+        class="bg-gray-800 p-4 overflow-y-auto"
         :style="{
-          width: panelWidth.windowPanel > 1024 ? panelWidth.orderPanel + 'px' : '100%',
+          width:
+            panelWidth.windowPanel > 1024
+              ? panelWidth.orderPanel + 'px'
+              : '100%',
           position: panelWidth.windowPanel < 1024 ? 'fixed' : undefined,
-          bottom: panelWidth.windowPanel < 1024 ? 0 : undefined
+          bottom: panelWidth.windowPanel < 1024 ? 0 : undefined,
         }"
       >
-        <OrderPanel :order="order" @edit-order="openModal" />
+        <OrderPanel
+          :order="order"
+          :pricingInfo="pricingInfo"
+          @edit-order="openModal"
+        />
       </div>
       <Modal v-if="modal.isOpen" @close="closeModal">
         <AddOrderInfo
           :item="selectedItem"
-          :orderForm="orderForm"
+          v-model="orderForm"
           :modalType="modal.type"
           @update-order-item="handleUpdateOrderItem"
           @delete-order-item="handleDeleteOrderItem"
@@ -46,6 +54,10 @@ import DashboardLayout from "~/layouts/DashboardLayout.vue";
 import NavPanel from "~/components/dashboard/panels/NavPanel.vue";
 
 export default {
+  middleware: 'auth', 
+  meta: {
+    roles: ['admin'], 
+  },
   components: {
     DashboardLayout,
     NavPanel,
@@ -96,9 +108,9 @@ export default {
           price: 30,
           description: "Description goes here",
           sizes: [
-            {id: "1", display: "Small"},
-            {id: "2", display: "Medium"},
-            {id: "3", display: "Large"}
+            { id: "1", display: "Small" },
+            { id: "2", display: "Medium" },
+            { id: "3", display: "Large" },
           ],
           image:
             "https://images.ctfassets.net/eum7w7yri3zr/3Z3fW9JhznhFDphzlHNmRx/d6410c46ffb8fc2c4c19c736a7f8d920/SG_Web_Image_Salad_Guacamole_Greens.png?w=600&fm=avif&q=75",
@@ -106,12 +118,12 @@ export default {
       ],
       modal: {
         isOpen: false,
-        type: null
+        type: null,
       },
       selectedItem: null,
       orderForm: {
         quantity: 1,
-        preferences: null
+        preferences: null,
       },
       order: [],
       panelWidth: {
@@ -136,13 +148,15 @@ export default {
       const navPanelWidth = this.panelWidth.navPanel;
       this.panelWidth.windowPanel = windowWidth;
       if (windowWidth > 1024) {
-        this.panelWidth.itemPanel = windowWidth - orderPanelWidth - navPanelWidth; // Remaining space
+        this.panelWidth.itemPanel =
+          windowWidth - orderPanelWidth - navPanelWidth; // Remaining space
       } else {
         this.panelWidth.itemPanel = windowWidth;
       }
     },
     // Order
     handleUpdateOrderItem(updatedOrder) {
+      console.log(updatedOrder)
       const existingOrderIndex = this.order.findIndex(
         (order) => order.item.id == updatedOrder.item.id
       );
@@ -150,27 +164,35 @@ export default {
       if (existingOrderIndex !== -1) {
         const updateItem = {
           ...this.order[existingOrderIndex],
-          ...updatedOrder
+          ...updatedOrder,
+          totalPrice:
+            this.order[existingOrderIndex].quantity *
+            this.order[existingOrderIndex].item.price,
         };
         this.order.splice(existingOrderIndex, 1, updateItem);
       } else {
-        this.order.push(updatedOrder);
+        const addItem = {
+          ...updatedOrder,
+          totalPrice: this.orderForm.quantity * this.selectedItem.price,
+        };
+        this.order.push(addItem);
       }
 
-      this.modal = { 
-        isOpen: false, 
-        type: null 
+      this.modal = {
+        isOpen: false,
+        type: null,
       };
     },
     handleDeleteOrderItem(itemId) {
+      console.log(itemId)
       const index = this.order.findIndex((order) => order.item.id === itemId);
       if (index !== -1) {
         this.order.splice(index, 1);
       }
-      this.modal = { 
-        isOpen: false, 
-        type: null 
-      }
+      this.modal = {
+        isOpen: false,
+        type: null,
+      };
       this.selectedItem = null;
     },
     // Modal
@@ -183,27 +205,37 @@ export default {
       } else {
         this.orderForm = {
           ...this.orderForm,
-          ...existingOrder
-        }
+          ...existingOrder,
+        };
       }
 
       this.selectedItem = item;
-      this.modal = { 
-        isOpen: true, 
-        type: existingOrder ? "edit" : "create"  
-      }
+      this.modal = {
+        isOpen: true,
+        type: existingOrder ? "edit" : "create",
+      };
     },
     closeModal() {
-      this.modal = { 
-        isOpen: false, 
-        type: null 
-      }
+      this.modal = {
+        isOpen: false,
+        type: null,
+      };
       this.selectedItem = null;
     },
   },
   computed: {
-    showOrderPanel() {
-      return this.screenWidth >= 800;
+    pricingInfo() {
+      const subtotal = this.order.reduce(
+        (sum, item) => sum + item.item.price * item.quantity,
+        0
+      );
+      const discount = this.order.reduce((sum, item) => sum + (item?.discount ? item.discount : 0), 0);
+      const total = subtotal - 0;
+      return {
+        total,
+        discount,
+        subtotal,
+      };
     },
   },
 };

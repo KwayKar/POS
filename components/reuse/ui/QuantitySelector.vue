@@ -1,23 +1,25 @@
 <template>
   <div class="quantity-selector w-full flex items-center bg-white">
-    <button 
-      @click="decrement" 
+    <button
+      @click="decrement"
       :disabled="value <= min"
       class="button ml-2 my-2"
     >
-    -
+      -
     </button>
-    <input 
-      type="text" 
-      :value="value" 
-      @input="onInput" 
-      :min="min" 
-      :max="max" 
+    <input
+      type="text"
+      :value="value"
+      @input="onInput"
+      @keypress="onlyAllowNumbers"
+      :min="min"
+      :max="max"
       :step="step"
       class="quantity-input w-full rounded px-2 py-1 text-center"
+      style="border: none; outline: none"
     />
-    <button 
-      @click="increment" 
+    <button
+      @click="increment"
       :disabled="value >= max"
       class="button mr-2 my-2"
     >
@@ -47,9 +49,6 @@ export default {
       default: 1,
     },
   },
-  mounted() {
-    console.log(this.value)
-  },
   methods: {
     increment() {
       if (this.value + this.step <= this.max) {
@@ -62,13 +61,27 @@ export default {
       }
     },
     onInput(event) {
-      let newValue = parseInt(event.target.value, 10);
+      // Remove all non-numeric characters
+      let newValue = event.target.value.replace(/[^0-9]/g, "");
+
+      if (newValue === "") {
+        newValue = 0;
+      } else {
+        newValue = parseInt(newValue, 10);
+      }
+
       if (!isNaN(newValue) && newValue >= this.min && newValue <= this.max) {
         this.emitValueChange(newValue);
       }
     },
     emitValueChange(newValue) {
       this.$emit("updateValue", newValue);
+    },
+    onlyAllowNumbers(event) {
+      const char = String.fromCharCode(event.keyCode);
+      if (!/[0-9]/.test(char)) {
+        event.preventDefault();
+      }
     },
   },
 };

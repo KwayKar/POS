@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col">
     <div class="flex-1 overflow-y-auto">
-      <h2 class="text-lg font-bold mb-4">Dish Details</h2>
+      <PanelTitle>Dish Details</PanelTitle>
       <div v-if="dish">
         <p v-if="dish.name" class="mb-2">
           <span class="font-semibold">Dish Name:</span> {{ dish.name }}
@@ -23,12 +23,12 @@
       class="p-4 border-t border-gray-300 fixed bottom-0 right-0 w-full lg:w-[400px]"
     >
       <div class="flex justify-end">
-        <button
-          class="w-full bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600"
+        <Button
+          class="w-full"
           @click="takeOutOrder"
         >
           Take Out Order
-        </button>
+        </Button>
       </div>
     </div>
   </div>
@@ -36,9 +36,15 @@
 
 <script>
 import { mapGetters } from "vuex";
+import PanelTitle from "../../reuse/PanelTitle.vue";
+import Button from "~/components/reuse/ui/Button.vue";
 
 export default {
   name: "DishDetails",
+  components: {
+    PanelTitle,
+    Button
+  },
   props: {
     dish: {
       type: Object,

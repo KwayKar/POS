@@ -1,170 +1,152 @@
 <template>
-  <div class="modal-content flex flex-col h-full">
-    <div class="flex flex-col p-3 lg:flex-row gap-4 flex-grow">
-      <!-- Left Panel for image & title -->
-      <div class="flex flex-col w-full lg:w-1/2 flex-grow">
-        <div class="relative">
-          <img
-            v-show="selectedItem?.image"
-            :src="selectedItem?.image"
-            alt="Item Image"
-            class="w-full h-auto rounded"
-          />
+  <div
+    class="modal-content w-full flex flex-col h-full bg-[var(--white-1)] p-6 rounded"
+  >
+    <h3 class="text-lg font-semibold mb-4">Product Information</h3>
+
+    <div>
+      <!-- Title -->
+      <div class="form-field">
+        <label class="label">Title</label>
+        <Input
+          type="text"
+          v-model="selectedItem.title"
+          placeholder="Enter Title"
+          :class="{
+            'border-red-500': errors.title,
+            'border-gray-300': !errors.title,
+          }"
+          class="w-full p-2 border rounded"
+        />
+      </div>
+
+      <!-- Category -->
+      <div class="form-field">
+        <label class="label">Category</label>
+        <div class="flex gap-2">
+          <Select v-model="selectedItem.category" :options="categories" />
+          <button @click="openCategoryModal" class="p-2 rounded text-black">
+            +
+          </button>
         </div>
       </div>
 
-      <!-- Right Panel / Item Info -->
-      <div
-        class="w-full lg:w-1/2 bg-gray-100 overflow-y-auto max-h-[400px] p-4 rounded"
-        style="-ms-overflow-style: none; scrollbar-width: none"
-      >
-        <h4 class="text-md font-semibold mb-2">Item Information</h4>
+      <!-- Description -->
+      <div class="form-field">
+        <label class="label">Description</label>
+        <Textarea
+          v-model="selectedItem.description"
+          :rows="3"
+          placeholder="Enter Description"
+        />
+      </div>
 
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700">Title</label>
-          <div>
-            <Input
-              type="text"
-              v-model="selectedItem.title"
-              placeholder="Enter Title"
-              :class="{
-                'border-red-500': errors.title,
-                'border-gray-300': !errors.title,
-              }"
-              class="w-full p-2 border rounded"
-            />
-          </div>
-        </div>
+      <!-- Quantity -->
+      <div class="form-field">
+        <label class="label">Quantity</label>
+        <n-input-number
+          v-model:value="selectedItem.quantity"
+          :min="1"
+          :max="10"
+          placeholder="Edit Quantity"
+          class="custom-input-number"
+        />
+      </div>
 
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700"
-            >Category</label
-          >
-          <button
-            @click="openCategoryModal"
-            class="p-2 rounded bg-blue-500 text-white"
-            >
-            +
-            </button>
-          <div>
-            <select
-              v-model="selectedItem.category"
-              class="w-full p-2 border rounded"
-            >
-              <option disabled value="">Select Category</option>
-              <option
-                v-for="category in categories"
-                :key="category"
-                :value="category"
-              >
-                {{ category }}
-              </option>
-            </select>
-          </div>
-        </div>
-
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700"
-            >Description</label
-          >
-          <div>
-            <input
-              type="text"
-              v-model="selectedItem.description"
-              placeholder="Enter Description"
-              :class="{
-                'border-red-500': errors.description,
-                'border-gray-300': !errors.description,
-              }"
-              class="w-full p-2 border rounded"
-            />
-          </div>
-        </div>
-
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700"
-            >Quantity</label
-          >
-          <div>
-            <input
-              type="number"
-              v-model="selectedItem.quantity"
-              :min="1"
-              :max="10"
-              class="w-full p-2 border rounded"
-              placeholder="Edit Quantity"
-            />
-          </div>
-        </div>
-
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700">Price</label>
-          <div>
-            <input
-              type="text"
-              v-model="selectedItem.price"
-              placeholder="Enter Price"
-              :class="{
-                'border-red-500': errors.price,
-                'border-gray-300': !errors.price,
-              }"
-              class="w-full p-2 border rounded"
-            />
-          </div>
-        </div>
+      <!-- Price -->
+      <div class="form-field">
+        <label class="label">Price</label>
+        <Input
+          type="text"
+          v-model="selectedItem.price"
+          @input="validatePriceInput"
+          placeholder="Enter Price"
+          class="w-full p-2 border rounded"
+        />
       </div>
     </div>
 
-    <!-- Bottom Panel / Edit and Remove Buttons -->
-    <div class="mt-4 flex justify-between p-4 bg-gray-200 rounded-b">
+    <div class="form-field">
+      <label class="label">Upload Image</label>
+      <div class="flex flex-start">
+        <FileUpload v-model="selectedItem.image[0]" />
+      </div>
+    </div>
+
+    <!-- Bottom Panel / Edit Button -->
+    <div class="mt-6 flex justify-end">
       <button
         @click="createItem"
         class="text-white px-4 py-2 rounded"
         style="background-color: var(--primary-btn-color, #4caf50)"
       >
-        <i class="fas fa-trash-alt"></i> Edit
+        Edit
       </button>
     </div>
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref } from "vue";
 import Input from "~/components/reuse/ui/Input.vue";
+import Textarea from "~/components/reuse/ui/Textarea.vue";
+import { NInputNumber } from "naive-ui";
+import Select from "~/components/reuse/ui/Select.vue";
+import FileUpload from "~/components/reuse/ui/FileUpload.vue"
 
-export default {
-  components: {
-    Input,
-  },
-  data() {
-    return {
-      selectedItem: {
-        title: "Product Name",
-        image: "https://via.placeholder.com/300x200.png?text=Upload+Image",
-        description: "",
-        quantity: 1,
-        price: "",
-      },
-      categories: ["Salads", "Drinks", "Desserts"],
-      title: "",
-      errors: {
-        title: false,
-        quantity: false,
-        price: false,
-      },
-    };
-  },
-  methods: {
-    createItem() {
-      if (this.selectedItem.title.trim() === "") {
-        this.errors.title = true;
-        return;
-      }
-      this.errors.title = false;
-      this.$emit("create-item", this.selectedItem);
-    },
-    openCategoryModal() {
-      this.$emit("open-category-modal");
-    }
-  },
+// Declare the selectedItem and errors state
+const selectedItem = ref({
+  title: "Product Name",
+  image: [],
+  description: "",
+  quantity: 1,
+  price: null,
+});
+
+const categories = ref([
+  { label: "Salads", value: "salads" },
+  { label: "Drinks", value: "drinks" },
+  { label: "Desserts", value: "desserts" },
+  { label: "Salad1s", value: "salads" },
+  { label: "Drinks2", value: "drinks" },
+  { label: "Desserts1", value: "desserts" }
+]);
+const errors = ref({
+  title: false,
+  quantity: false,
+  price: false,
+});
+
+const validatePriceInput = (value) => {
+  // Only allow numbers and the decimal point
+  const regex = /^[0-9]*\.?[0-9]*$/;
+  if (!regex.test(selectedItem.value.price)) {
+    selectedItem.value.price = selectedItem.value.price.slice(0, -1);
+  }
+};
+
+const createItem = () => {
+  if (selectedItem.value.title.trim() === "") {
+    errors.value.title = true;
+    return;
+  }
+  errors.value.title = false;
+  console.log(selectedItem);
+  emit("create-item", selectedItem.value);
+};
+
+const handleFileSelect = (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+  selectedItem.value.image[0] = URL.createObjectURL(file); 
+};
+
+const openCategoryModal = () => {
+  emit("open-category-modal");
 };
 </script>
+
+<style scoped>
+@import "~/assets/css/form.css";
+
+</style>

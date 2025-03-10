@@ -1,18 +1,21 @@
 <template>
-  <div class="flex flex-col lg:flex-row">
+  <div class="flex layout">
     <!-- Left Panel -->
     <div class="flex flex-col w-full lg:w-1/2 p-4">
-      <img :src="selectedItem?.image" alt="" class="w-full h-auto rounded" />
-      <h3 class="text-lg font-bold mt-4 text-center lg:text-left">
-        {{ selectedItem?.title }}
+      <img :src="selectedItem?.image" alt="" class="rounded item-image" />
+      <h3 class="text-lg font-bold mt-4 text-center lg:text-left item-title">
+        {{ selectedItem?.title }} 
+        <span class="text-lg m2-4 text-center lg:text-left">
+          - ${{ selectedItem?.price }}
+        </span>
       </h3>
     </div>
 
     <!-- Right Panel -->
     <div class="w-full lg:w-1/2 bg-gray-100 p-4 rounded">
-      <h4 class="text-md font-semibold mb-6">Order Information</h4>
+      <FormTitle>Order Information</FormTitle>
 
-      <div class="mb-8">
+      <div class="mt-4 mb-8">
         <label
           for="quantity"
           class="my-3 block text-sm font-medium text-gray-700"
@@ -53,10 +56,8 @@
           Preferences
         </label>
         <Textarea
-          :value="form.preferences"
-          @input="updatePreferences"
-          id="preferences"
-          rows="3"
+          v-model="form.preferences"
+          :rows="3"
           placeholder="Add Preferences"
         />
       </div>
@@ -64,6 +65,7 @@
       <!-- Submit Button -->
       <div class="flex items-center space-x-2 mb-2">
         <Button
+          v-if="modalType === 'edit'"
           @click="removeItemFromOrder(item.id)"
           class="flex items-center h-10 text-white rounded hover:bg-red-600"
           style="background: var(--red-1)"
@@ -85,6 +87,7 @@
 </template>
 
 <script>
+import FormTitle from "~/components/reuse/components/formTitle/FormTitle.vue";
 import Icons from "~/components/reuse/icons/Icons.vue";
 import Button from "~/components/reuse/ui/Button.vue";
 import QuantitySelector from "~/components/reuse/ui/QuantitySelector.vue";
@@ -98,6 +101,7 @@ export default {
     Textarea,
     Icons,
     RadioInput,
+    FormTitle
   },
   props: {
     item: {
@@ -108,20 +112,20 @@ export default {
       type: String,
       required: true,
     },
-    orderForm: {
+    value: {
       type: Object,
       default: () => ({
         quantity: 1,
         preferences: "",
         size: null,
       }),
-    },
+    }
   },
   data() {
     return {
       isModalOpen: false,
       selectedItem: null,
-      form: { ...this.orderForm },
+      form: { ...this.value },
       sizeOptions: [
         { id: "1", display: "Small" },
         { id: "2", display: "Medium" },
@@ -135,7 +139,7 @@ export default {
       handler(newItem) {
         if (newItem === "edit") {
           this.form = {
-            ...this.orderForm,
+            ...this.value,
           };
         } else {
           this.form = {
@@ -171,7 +175,6 @@ export default {
       if (this.form.preferences) {
         order.preferences = this.form.preferences;
       }
-
       this.$emit("update-order-item", order);
     },
     removeItemFromOrder(id) {
@@ -179,9 +182,6 @@ export default {
     },
     updateQuantity(newQuantity) {
       this.form.quantity = newQuantity;
-    },
-    updatePreferences(newValue) {
-      this.form.preferences = newValue;
     },
     updateSize(newValue) {
       this.form.size = newValue;

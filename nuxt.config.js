@@ -1,4 +1,3 @@
-
 export default {
   head: {
     title: 'firstest',
@@ -15,9 +14,19 @@ export default {
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
     ]
   },
+
   css: [
-     '~/assets/main.css'
+    '~/assets/main.css',
+    'tailwindcss/tailwind.css',
   ],
+
+  postcss: {
+    plugins: {
+      tailwindcss: {},
+      autoprefixer: {},
+    },
+  },
+
   image: {
     provider: 'static', 
     domains: ['https://images.ctfassets.net'],
@@ -25,15 +34,41 @@ export default {
       dir: 'assets/images'
     }
   },
+
   plugins: [],
   components: true,
   buildModules: [],
+
   modules: [
-    '@nuxt/image'
+    '@nuxt/image',
+    '@pinia/nuxt',
   ],
+
   layers: [
     // '@nuxtjs/tailwindcss',
     '~/custom-layer'
   ],
-  build: {},
-}
+
+  build: {
+    loaders: {
+      css: {
+        additionalData: `@import "~assets/css/form.css";` 
+      }
+    }
+  },
+
+  router: {
+    extendRoutes(routes, resolve) {
+      routes.push(
+        {
+          path: '/dashboard/accept-orders',
+          component: resolve(__dirname, 'pages/dashboard/accept-orders.vue'),
+          meta: { roles: ['admin', 'waiter'] }, 
+          middleware: 'auth',
+        },
+      );
+    },
+  },
+
+  compatibilityDate: '2025-01-06',
+};
