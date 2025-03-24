@@ -156,7 +156,6 @@ export default {
     },
     // Order
     handleUpdateOrderItem(updatedOrder) {
-      console.log(updatedOrder)
       const existingOrderIndex = this.order.findIndex(
         (order) => order.item.id == updatedOrder.item.id
       );

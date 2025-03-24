@@ -33,7 +33,7 @@
 </template>
 
 <script>
-import FormTitle from "~/components/reuse/components/formTitle/FormTitle.vue";
+import FormTitle from "~/components/reuse/general/formTitle/FormTitle.vue";
 import Button from "~/components/reuse/ui/Button.vue";
 import Input from "~/components/reuse/ui/Input.vue";
 import RadioInput from "~/components/reuse/ui/RadioInput.vue";

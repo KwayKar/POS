@@ -87,7 +87,7 @@
 </template>
 
 <script>
-import FormTitle from "~/components/reuse/components/formTitle/FormTitle.vue";
+import FormTitle from "~/components/reuse/general/formTitle/FormTitle.vue";
 import Icons from "~/components/reuse/icons/Icons.vue";
 import Button from "~/components/reuse/ui/Button.vue";
 import QuantitySelector from "~/components/reuse/ui/QuantitySelector.vue";

@@ -1,39 +1,41 @@
 <template>
-  <DashboardLayout>
-    <NavPanel
-      class="fixed top-0 left-0 lg:left-[100px] w-full lg:w-[calc(100%-100px)] h-16 bg-white shadow"
-    >
-      <div>
-        <Button 
-          class="create-btn" 
-          style="background-color: var(--primary-btn-color, #4caf50)"
-          @click="openModal('create')"
-        >
-          Create Product
-        </Button>
+  <div v-cloak>
+    <DashboardLayout>
+      <NavPanel
+        class="fixed top-0 left-0 lg:left-[100px] w-full lg:w-[calc(100%-100px)] h-16 bg-white shadow"
+      >
+        <div>
+          <Button 
+            class="create-btn" 
+            style="background-color: var(--primary-btn-color, #4caf50)"
+            @click="openModal('create')"
+          >
+            Create Product
+          </Button>
+        </div>
+      </NavPanel>
+      <div class="flex flex-col lg:flex-row h-full" :style="{ width: '100%' }">
+        <div class="p-4 bg-gray-100 h-full overflow-y-auto" :style="{ width: '100%' }">
+          <ItemList :items="items" :categories="categories" @select-item="openModal" />
+        </div>
+        
+        <Modal v-if="modal.isOpen && modal.type === 'edit'" @close="closeModal" :minHeight="'400px'">
+          <ProductInfo :item="selectedItem" @edit-item="updateItem" @remove-item="removeItem" />
+        </Modal>
+        
+        <Modal v-if="modal.isOpen && modal.type === 'create'" @close="closeModal" :minHeight="'400px'">
+          <CreateProduct @create-item="createItem" @open-category-modal="openCategoryModal" />
+        </Modal>
+        
+        <Modal v-if="modal.isOpen && modal.type === 'category'" @close="closeModal" :minHeight="'400px'">
+          <CreateCategory 
+            :categories="categories"
+            @update-categories="updateCategories"
+          />
+        </Modal>
       </div>
-    </NavPanel>
-    <div class="flex flex-col lg:flex-row h-full">
-      <div class="p-4 bg-gray-100 h-full overflow-y-auto">
-        <ItemList :items="items" :categories="categories" @select-item="openModal" />
-      </div>
-      
-      <Modal v-if="modal.isOpen && modal.type === 'edit'" @close="closeModal" :minHeight="'400px'">
-        <ProductInfo :item="selectedItem" @edit-item="updateItem" @remove-item="removeItem" />
-      </Modal>
-      
-      <Modal v-if="modal.isOpen && modal.type === 'create'" @close="closeModal" :minHeight="'400px'">
-        <CreateProduct @create-item="createItem" @open-category-modal="openCategoryModal" />
-      </Modal>
-      
-      <Modal v-if="modal.isOpen && modal.type === 'category'" @close="closeModal" :minHeight="'400px'">
-        <CreateCategory 
-          :categories="categories"
-          @update-categories="updateCategories"
-        />
-      </Modal>
-    </div>
-  </DashboardLayout>
+    </DashboardLayout>
+  </div>
 </template>
 
 <script>
@@ -80,6 +82,7 @@ export default {
   methods: {
     // Modal
     openModal(type, item) {
+      console.log(type, item);
       this.selectedItem = item;
       this.modal = {
         type,
@@ -102,7 +105,7 @@ export default {
     updateItem(updatedItem) {
       const index = this.items.findIndex((item) => item.id === updatedItem.id);
       if (index !== -1) {
-        this.$set(this.items, index, updatedItem);
+        this.items[index] = { ...updatedItem };
       }
       this.closeModal();
     },
@@ -123,3 +126,9 @@ export default {
   },
 };
 </script>
+
+<style>
+  [v-cloak] {
+    display: none;
+  }
+</style>

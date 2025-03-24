@@ -40,11 +40,11 @@ export default {
     },
   },
   data() {
-    return {
-      gridClass: "",
-      selectedCategory: "All"
-    };
-  },
+  return {
+    gridClass: this.getGridClass(),
+    selectedCategory: "All"
+  };
+},
   mounted() {
     this.updateGridClass();
     window.addEventListener("resize", this.updateGridClass);
@@ -67,7 +67,16 @@ export default {
       this.selectedCategory = category.name;
     },
     selectItem(item) {
+      console.log(item)
       this.$emit('select-item', item);
+    },
+    getGridClass() {
+      const width = window.innerWidth;
+      if (width < 640) return "grid grid-cols-2";
+      if (width < 768) return "grid grid-cols-3";
+      if (width < 1024) return "grid grid-cols-4";
+      if (width < 1300) return "grid grid-cols-3";
+      return "grid grid-cols-4";
     },
     updateGridClass() {
       const width = window.innerWidth;

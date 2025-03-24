@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 html {
-  font-size: calc(1vw);
+  font-size: 16px;
 }
 
 @media screen and (max-width: 1000px) {
@@ -24,15 +24,21 @@ html {
 
   --white-1: #fff;
   --red-1: #f47777;
+
   --black-1: #232323;
+
   --gray-1: #b5b5b5;
   --gray-2: #a49f9f;
+  
   --pale-gray-1: #bebebe;
   --dark-gray-1: #3e3e3e;
 
   --box-shadow-1: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-html {
-  font-size: 16px;
+
+label {
+  font-size: 1rem;
+  margin: 6px 0;
+  display: block;
 }
