@@ -45,6 +45,13 @@ export default {
   padding: 0.5rem;     
   box-sizing: border-box;
   outline: none;
-  border: 1px solid var(--gray-1);
+  border: 1px solid #232323; 
+  border-radius: 7px;
+
+}
+
+.custom-textarea:focus {
+  border-color: rgb(155, 246, 155);
+  outline: 2px solid var(--gray-1);  
 }
 </style>

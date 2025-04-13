@@ -7,7 +7,7 @@
         @drop.prevent="handleDrop"
         :class="{ 'drag-over': isDragging }"
       >
-        <p v-if="!modelValue">Drag & Drop files here or</p>
+        <!-- <p v-if="!modelValue">Drag & Drop files here or</p> -->
         <button class="upload-btn" @click="triggerFileInput">Browse Files</button>
         <input
           type="file"

@@ -1,0 +1,50 @@
+.modal-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--primary-text-color-1);
+  padding: 22px 22px 15px;
+  border-bottom: 1px solid var(--gray-1);
+}
+
+.form-control {
+  padding: 4px 22px 20px;
+}
+
+.form-control label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--gray-3);
+}
+
+.input {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 0.95rem;
+  border: 1px solid var(--gray-1);
+  border-radius: 6px;
+}
+
+.actions {
+  padding: 0 22px;
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.confirm-btn {
+  padding: 8px 18px;
+  background-color: var(--black-1);
+  color: var(--white-1);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.modal-submit-section {
+  padding: 0px 22px 10px;
+  margin: 16px 0;
+  display: flex;
+  justify-content: flex-end;
+}

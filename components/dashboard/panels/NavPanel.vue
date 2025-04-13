@@ -1,11 +1,11 @@
 <template>
   <div class="flex items-center justify-between px-4">
     <div class="left-content">
-      <h1 class="text-lg font-semibold">Dashboard</h1>
+      <h1 class="title">{{ breadcrumb }}</h1>
     </div>
-    
+
     <div class="right-content">
-      <slot></slot> 
+      <slot></slot>
     </div>
   </div>
 </template>
@@ -24,6 +24,21 @@ export default {
   },
   mounted() {
     this.setPanelType(this.$route);
+  },
+  computed: {
+    breadcrumb() {
+      if (this.$route.path.includes("dashboard/products")) {
+        return "Dashboard / Products";
+      } else if (this.$route.path.includes("dashboard/orders")) {
+        return "Dashboard / Orders";
+      } else if (this.$route.path.includes("dashboard/reports")) {
+        return "Dashboard / Reports";
+      } else if (this.$route.path.includes("dashboard/promoions")) {
+        return "Dashboard / Promoions";
+      } else {
+        return "Dashboard";
+      }
+    },
   },
   methods: {
     setPanelType(route) {
@@ -56,5 +71,13 @@ export default {
 .search-input input {
   padding: 5px;
   margin-right: 10px;
+}
+
+.title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--primary-text-color-1);
+  margin: 0;
+  padding: 5px 0;
 }
 </style>

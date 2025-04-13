@@ -16,8 +16,7 @@ export default {
   },
 
   css: [
-    '~/assets/main.css',
-    'tailwindcss/tailwind.css',
+    './assets/main.css',
   ],
 
   postcss: {

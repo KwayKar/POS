@@ -60,6 +60,6 @@ export default {
 }
 
 .icon-container svg {
-  fill: white;
+  fill: var(--white-1);
 }
 </style>

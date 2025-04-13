@@ -1,11 +1,11 @@
 <template>
-  <div class="flex h-screen">
+  <div class="flex h-screen" style="width: 100%">
     <SidePanel
       class="fixed top-0 left-0 h-full w-[100px] bg-gray-800 hidden lg:flex"
     />
 
-    <div class="flex flex-col flex-1 lg:ml-[100px]">
-      <div class="pt-12 flex flex-1 overflow-hidden">
+    <div class="layout">
+      <div class="custom-container">
         <slot />
       </div>
     </div>
@@ -21,3 +21,22 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.layout {
+  width: 100%;
+  margin-left: 0px;
+}
+@media screen and (min-width: 1024px) {
+  .layout {
+    margin-left: 100px;
+  }
+}
+
+.custom-container {
+  padding-top: 3rem; 
+  display: flex;
+  overflow: hidden;
+  margin-top: 18px;
+}
+</style>

@@ -1,117 +1,364 @@
 <template>
-  <div class="flex flex-col w-full">
-    <div class="flex-1 overflow-y-auto">
-      <PanelTitle>Order Details</PanelTitle>
-      <div v-if="order">
-        <div v-if="order.id" class="mb-2 flex field-item">
-          <p class="font-semibold">Order ID:</p>
-          <p>{{ order.id }}</p>
-        </div>
-        
-        <div v-if="order.phone" class="mb-2 flex field-item">
-          <p class="font-semibold">Phone:</p>
-          <p>{{ order.phone }}</p>
+  <div class="order-container">
+    <h2 class="header2">Order Details</h2>
+
+    <div class="order-layout">
+      <div class="order-details">
+        <div class="order-details-info">
+          <label>ID:</label>
+          <p>{{ order?.id }}</p>
         </div>
 
-        <div v-if="order.email" class="mb-2 flex field-item">
-          <p class="font-semibold">Email:</p>
-          <p>{{ order.email }}</p>
+        <div class="order-details-info-gap" />
+
+        <div class="order-details-info">
+          <label>Type:</label>
+          <p>{{ order?.orderType }}</p>
         </div>
 
-        <div v-if="order.address" class="mb-2 flex field-item">
-          <p class="font-semibold">Address:</p>
-          <p>{{ order.address }}</p>
+        <div class="order-details-info-gap" />
+
+        <div class="order-details-info">
+          <label>Total:</label>
+          <p>{{ order?.totalAmount }}</p>
         </div>
 
-        <div v-if="order.date" class="mb-2 flex field-item">
-          <p class="font-semibold">Order Date:</p>
-          <p>{{ order.date }}</p>
+        <div class="order-details-info-gap" />
+
+        <div class="order-details-info">
+          <label>Status:</label>
+          <p>{{ order?.status }}</p>
+          <!-- <div class="edit-pencil">
+            <EditPencil2 />
+          </div> -->
         </div>
 
-        <div v-if="order.orderStatus" class="mb-4 flex field-item">
-          <p class="font-semibold">Status:</p>
-          <p>{{ order.orderStatus }}</p>
+        <div class="order-details-info-gap" />
+
+        <div class="order-details-info">
+          <label>Order Date:</label>
+          <p>{{ formatDate(order?.createdAt) }}</p>
         </div>
 
-        <p v-if="order.dishes" class="my-2 space-y-2">
-          <span class="font-semibold">Dishes:</span>
-        </p>
-        <ul v-if="order.dishes" class="list-disc list-inside pl-4">
-          <li v-for="dish in order.dishes" :key="dish.id" class="mb-4">
-            <span class="font-semibold">{{ dish.name }} (x{{ dish.quantity }})</span><br />
-            <span v-if="dish.comments" class="text-gray-600">- {{ dish.comments }}</span>
-          </li>
-        </ul>
+        <div class="order-details-info-gap" />
 
-        <p v-if="order.items" class="mb-2">
-          <span class="font-semibold">Items:</span>
-        </p>
-        <ul v-if="order.items" class="list-disc list-inside pl-4">
-          <li v-for="item in order.items" :key="item.id">
-            {{ item.name }} - {{ item.quantity }}
-          </li>
-        </ul>
-        <p v-if="order.total" class="mt-4 space-y-2">
-          <span class="font-semibold">Total:</span> ${{ order.total }}
-        </p>
+        <div class="order-details-info">
+          <label>Delivery Address:</label>
+          <p>{{ order?.deliveryAddress }}</p>
+          <div class="edit-pencil" @click="openModal('delivery-address')">
+            <EditPencil2 />
+          </div>
+        </div>
+
+        <div class="order-details-info-gap" />
+
+        <div class="order-details-info" style="padding-bottom: 52px">
+          <label>Payment Method:</label>
+          <p>{{ order?.paymentMethod?.method }}</p>
+          <div class="edit-pencil" @click="openModal('payment-method')">
+            <EditPencil2 />
+          </div>
+        </div>
       </div>
-      <div v-else>
-        <p>No order selected.</p>
-      </div>
-    </div>
 
-    <!-- Button Section -->
-    <div
-      class="p-4 border-t border-gray-300 fixed bottom-0 right-0 w-full lg:w-[400px]"
-    >
-      <div class="flex justify-end space-x-4">
+      <div class="wrap-order-items">
+        <table class="table">
+          <thead class="tableHeader bg-gray-100">
+            <tr>
+              <th>Item Name</th>
+              <th>Quantity</th>
+              <th>Processed</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="item in order.items" :key="item.id">
+              <td style="font-weight: 600; color: 'var(--olive-gray)'">{{ item.name }}</td>
+              <td>{{ item.quantity }}</td>
+              <td>
+                <Checkbox v-model="item.processed" :id="item.id">Done</Checkbox>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="modal-bottom">
         <Button
-          class="w-1/2 bg-red-500 text-white py-2 px-4 hover:bg-red-600"
-          @click="cancelOrder"
-          style="background: var(--red-1)"
+          @click="openModal('order-status')"
+          background="var(--red-1)"
+          color="var(--white-1)"
+          :applyShadow="true"
         >
-          Cancel
-        </Button>
-        <Button class="w-1/2 py-2 px-4 rounded" @click="processOrder">
-          Process
+          Status - Processing
         </Button>
       </div>
     </div>
   </div>
+
+  <Modal
+    v-if="modal.isOpen && modal.type === 'payment-method'"
+    width="420px"
+    height="auto"
+    @close="closeModal"
+  >
+    <UpdatePayment
+      :isOpen="modal.isOpen"
+      @close="closeModal"
+    />
+  </Modal>
+
+  <Modal
+    v-if="modal.isOpen && modal.type === 'delivery-address'"
+    width="420px"
+    height="auto"
+    @close="closeModal"
+  >
+    <UpdateDeliveryAddress
+      :isOpen="modal.isOpen"
+      @close="closeModal"
+    />
+  </Modal>
+
+  <Modal
+    v-if="modal.isOpen && modal.type === 'order-status'"
+    width="420px"
+    height="auto"
+    @close="closeModal"
+  >
+    <UpdateOrderStatus
+      :isOpen="modal.isOpen"
+      @close="closeModal"
+    />
+  </Modal>
 </template>
 
 <script>
+import { NCheckbox } from "naive-ui";
 import Button from "~/components/reuse/ui/Button.vue";
-import PanelTitle from "../reuse/PanelTitle.vue";
+import Checkbox from "~/components/reuse/ui/Checkbox.vue";
+import Modal from "~/components/reuse/ui/Modal.vue";
+import UpdateOrderStatus from "./UpdateOrderStatus.vue";
+import EditPencil2 from "~/components/reuse/icons/EditPencil2.vue";
+import UpdatePayment from "./edit/UpdatePayment.vue";
+import UpdateDeliveryAddress from "./edit/UpdateDeliveryAddress.vue";
 
 export default {
   name: "OrderDetails",
-  components: {
-    PanelTitle,
-    Button,
-  },
   props: {
-    order: {
-      type: Object,
-      required: false,
-    },
+    order: Object,
+  },
+  data() {
+    return {
+      options: ["Deliver", "Processing", "Deliver", "Dispatched"],
+      selectedOption: null,
+      modal: {
+        isOpen: false,
+        type: "",
+      },
+    };
+  },
+  components: {
+    NCheckbox,
+    Checkbox,
+    Button,
+    Modal,
+    EditPencil2,
+    UpdateOrderStatus,
+    UpdatePayment,
+    UpdateDeliveryAddress,
   },
   methods: {
-    cancelOrder() {
-      this.$emit("cancel-order", this.order.id);
+    openModal(type) {
+      this.modal.isOpen = true;
+      this.modal.type = type;
     },
-    processOrder() {
-      this.$emit("process-order", this.order.id);
+    closeModal() {
+      this.modal.isOpen = false;
+      this.modal.type = "";
+    },
+    formatDate(date) {
+      if (!date) return "N/A";
+      const options = {
+        day: "2-digit",
+        month: "long",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      };
+      return new Date(date).toLocaleString("en-US", options);
     },
   },
 };
 </script>
 
 <style scoped>
-.flex-1 {
-  margin-bottom: 4rem;
+.order-container {
+  padding: 24px;
+  position: relative;
 }
-.field-item > p {
+
+.order-layout {
+  display: flex;
+  margin: 32px 0 100px;
+}
+@media (max-width: 850px) {
+  .order-layout {
+    flex-direction: column;
+  }
+}
+
+.wrap-order-items {
+  width: 100%;
+  height: 100%;
   flex: 1;
+  border-radius: 14px;
+  border: 1px solid var(--black-2);
+  overflow: hidden;
+}
+
+.order-details {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  flex: 0.75;
+  margin-right: 35px;
+  width: 100%;
+  padding: 14px;
+  background: var(--white-1);
+  border-radius: 24px;
+  box-shadow: 1px 2px 4px #d9d9d97d;
+  border: 1px solid var(--black-2);
+  @media screen and (min-width: 850px) {
+    max-width: 450px;
+  }
+}
+@media (max-width: 900px) {
+  .order-details {
+    width: 100%;
+  }
+}
+.order-details p {
+  flex: 2;
+  min-width: 150px;
+}
+.order-details-info {
+  display: flex;
+  align-items: flex-start;
+  padding: 12px 0;
+  word-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+}
+@media (min-width: 768px) {
+  .order-details-info:hover .edit-pencil {
+    visibility: visible;
+  }
+}
+.order-details-info-gap {
+  margin: 0;
+  width: 100%;
+  height: 1px;
+  background: var(--line-gap);
+}
+.order-details-info label {
+  min-width: 150px;
+  flex: 1;
+  font-size: var(--font-size-small);
+  font-weight: 600;
+  margin: 0;
+  color: var(--olive-gray);
+}
+.order-details-info p {
+  display: flex;
+  align-items: center;
+  font-size: var(--font-size-small);
+  color: var(--black-1);
+}
+
+.full-width {
+  width: 100%;
+}
+
+.gap-line {
+  width: 100%;
+  height: 1px;
+  background: var(--pale-gray-1);
+  margin: 22px 0;
+}
+
+.button-container {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.table {
+  width: 100%;
+  border: none !important;
+}
+
+.table th,
+.table td {
+  font-size: 0.95rem;
+  color: var(--olive-gray);
+  height: 54px;
+  border-bottom: 1px solid #dedede;
+}
+
+.table th,
+.tabletable th {
+  font-size: var(--font-size-small);
+  font-weight: 600;
+}
+
+.n-checkbox ::v-deep .n-checkbox-inner {
+  border: 1px solid var(--black-2) !important;
+  border-radius: 4px;
+}
+
+.modal-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 30px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  background: var(--primary-bg-color-1);
+  width: 100%;
+  height: 85px;
+  border-top: 1px solid var(--gray-1);
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+}
+
+.option {
+  color: var(--black-1);
+  font-size: var(--font-size-small);
+  padding: 10px;
+  cursor: pointer;
+  margin: 8px 14px;
+  border-radius: 8px;
+}
+
+.option:hover {
+  background-color: var(--primary-hover-bg-color-1);
+}
+
+.selected {
+  background-color: var(--black-1);
+  color: var(--white-1);
+  border-color: var(--black-1);
+}
+.edit-pencil {
+  width: 20px;
+  height: 20px;
+  fill: #787474;
+  visibility: visible;
+  cursor: pointer;
+}
+@media (min-width: 768px) {
+  .edit-pencil {
+    visibility: hidden;
+  }
 }
 </style>

@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
   <div class="p-4">
     <h2 class="text-lg font-semibold mb-3">Confirm Deletion</h2>
     <p>
@@ -11,7 +11,7 @@
       </button>
       <button
         @click="$emit('confirm')"
-        class="px-4 py-2 bg-red-500 text-white rounded"
+        class="delete-button"
       >
         Delete
       </button>
@@ -27,3 +27,15 @@ defineProps({
   },
 });
 </script>
+
+<style scoped>
+.delete-button {
+  padding: 8px 16px;
+  background-color: var(--red-2);
+  color: var(--white-1);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease-in-out;
+}
+</style> -->

@@ -1,192 +1,152 @@
 <template>
-    <div class="p-4">
-      <!-- Input and Create Button -->
-      <div class="flex items-center gap-4 mb-4">
-        <input
-          v-model="newCategory"
-          type="text"
-          placeholder="Add a new category"
-          class="flex-1 p-2 border rounded"
-        />
-        <button
-          @click="addCategory"
-          class="px-4 py-2 bg-blue-600 text-white rounded"
-        >
-          Create
-        </button>
-      </div>
-  
-      <!-- Category List -->
-      <div class="category-list">
-        <div
-          v-for="(category, index) in categories"
-          :key="category.id"
-          class="flex items-center justify-between p-2 border-b"
-          @mouseenter="isHovered = index"
-          @mouseleave="isHovered = null"
-        >
-          <!-- Category Name -->
-          <span class="flex-1">{{ category.name }}</span>
-       
-          <!-- Always visible on larger screens -->
-          <div class="flex gap-2">
-            <button
-              @click="openEditModal(index)"
-              class="px-2 py-1 bg-yellow-400 text-white rounded"
-            >
-              Edit
-            </button>
-            <button
-              @click="openRemoveModal(index)"
-              class="px-2 py-1 bg-red-600 text-white rounded"
-            >
-              Remove
-            </button>
-          </div>
-        </div>
-      </div>
-  
-      <!-- Edit Modal -->
-      <div v-if="isEditModalVisible" class="modal-overlay">
-        <div class="modal-content">
-          <h2>Edit Category</h2>
-          <input
-            v-model="editedCategoryName"
-            type="text"
-            class="p-2 border rounded mb-4"
-          />
-          <div class="modal-actions">
-            <button @click="updateCategory" class="px-4 py-2 bg-blue-600 text-white rounded">
-              Save
-            </button>
-            <button @click="closeEditModal" class="px-4 py-2 bg-gray-400 text-white rounded">
-              Cancel
-            </button>
-          </div>
-        </div>
-      </div>
-  
-      <!-- Confirmation Modal -->
-      <div v-if="isRemoveModalVisible" class="modal-overlay">
-        <div class="modal-content">
-          <h2>Are you sure you want to remove this category?</h2>
-          <div class="modal-actions">
-            <button @click="removeCategory" class="px-4 py-2 bg-red-600 text-white rounded">
-              Yes, Remove
-            </button>
-            <button @click="closeRemoveModal" class="px-4 py-2 bg-gray-400 text-white rounded">
-              Cancel
-            </button>
-          </div>
-        </div>
-      </div>
+  <h3 class="modal-title">
+    {{ mode === 'edit' ? 'Update' : 'Create' }} Category
+  </h3>
+
+  <div class="modal-content category-form">
+    <div class="form-group flex-1">
+      <label for="title" class="form-label">Title</label>
+      <Input
+        v-model="categoryName"
+        type="text"
+        placeholder="Add a new category"
+        class="w-full p-2 border rounded"
+      />
     </div>
-  </template>
-  
-  <script>
-  export default {
-    props: {
-      categories: {
-        type: Array,
-        required: true,
-      },
-    },
-    data() {
-      return {
-        newCategory: "",
-        isHovered: null,
-        editedCategoryName: "",
-        categoryToRemove: null,
-        isEditModalVisible: false,
-        isRemoveModalVisible: false,
-        categoryIndexToEdit: null,
-      };
-    },
-    methods: {
-      addCategory() {
-        if (this.newCategory.trim() === "") {
-          alert("Category name cannot be empty!");
-          return;
-        }
-        const newCategory = { id: Date.now(), name: this.newCategory };
-        this.$emit("update-categories", [...this.categories, newCategory]);
-        this.newCategory = "";
-      },
-      openEditModal(index) {
-        this.categoryIndexToEdit = index;
-        this.editedCategoryName = this.categories[index].name;
-        this.isEditModalVisible = true;
-      },
-      closeEditModal() {
-        this.isEditModalVisible = false;
-        this.categoryIndexToEdit = null;
-        this.editedCategoryName = "";
-      },
-      updateCategory() {
-        if (this.editedCategoryName.trim() !== "") {
-          const updatedCategories = [...this.categories];
-          updatedCategories[this.categoryIndexToEdit].name = this.editedCategoryName;
-          this.$emit("update-categories", updatedCategories);
-          this.closeEditModal();
-        }
-      },
-      openRemoveModal(index) {
-        this.categoryToRemove = index;
-        this.isRemoveModalVisible = true;
-      },
-      closeRemoveModal() {
-        this.isRemoveModalVisible = false;
-        this.categoryToRemove = null;
-      },
-      removeCategory() {
-        const updatedCategories = this.categories.filter(
-          (_, index) => index !== this.categoryToRemove
-        );
-        this.$emit("update-categories", updatedCategories);
-        this.closeRemoveModal();
-      },
-    },
+
+    <div class="form-group flex-1">
+      <label for="title" class="form-label"
+        >Upload Image
+        <span>(Optional)</span>
+      </label>
+      <FileUploads
+        v-model:files="uploadedImages"
+        :multiple="true"
+        :min-images="1"
+        :max-images="1"
+        @error="handleUploadError"
+      />
+    </div>
+
+    <p v-if="formError" class="text-red-500 mt-2">{{ formError }}</p>
+
+    <div class="flex justify-end my-2">
+      <Button
+        type="button"
+        @click="handleSubmit"
+        style="
+          border: 1px solid var(--black-1);
+          background: var(--primary-text-color-1);
+          color: var(--white-1);
+          height: 40px;
+        "
+      >
+        {{ mode === 'edit' ? 'Update' : 'Create' }}
+      </Button>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, watch } from "vue";
+import { defineProps, defineEmits } from "vue";
+import Button from "~/components/reuse/ui/Button.vue";
+import FileUploads from "~/components/reuse/ui/FileUploads.vue";
+import Input from "~/components/reuse/ui/Input.vue";
+import { useCategory } from "~/stores/product/category/useCategory";
+
+const props = defineProps({
+  categories: {
+    type: Array,
+    required: true,
+  },
+  mode: {
+    type: String,
+    default: "create", // or "edit"
+  },
+});
+
+const { createCategory, updateCategory, getSelectedCategory } = useCategory();
+
+const categoryName = ref("");
+const uploadedImages = ref([]); 
+const formError = ref("");
+const emit = defineEmits(["close"]);
+
+const handleSubmit = () => {
+  if (categoryName.value.trim() === "") {
+    formError.value = 'Category title is empty'
+    return;
+  }
+  const category = {
+    id: props.mode === "edit" ? getSelectedCategory.id : Date.now(),
+    name: categoryName.value,
+    image: uploadedImages.value 
   };
-  </script>
   
-  <style scoped>
-  .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
+  if (props.mode === "edit") {
+    updateCategory(getSelectedCategory.id, category)
+  } else {
+    createCategory(category);
   }
-  
-  .modal-content {
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-    width: 300px;
-    text-align: center;
+
+  categoryName.value = "";
+  emit("close");
+}
+
+const handleUploadError = (message) => {
+  formError.value = message;
+  setTimeout(() => {
+    formError.value = "";
+  }, 5000);
+};
+
+onMounted(() => {
+  if (props.mode === 'edit' && getSelectedCategory) {
+    categoryName.value = getSelectedCategory.name || '';
+    if (getSelectedCategory.image) {
+      uploadedImages.value = [getSelectedCategory.image];
+    }
   }
-  
-  .modal-actions {
-    margin-top: 20px;
-    display: flex;
-    justify-content: space-between;
-  }
-  
-  .category-list > div {
-    transition: background-color 0.2s ease;
-  }
-  
-  .category-list > div:hover {
-    background-color: #f0f0f0;
-  }
-  
-  .action-buttons {
-    display: none;
-  }
-  </style>
-  
+});
+
+watch(
+  () => props.initialData,
+  (val) => {
+    if (props.mode === "edit" && val?.name) {
+      categoryName.value = val.name;
+    }
+  },
+  { immediate: true }
+);
+
+</script>
+
+<style scoped>
+.category-form {
+  width: 100%;
+}
+.upload-section {
+  width: 100%;
+  padding: 1rem;
+  border: 1px solid var(--black-1);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.3s;
+  cursor: pointer;
+}
+.upload-box {
+  min-width: 24px;
+  min-height: 24px;
+}
+
+.preview-image {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  height: 80px;
+  object-fit: contain;
+}
+</style>

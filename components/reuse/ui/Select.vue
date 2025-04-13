@@ -1,8 +1,11 @@
 <template>
-  <div class="relative w-full" ref="selectWrapper">
+  <div class="select-box relative w-full" ref="selectWrapper">
     <button
-      class="w-full px-4 py-2 text-left border rounded-md flex items-center justify-between focus:outline-none"
-      :style="{ borderColor: 'var(--gray-1)' }"
+      class="w-full px-5 py-2 text-left border rounded-md flex items-center justify-between focus:outline-none"
+      :style="{
+        background: 'var(--white-1)',
+        fontSize: '0.95rem',
+      }"
       @click="toggleDropdown"
       :aria-expanded="isOpen ? 'true' : 'false'"
       :aria-controls="dropdownId"
@@ -11,18 +14,20 @@
       <span v-if="!selectedItem">Select an option</span>
       <span v-else>{{ selectedItem.label }}</span>
 
-      <svg
-        class="w-4 h-4 ml-2"
-        viewBox="0 0 20 20"
-        fill="currentColor"
-        aria-hidden="true"
-      >
-        <path
-          fill-rule="evenodd"
-          d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-          clip-rule="evenodd"
-        />
-      </svg>
+      <div class="svg-container w-6 h-6 ml-1">
+        <svg
+          class="w-full h-full"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+          aria-hidden="true"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+            clip-rule="evenodd"
+          />
+        </svg>
+      </div>
     </button>
 
     <!-- dropdown option -->
@@ -52,7 +57,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 
 const props = defineProps({
   options: {
@@ -93,6 +98,12 @@ const handleClickOutside = (event) => {
 };
 
 onMounted(() => {
+  if (!selectedItem.value && props.modelValue) {
+    selectedItem.value = props.options.find(
+      (option) => option.value === props.modelValue
+    );
+  }
+
   document.addEventListener("click", handleClickOutside);
 });
 
@@ -100,7 +111,15 @@ onUnmounted(() => {
   document.removeEventListener("click", handleClickOutside);
 });
 
-// Transition for dropdown
+watch(
+  () => props.modelValue,
+  (newValue) => {
+    selectedItem.value = props.options.find(
+      (option) => option.value === newValue
+    );
+  }
+);
+
 const beforeEnter = (el) => {
   el.style.transform = "translateY(-10px) scaleY(0.95)";
   el.style.opacity = 0;
@@ -123,6 +142,11 @@ const leave = (el, done) => {
 </script>
 
 <style scoped>
+.select-box {
+  border: 1px solid #232323; 
+  border-radius: 7px;
+}
+
 .dropdown-drop-enter-active,
 .dropdown-drop-leave-active {
   transition: transform 0.3s ease, opacity 0.3s ease;
@@ -137,6 +161,7 @@ const leave = (el, done) => {
 ul {
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.1);
+  font-size: 0.95rem;
 }
 
 ul::-webkit-scrollbar {

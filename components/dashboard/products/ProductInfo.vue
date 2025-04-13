@@ -1,223 +1,360 @@
 <template>
-  <div class="modal-content flex flex-col h-full">
-    <div class="flex flex-col p-3 lg:flex-row gap-4 flex-grow">
+  <div class="product-info-layout flex flex-col h-full">
+    <div class="header-section">
+      <h2 class="header2">Item Information</h2>
+    </div>
+    <div class="panel-section flex flex-col px-3 lg:flex-row gap-4 flex-grow">
       <!-- Left Panel - Image and Title -->
-      
-      <div class="flex flex-col w-full lg:w-1/2 flex-grow">
-        <div class="relative">
-        <img
-          v-show="selectedItem?.image"
-          :src="selectedItem?.image"
-          alt="Item Image"
-          class="w-full h-auto rounded"
-        />
+      <div class="left-panel">
+        <div class="image-container">
+          <img
+            v-if="selectedItem?.images.length"
+            :src="selectedItem?.images[0]"
+            alt="Item Image"
+            class="item-image"
+          />
 
-        <button
-          v-if="selectedItem?.image"
-          class="absolute bottom-4 right-4 p-2 bg-blue-500 text-white rounded-full opacity-70 hover:opacity-100 transition-opacity"
-        >
-          Edit
-        </button>
+          <div class="edit-button">
+            <EditPencil2 />
+          </div>
         </div>
       </div>
 
       <!-- Right Panel  Item Info -->
-      <div
-        class="w-full lg:w-1/2 bg-gray-100 overflow-y-auto max-h-[400px] p-4 rounded"
-        style="-ms-overflow-style: none; scrollbar-width: none"
-      >
-        <h4 class="text-md font-semibold mb-2">Item Information</h4>
-
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700">Title</label>
-          <div>
-            <input
-              type="text"
-              v-model="selectedItem.title"
-              placeholder="Enter Title"
-              :class="{
-                'border-red-500': errors.title,
-                'border-gray-300': !errors.title,
-              }"
-              class="w-full p-2 border rounded"
-            />
-          </div>
+      <div class="right-panel">
+        <div class="form-group">
+          <label for="title" class="form-label">Title</label>
+          <Input
+            type="text"
+            v-model="selectedItem.title"
+            placeholder="Enter Title"
+            :class="['form-input', errors.title ? 'input-error' : '']"
+            id="title"
+          />
         </div>
 
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700"
-            >Description</label
-          >
-          <div>
-            <input
-              type="text"
-              v-model="selectedItem.description"
-              placeholder="Enter Description"
-              :class="{
-                'border-red-500': errors.description,
-                'border-gray-300': !errors.description,
-              }"
-              class="w-full p-2 border rounded"
-            />
-          </div>
+        <div class="form-group">
+          <label for="description" class="form-label">Description</label>
+          <Textarea
+            v-model="selectedItem.description"
+            placeholder="Enter Description"
+            :rows="3"
+          />
         </div>
 
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700"
-            >Quantity</label
-          >
-          <div>
-            <input
+        <div class="form-group">
+          <div class="flex items-center justify-between mb-1">
+            <label for="category" class="form-label">Category</label>
+            <button
+              @click="openAddCategoryModal"
+              class="text-gray-500 hover:text-black"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+            </button>
+          </div>
+          <Select v-model="selectedItem.category" :options="categoryOptions" />
+        </div>
+
+        <div class="flex gap-4">
+          <div class="form-group flex-1">
+            <label for="quantity" class="form-label">Quantity</label>
+            <Input
               type="number"
               v-model="selectedItem.quantity"
               :min="1"
               :max="10"
-              class="w-full p-2 border rounded"
               placeholder="Edit Quantity"
+              :class="['form-input', errors.price ? 'input-error' : '']"
+              id="quantity"
+            />
+          </div>
+
+          <div class="form-group flex-1">
+            <label for="price" class="form-label">Price</label>
+            <Input
+              type="number"
+              v-model="selectedItem.price"
+              placeholder="Enter Price"
+              :class="['form-input', errors.price ? 'input-error' : '']"
+              id="price"
             />
           </div>
         </div>
 
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700">Price</label>
-          <div>
-            <input
-              type="text"
-              v-model="selectedItem.price"
-              placeholder="Enter Price"
-              :class="{
-                'border-red-500': errors.price,
-                'border-gray-300': !errors.price,
-              }"
-              class="w-full p-2 border rounded"
-            />
-          </div>
-        </div>
+        <ProductSizes
+          v-model="selectedItem.size"
+          label="Product has different sizes?"
+          secondLabel="Stock"
+          secondKey="stock"
+          secondType="number"
+        />
       </div>
     </div>
 
     <!-- Bottom Panel / Edit and Remove Buttons -->
-    <div class="mt-4 flex justify-between p-4 bg-gray-200 rounded-b">
-      <button
+    <div class="bottom-panel">
+      <Button
         @click="deleteItem"
-        class="text-white bg-red-500 rounded p-2.5 w-[40px] h-[40px]"
+        style="
+          border: 1px solid var(--black-1);
+          background: var(--red-1);
+          color: var(--white-1);
+          height: 40px;
+        "
       >
-        <svg
-          viewBox="0 0 24 24"
-          class="fill-white"
-          tabindex="-1"
-          title="DeleteOutline"
-        >
-          <path
-            d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6zM8 9h8v10H8zm7.5-5-1-1h-5l-1 1H5v2h14V4z"
-          ></path>
-        </svg>
-      </button>
-      <button
+        Delete
+      </Button>
+      <Button
         @click="editItem"
-        class="text-white px-4 py-2 rounded"
-        style="background-color: var(--primary-btn-color, #4caf50)"
+        class="edit-btn"
+        applyShadow="'true'"
+        style="
+          border: 1px solid var(--black-1);
+          background: var(--primary-text-color-1);
+          color: var(--white-1);
+          height: 40px;
+        "
       >
-        <i class="fas fa-trash-alt"></i> Edit
-      </button>
+        Update
+      </Button>
     </div>
   </div>
+
+  <Modal
+    v-if="modal.isOpen && modal.type === 'category'"
+    width="420px"
+    height="auto"
+    @close="closeModal"
+  >
+    <CreateCategory @close="closeModal" />
+  </Modal>
 </template>
 
-<script>
+<script setup>
+import { reactive, defineProps, defineEmits } from "vue";
+import EditPencil2 from "~/components/reuse/icons/EditPencil2.vue";
+import Button from "~/components/reuse/ui/Button.vue";
 import Input from "~/components/reuse/ui/Input.vue";
+import Modal from "~/components/reuse/ui/Modal.vue";
+import Select from "~/components/reuse/ui/Select.vue";
+import Textarea from "~/components/reuse/ui/Textarea.vue";
+import { useCategory } from "~/stores/product/category/useCategory";
+import CreateCategory from "./categories/CreateCategory.vue";
+import ProductSizes from "./general/ProductSizes.vue";
 
-export default {
-  comments: {
-    Input,
+const categoryStore = useCategory();
+const props = defineProps({
+  item: {
+    type: Object,
+    required: true,
   },
-  props: {
-    item: {
-      type: Object,
-      required: true,
-    },
-  },
-  data() {
-    return {
-      selectedItem: { ...this.item },
-      errors: {},
-    };
-  },
-  methods: {
-    editItem() {
-      this.$emit("edit-item", {
-        ...this.selectedItem,
-        title: this.selectedItem.title,
-        description: this.selectedItem.description,
-        quantity: this.selectedItem.quantity,
-        price: this.selectedItem.price,
-      });
-    },
-    deleteItem() {
-      this.$emit("remove-item", this.selectedItem.id);
-    },
-  },
+});
+const emit = defineEmits(["edit-item", "remove-item"]);
+const selectedItem = reactive({ ...props.item });
+const errors = reactive({});
+const modal = reactive({
+  isOpen: false,
+  type: null,
+});
+
+const editItem = () => {
+  emit("edit-item", {
+    ...selectedItem,
+    title: selectedItem.title,
+    description: selectedItem.description,
+    quantity: selectedItem.quantity,
+    price: selectedItem.price,
+    size: selectedItem.size,
+  });
 };
+
+const deleteItem = () => {
+  emit("remove-item", selectedItem.id);
+};
+
+const openAddCategoryModal = () => {
+  modal.isOpen = true;
+  modal.type = "category";
+};
+
+const closeModal = () => {
+  modal.isOpen = false;
+  modal.type = "";
+};
+
+const categoryOptions = computed(() =>
+  categoryStore.getCategoryList.map((cat) => ({
+    label: cat.name,
+    value: cat.id,
+  }))
+);
 </script>
 
 <style scoped>
-.fixed {
-  position: fixed;
+.header-section {
+  margin: 20px 24px;
 }
 
-.w-full {
+@media screen and (max-width: 900px) {
+  .panel-section {
+    overflow-y: scroll;
+  }
+}
+
+.product-info-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--primary-bg-color-1);
+  border-radius: 16px;
+}
+
+.left-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
   width: 100%;
 }
 
-.p-4 {
-  padding: 16px;
+.image-container {
+  position: relative;
 }
 
-.text-gray-700 {
+.image-container > img {
+  max-height: 700px;
+  object-fit: contain;
+  border-radius: 10px;
+}
+@media screen and (max-width: 900px) {
+  .image-container > img {
+    max-height: 300px;
+  }
+}
+
+.item-image {
+  width: 100%;
+  height: auto;
+}
+
+.edit-btn {
+  transition: all 0.3s ease !important;
+}
+
+.edit-btn:hover {
+  background: var(--white-1) !important;
+  color: var(--black-1) !important;
+}
+
+.right-panel {
+  width: 100%;
+  flex: 2;
+  overflow-y: auto;
+  height: 600px;
+  max-height: 700px;
+  padding: 0 1rem 12rem;
+  border-radius: 8px;
+}
+@media screen and (max-width: 900px) {
+  .right-panel {
+    overflow-y: visible;
+    height: auto;
+    max-height: 100vh;
+    margin-bottom: 100px;
+  }
+}
+
+.item-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.form-group {
+  margin-bottom: 2rem;
+}
+
+.form-label {
+  font-size: 0.875rem;
+  font-weight: 600;
   color: #4a4a4a;
 }
 
-.text-white {
+.form-input {
+  width: 100%;
+  padding: 0.5rem;
+}
+
+.input-error {
+  border-color: var(--red-1);
+}
+
+.bottom-panel {
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem;
+  border-top: 1px solid var(--black-1);
+  border-radius: 0 0 8px 8px;
+}
+@media screen and (max-width: 900px) {
+  .bottom-panel {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100vw;
+    background: var(--white-1);
+  }
+}
+
+.delete-button {
+  background-color: #e74c3c;
   color: white;
+  padding: 0.625rem;
+  border-radius: 50%;
+  width: 2.5rem;
+  height: 2.5rem;
 }
 
-.bg-gray-100 {
-  background-color: #f7fafc;
+.delete-icon {
+  fill: var(--white-1);
+  width: 16px;
+  height: 16px;
 }
 
-.bg-gray-800 {
-  background-color: #2d3748;
-}
-
-.rounded {
-  border-radius: 8px;
-}
-
-.text-md {
-  font-size: 1rem;
-}
-
-.text-lg {
-  font-size: 1.125rem;
-}
-
-.text-sm {
-  font-size: 0.875rem;
-}
-
-.font-bold {
-  font-weight: bold;
-}
-
-.font-medium {
-  font-weight: 500;
-}
-
-.mb-4 {
-  margin-bottom: 16px;
-}
-
-.cursor-pointer {
+.edit-button {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  display: flex;
+  width: 50px;
+  height: 50px;
+  border: 1px solid var(--gray-1);
+  background-color: var(--white-1);
+  color: var(--white-1);
+  padding: 0.75rem;
+  box-sizing: border-box;
+  border-radius: 50%;
   cursor: pointer;
+  fill: transparent;
+  stroke: #777777;
+  transition: all 0.2s ease-in-out;
+}
+
+.edit-button:hover {
+  fill: var(--black-2);
+  stroke: #ffffff;
+  background-color: var(--black-2);
 }
 </style>

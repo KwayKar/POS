@@ -46,7 +46,7 @@
 </template>
 
 <script>
-import ItemList from "~/components/dashboard/items/ItemList.vue";
+import ItemList from "~/components/dashboard/items/food/FoodItemList.vue";
 import AddOrderInfo from "~/components/dashboard/acceptOrder/AddOrderInfo.vue";
 import OrderPanel from "~/components/dashboard/acceptOrder/OrderPanel.vue";
 import Modal from "~/components/reuse/ui/Modal.vue";

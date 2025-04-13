@@ -1,100 +1,158 @@
 <template>
-  <div class="w-full py-4" style="min-height: 100vh">
-    <CategoryList :categories="uniqueCategories" @select-category="filterItems" />
+  <div
+    class="min-h-screen flex flex-col"
+    style="min-height: 100vh; display: flex; flex-direction: column"
+  >
+    <div class="wrap-category-list p-4 pb-0 shrink-0">
+      <CategoryList
+        :categories="uniqueCategories"
+        @select-category="filterItems"
+      />
+    </div>
 
-    <div class="gap-4" :class="gridClass">
-      <div
-        v-for="item in filteredItems"
-        :key="item.id"
-        @click="selectItem(item)"
-        class="border rounded-lg shadow-lg overflow-hidden"
-      >
-        <div class="relative aspect-w-1 aspect-h-1">
-          <img :src="item.image" :alt="item.title" width="500" height="500" />
-        </div>
-        <div class="p-4">
-          <h2 class="text-xl font-semibold text-center">{{ item.title }}</h2>
+    <div
+      class="wrap-items wrap-product-items"
+      :style="{ overflowY: 'auto', height: panelHeight + 'px' }"
+    >
+      <div class="product-items" :class="gridClass">
+        <div
+          v-for="item in filteredItems"
+          :key="item.id"
+          @click="selectItem(item)"
+          class="product-item"
+        >
+          <div class="relative aspect-w-1 aspect-h-1">
+            <img
+              :src="item.images[0]"
+              :alt="item.title"
+              class="product-image object-cover w-full h-full"
+              width="500"
+              height="500"
+            />
+          </div>
+          <div class="p-4">
+            <h2 class="item-title text-xl">{{ item.title }}</h2>
+            <p class="text-m">{{ item.price }}</p>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </template>
 
-<script>
-import CategoryList from '../categories/CategoryList.vue';
+<script setup>
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import CategoryList from "./CategoryList.vue";
 
-export default {
-  components: {
-    CategoryList,
+const props = defineProps({
+  items: {
+    type: Array,
+    required: true,
+    default: () => [],
   },
-  props: {
-    items: {
-      type: Array,
-      required: true,
-      default: () => [],
-    },
-    categories: {
-      type: Array,
-      required: true,
-      default: () => [],
-    },
+  categories: {
+    type: Array,
+    required: true,
+    default: () => [],
   },
-  data() {
-  return {
-    gridClass: this.getGridClass(),
-    selectedCategory: "All"
-  };
-},
-  mounted() {
-    this.updateGridClass();
-    window.addEventListener("resize", this.updateGridClass);
-  },
-  beforeDestroy() {
-    window.removeEventListener("resize", this.updateGridClass);
-  },
-  computed: {
-    uniqueCategories() {
-      return [{id: 'all', name: "All"}, ...new Set(this.categories.map((item) => item))];
-    },
-    filteredItems() {
-      return this.selectedCategory && this.selectedCategory !== "All"
-        ? this.items.filter((item) => item.category == this.selectedCategory)
-        : this.items;
-    },
-  },
-  methods: {
-    filterItems(category) {
-      this.selectedCategory = category.name;
-    },
-    selectItem(item) {
-      console.log(item)
-      this.$emit('select-item', item);
-    },
-    getGridClass() {
-      const width = window.innerWidth;
-      if (width < 640) return "grid grid-cols-2";
-      if (width < 768) return "grid grid-cols-3";
-      if (width < 1024) return "grid grid-cols-4";
-      if (width < 1300) return "grid grid-cols-3";
-      return "grid grid-cols-4";
-    },
-    updateGridClass() {
-      const width = window.innerWidth;
-      if (width < 640) {
-        this.gridClass = "grid grid-cols-2";
-      } else if (width < 768) {
-        this.gridClass = "grid grid-cols-3";
-      } else if (width < 1024) {
-        this.gridClass = "grid grid-cols-4";
-      } else if (width < 1300) {
-        this.gridClass = "grid grid-cols-3";
-      } else {
-        this.gridClass = "grid grid-cols-4";
-      }
-    },
-  },
-};
+});
+
+const emit = defineEmits(["select-item"]);
+const panelHeight = ref(0);
+const selectedCategory = ref("All");
+const gridClass = ref("grid grid-cols-4");
+
+function updatePanelHeight() {
+  panelHeight.value = window.innerHeight - 135;
+}
+
+function getGridClass() {
+  const width = window.innerWidth;
+  if (width < 640) return "grid grid-cols-2";
+  if (width < 1200) return "grid grid-cols-3";
+  if (width < 1300) return "grid grid-cols-4";
+  return "grid grid-cols-4";
+}
+
+function updateGridClass() {
+  gridClass.value = getGridClass();
+}
+
+onMounted(() => {
+  updateGridClass();
+  updatePanelHeight();
+  document.body.style.overflow = "hidden";
+  window.addEventListener("resize", updateGridClass);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", updateGridClass);
+});
+
+const uniqueCategories = computed(() => {
+  const categorySet = new Set(props.categories.map((item) => item));
+  return [{ id: "all", name: "All" }, ...categorySet];
+});
+
+const filteredItems = computed(() => {
+  return selectedCategory.value && selectedCategory.value !== "All"
+    ? props.items.filter((item) => item.category === selectedCategory.value)
+    : props.items;
+});
+
+function filterItems(category) {
+  selectedCategory.value = category.id;
+}
+
+function selectItem(item) {
+  emit("select-item", "edit", item);
+}
 </script>
 
 <style scoped>
+.wrap-category-list {
+  box-sizing: border-box;
+}
+
+.wrap-items {
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+.wrap-product-items {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.product-items {
+  gap: 20px;
+  flex: 1;
+  margin-bottom: 200px;
+}
+
+.wrap-product-items::-webkit-scrollbar {
+  display: none;
+}
+
+.wrap-product-items {
+  overflow: -moz-scrollbars-none;
+  scrollbar-width: none;
+}
+
+.product-item {
+  border: 1px solid var(--gray-2);
+  border-radius: 0.5rem;
+  box-shadow: 4px 4px 1px #bdbdbd6b;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.product-image {
+  background: #e9e9e9;
+}
+
+.item-title {
+  font-weight: 600;
+  color: var(--forest-green);
+}
 </style>

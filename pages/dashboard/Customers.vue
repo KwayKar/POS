@@ -15,7 +15,7 @@
       </div>
 
       <div class="bg-white shadow rounded-md overflow-hidden">
-        <table class="table-auto w-full text-left">
+        <table class="table w-full text-left">
           <thead class="bg-gray-100">
             <tr>
               <th class="px-6 py-3 text-gray-600 font-medium">Name</th>

@@ -1,6 +1,6 @@
 <template>
   <div
-    class="modal-content w-full flex flex-col h-full bg-[var(--white-1)] p-6 rounded"
+    class="modal-container modal-content w-full flex flex-col h-full bg-[var(--white-1)] p-6 rounded"
   >
     <h3 class="text-lg font-semibold mb-4">Product Information</h3>
 
@@ -92,7 +92,7 @@ import Input from "~/components/reuse/ui/Input.vue";
 import Textarea from "~/components/reuse/ui/Textarea.vue";
 import { NInputNumber } from "naive-ui";
 import Select from "~/components/reuse/ui/Select.vue";
-import FileUpload from "~/components/reuse/ui/FileUpload.vue"
+import FileUpload from "~/components/reuse/ui/FileUpload.vue";
 
 // Declare the selectedItem and errors state
 const selectedItem = ref({
@@ -109,7 +109,7 @@ const categories = ref([
   { label: "Desserts", value: "desserts" },
   { label: "Salad1s", value: "salads" },
   { label: "Drinks2", value: "drinks" },
-  { label: "Desserts1", value: "desserts" }
+  { label: "Desserts1", value: "desserts" },
 ]);
 const errors = ref({
   title: false,
@@ -138,7 +138,7 @@ const createItem = () => {
 const handleFileSelect = (event) => {
   const file = event.target.files[0];
   if (!file) return;
-  selectedItem.value.image[0] = URL.createObjectURL(file); 
+  selectedItem.value.image[0] = URL.createObjectURL(file);
 };
 
 const openCategoryModal = () => {
@@ -148,5 +148,11 @@ const openCategoryModal = () => {
 
 <style scoped>
 @import "~/assets/css/form.css";
-
+.modal-container {
+  display: flex;
+  width: 100%;
+  top: 0;
+  height: 100%;
+  animation: moveUp 0.3s ease-out;
+}
 </style>

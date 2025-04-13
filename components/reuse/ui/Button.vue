@@ -2,14 +2,13 @@
   <button
     :type="type"
     :class="[
-      'px-4 py-2 rounded focus:outline-none transition',
-      variantClass,
-      sizeClass,
-      $attrs.class,
+      'custom-button', 
+      variantClass, 
+      sizeClass, 
+      applyShadow ? 'custom-btn-shadow' : '',
     ]"
-    class="custom-button"
+    :style="{ backgroundColor: background, color: color }"
     v-bind="$attrs"
-    @click="$emit('click')"
   >
     <slot />
   </button>
@@ -31,26 +30,38 @@ export default {
       type: String,
       default: "medium",
     },
+    background: {
+      type: String,
+      default: '',
+    },
+    color: {
+      type: String,
+      default: '',
+    },
+    applyShadow: {
+      type: Boolean,
+      default: false, 
+    },
   },
   computed: {
     variantClass() {
       switch (this.variant) {
         case "secondary":
-          return "bg-gray-500 text-white hover:bg-gray-600";
+          return "custom-btn-secondary";
         case "danger":
-          return "bg-red-500 text-white hover:bg-red-600";
+          return "custom-btn-danger";
         default:
-          return "bg-blue-500 text-white hover:bg-blue-600";
+          return "custom-btn-primary";
       }
     },
     sizeClass() {
       switch (this.size) {
         case "small":
-          return "text-sm";
+          return "custom-btn-small";
         case "large":
-          return "text-lg";
+          return "custom-btn-large";
         default:
-          return "text-base";
+          return "custom-btn-medium";
       }
     },
   },
@@ -58,18 +69,58 @@ export default {
 </script>
 
 <style scoped>
-button:disabled {
+.custom-button {
+  background-color: var(--white-1);
+  color: var(--primary-text-color-1);
+  font-size: var(--font-size-x-small);
+  padding: 6px 32px;
+  border-radius: 24px;
+  transition: background-color 0.3s ease;
+  height: 42px;
+}
+
+.custom-button:disabled {
   cursor: not-allowed;
   opacity: 0.5;
 }
-.custom-button {
-  background-color: var(--primary-btn-color);
-  color: white;
-  padding: 8px 16px;
-  border-radius: 6px;
-  transition: background-color 0.3s ease;
-}
+
 .custom-button:hover {
-  opacity: 0.7;
+  opacity: 0.85;
+  background: var(--black-1);
+  color: var(--white-1);
+}
+
+.custom-btn-primary {
+  background-color: var(--white-1);
+  color: var(--primary-text-color-1);
+}
+
+.custom-btn-secondary {
+  background-color: var(--gray-500);
+  color: var(--white-1);
+}
+
+.custom-btn-danger {
+  background-color: var(--red-500);
+  color: var(--white-1);
+}
+
+.custom-btn-small {
+  font-size: 12px;
+  padding: 4px 16px;
+}
+
+.custom-btn-medium {
+  font-size: 15px;
+  padding: 6px 32px;
+}
+
+.custom-btn-large {
+  font-size: 20px;
+  padding: 8px 48px;
+}
+
+.custom-btn-shadow {
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.15);
 }
 </style>

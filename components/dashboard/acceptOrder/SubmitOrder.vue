@@ -11,13 +11,13 @@
       <!-- Subtotal -->
       <div v-if="pricingInfo.subtotal" class="flex justify-between my-2">
         <span>Subtotal:</span>
-        <span>{{ pricingInfo.subtotal | currency }}</span>
+        <span>{{ pricingInfo.subtotal  }}</span>
       </div>
 
       <!-- Discount -->
       <div v-if="pricingInfo.discount" class="flex justify-between my-2">
         <span>Discount:</span>
-        <span>-{{ pricingInfo.discount | currency }}</span>
+        <span>-{{ pricingInfo.discount }}</span>
       </div>
     </div>
 

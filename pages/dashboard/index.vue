@@ -7,7 +7,7 @@
 </template>
 
 <script>
-import ItemList from "~/components/dashboard/items/ItemList.vue";
+import ItemList from "~/components/dashboard/items/food/FoodItemList.vue";
 import DashboardLayout from "~/layouts/DashboardLayout.vue";
 
 export default {
