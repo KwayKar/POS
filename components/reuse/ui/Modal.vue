@@ -1,13 +1,22 @@
 <template>
   <div class="overlay" @click.self="close">
     <div
-      class="rounded shadow-lg modal-layout"
+      class="modal-layer rounded shadow-lg"
+      :class="isFullScreenMobile ? 'modal-layout-mobile' : 'modal-layout'"
       :style="computedModalStyles"
     >
       <div class="close-button" @click="close">
         <Icons icon="Cross" fillColor="var(--black-1)" />
       </div>
-      <slot></slot>
+
+      <div
+        :style="{
+          height: height,
+          overflow: 'hidden',
+        }"
+      >
+        <slot></slot>
+      </div>
     </div>
   </div>
 </template>
@@ -36,6 +45,10 @@ export default {
       type: [String, Number],
       default: "0px",
     },
+    isFullScreenMobile: {
+      type: Boolean,
+      default: false,
+    },
   },
   computed: {
     computedModalStyles() {
@@ -44,12 +57,13 @@ export default {
         height: this.height,
         maxHeight: this.maxHeight,
         minHeight: this.minHeight,
+        position: 'relative'
       };
     },
   },
   methods: {
     setModalHeight() {
-      const height = window.innerHeight - 100;
+      const height = window.innerHeight;
       document.documentElement.style.setProperty(
         "--modal-height",
         `${height}px`
@@ -84,27 +98,22 @@ export default {
   transition: all 1s ease-in-out;
   z-index: 9999;
 }
-@media screen and (max-width: 900px) {
-  .overlay {
-    align-items: flex-end;
-  }
-}
-
 .modal-layout {
   position: relative;
   top: -3%;
   border-radius: 12px;
   background: var(--primary-bg-color-1);
-
 }
 
 @media screen and (max-width: 900px) {
-  .modal-layout {
-    overflow-y: auto;
+  .modal-layout-mobile {
+    position: relative;
     top: 0%;
     width: 100vw !important;
-    height: 92vh !important;
+    height: 100vh !important;
     max-height: 100vh !important;
+    border-radius: 0px;
+    background: var(--primary-bg-color-1);
   }
 }
 .close-button {
@@ -124,8 +133,8 @@ export default {
 }
 @media screen and (max-width: 900px) {
   .close-button {
-    position: fixed;
-    top: 90px;
+    position: absolute;
+    top: 20px;
     right: 10px;
     font-size: 24px;
     font-weight: bold;

@@ -315,22 +315,6 @@ export default {
   border-radius: 4px;
 }
 
-.modal-bottom {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding-right: 30px;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  background: var(--primary-bg-color-1);
-  width: 100%;
-  height: 85px;
-  border-top: 1px solid var(--gray-1);
-  border-bottom-left-radius: 20px;
-  border-bottom-right-radius: 20px;
-}
-
 .option {
   color: var(--black-1);
   font-size: var(--font-size-small);

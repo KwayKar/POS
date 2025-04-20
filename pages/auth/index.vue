@@ -1,150 +1,218 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-100">
-    <div class="max-w-md w-full bg-white rounded-lg shadow-md p-8">
-      <h2 class="text-2xl font-semibold text-center text-gray-800 mb-6">
-        {{ isSignUp ? 'Sign Up' : 'Login' }}
+  <div class="auth-container">
+    <div class="auth-box">
+      <h2>
+        {{ isSignUp ? "Sign Up" : "Login" }}
       </h2>
-      
-      <form @submit.prevent="handleSubmit">
+
+      <form class="form" @submit.prevent="handleSubmit">
         <!-- Name Field (Only for Sign-Up) -->
         <div v-if="isSignUp" class="mb-4">
-          <label for="name" class="block text-sm font-medium text-gray-600 mb-2">Name</label>
+          <label for="name" class="block text-sm font-medium text-gray-600 mb-2"
+            >Name</label
+          >
           <Input
             type="text"
             id="name"
             v-model="form.name"
             placeholder="Enter your name"
-            :class="{'border-red-500': errors.name, 'border-gray-300': !errors.name}"
+            :class="{
+              'border-red-500': errors.name,
+              'border-gray-300': !errors.name,
+            }"
           />
-          <p v-if="errors.name" class="text-red-500 text-xs mt-1">{{ errors.name }}</p>
+          <p v-if="errors.name" class="text-red-500 text-xs mt-1">
+            {{ errors.name }}
+          </p>
         </div>
 
         <!-- Email Field -->
         <div class="mb-4">
-          <label for="email" class="block text-sm font-medium text-gray-600 mb-2">Email</label>
+          <label
+            for="email"
+            class="block text-sm font-medium text-gray-600 mb-2"
+            >Email</label
+          >
           <Input
             type="email"
             id="email"
             v-model="form.email"
             placeholder="Enter your email"
-            :class="{'border-red-500': errors.email, 'border-gray-300': !errors.name}"
+            :class="{
+              'border-red-500': errors.email,
+              'border-gray-300': !errors.name,
+            }"
           />
-          <p v-if="errors.email" class="text-red-500 text-xs mt-1">{{ errors.email }}</p>
+          <p v-if="errors.email" class="text-red-500 text-xs mt-1">
+            {{ errors.email }}
+          </p>
         </div>
 
         <!-- Password Field -->
         <div class="mb-4">
-          <label for="password" class="block text-sm font-medium text-gray-600 mb-2">Password</label>
+          <label
+            for="password"
+            class="block text-sm font-medium text-gray-600 mb-2"
+            >Password</label
+          >
           <Input
             type="password"
             id="password"
             v-model="form.password"
             placeholder="Enter your password"
-            :class="{'border-red-500': errors.password, 'border-gray-300': !errors.name}"
+            :class="{
+              'border-red-500': errors.password,
+              'border-gray-300': !errors.name,
+            }"
           />
-          <p v-if="errors.password" class="text-red-500 text-xs mt-1">{{ errors.password }}</p>
+          <p v-if="errors.password" class="text-red-500 text-xs mt-1">
+            {{ errors.password }}
+          </p>
         </div>
 
-        <Button type="submit" class="w-full mt-4 mb-2" :class="{'opacity-70': loading}">
-          <span v-if="loading" class="spinner">Processing</span>
-          <span v-else>{{ isSignUp ? 'Sign Up' : 'Login' }}</span>
-        </Button>
+        <div class="submit-btn">
+          <SubmitButton @click="handleSubmit" :applyShadow="true">
+            <span v-if="loading" class="spinner">Processing</span>
+            <span v-else>{{ isSignUp ? "Sign Up" : "Login" }}</span>
+          </SubmitButton>
+        </div>
       </form>
 
       <!-- Toggle between Login and Sign-Up -->
       <p class="mt-4 text-sm text-gray-600 text-center">
-        {{ isSignUp ? 'Already have an account?' : "Don't have an account?" }}
+        {{ isSignUp ? "Already have an account?" : "Don't have an account?" }}
         <button
           class="text-blue-500 hover:underline font-medium"
           @click="isSignUp = !isSignUp"
         >
-          {{ isSignUp ? 'Login here' : 'Sign up here' }}
+          {{ isSignUp ? "Login here" : "Sign up here" }}
         </button>
       </p>
     </div>
   </div>
 </template>
 
+<script setup>
+import { ref, reactive } from "vue";
+import Input from "~/components/reuse/ui/Input.vue";
+import SubmitButton from "~/components/reuse/ui/SubmitButton.vue";
+import { login, signUp } from "~/services/authService";
 
-<script>
-import Input from '~/components/reuse/ui/Input.vue';
-import Button from '~/components/reuse/ui/Button.vue';
-import { login, signUp } from '~/services/authService';
+const isSignUp = ref(false);
 
-export default {
-  components: {
-    Input,
-    Button,
-  },
-  data() {
-    return {
-      isSignUp: false,
-      form: {
-        name: '',
-        email: '',
-        password: '',
-      },
-      errors: {
-        name: '',
-        email: '',
-        password: '',
-      },
-    };
-  },
-  methods: {
-    validateForm() {
-      this.errors = {};
+const form = reactive({
+  name: "",
+  email: "",
+  password: "",
+});
 
-      // Name validation
-      if (this.isSignUp && !this.form.name) {
-        this.errors.name = 'Name is required.';
-      }
+const errors = reactive({
+  name: "",
+  email: "",
+  password: "",
+});
 
-      // Email validation
-      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!this.form.email) {
-        this.errors.email = 'Email is required.';
-      } else if (!emailPattern.test(this.form.email)) {
-        this.errors.email = 'Please enter a valid email.';
-      }
+const loading = ref(false);
 
-      // Password validation
-      if (!this.form.password) {
-        this.errors.password = 'Password is required.';
-      } else if (this.form.password.length < 6) {
-        this.errors.password = 'Password must be at least 6 characters long.';
-      }
+const validateForm = () => {
+  errors.name = "";
+  errors.email = "";
+  errors.password = "";
 
-      return Object.keys(this.errors).length === 0;
-    },
-    async handleSubmit() {
-      if (!this.validateForm()) {
-        return;
-      }
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-      this.loading = true;
-      try {
-        if (this.isSignUp) {
-          const response = await signUp(this.form);
-          console.log('Sign-up successful:', response.data);
-        } else {
-          const response = await login(this.form);
-          console.log('Login successful:', response.data);
+  if (isSignUp.value && !form.name) {
+    errors.name = "Name is required.";
+  }
+
+  if (!form.email) {
+    errors.email = "Email is required.";
+  } else if (!emailPattern.test(form.email)) {
+    errors.email = "Please enter a valid email.";
+  }
+
+  if (!form.password) {
+    errors.password = "Password is required.";
+  } else if (form.password.length < 6) {
+    errors.password = "Password must be at least 6 characters long.";
+  }
+
+  return !errors.name && !errors.email && !errors.password;
+};
+
+const handleSubmit = async () => {
+  if (!validateForm()) return;
+
+  loading.value = true;
+  try {
+    if (isSignUp.value) {
+      const response = await signUp(form);
+      console.log("Sign-up successful:", response.data);
+    } else {
+      const response = await login(form);
+      console.log("Login successful:", response.data);
+    }
+  } catch (error) {
+    if (error.response?.data?.errors) {
+      const apiErrors = error.response.data.errors;
+      Object.keys(apiErrors).forEach((key) => {
+        if (errors[key] !== undefined) {
+          errors[key] = apiErrors[key];
         }
-      } catch (error) {
-        console.error('Error during authentication:', error.response?.data || error.message);
-        // Update `errors` based on the API response
-        if (error.response?.data?.errors) {
-          this.errors = error.response.data.errors;
-        }
-      } finally {
-        this.loading = false;
-      }
-    },
-  },
+      });
+    }
+  } finally {
+    loading.value = false;
+  }
 };
 </script>
 
-<style>
-  
+<style scoped>
+.auth-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--primary-bg-color-1);
+}
+
+.auth-box {
+  max-width: 480px;
+  width: 100%;
+  background-color: var(--white-1);
+  border-radius: 1rem;
+  border: 1px solid var(--gray-1);
+  padding-bottom: 1.5rem;
+}
+@media screen and (max-width: 600px) {
+  .auth-box {
+    max-width: 90%;
+  }
+}
+
+.auth-box h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  text-align: center;
+  color: #1f2937;
+  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--pale-gray-1);
+}
+
+.form {
+  padding: 0 1.5rem;
+}
+
+.submit-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin: 25px 0 40px;
+}
+.submit-btn > button {
+  width: 100%;
+  height: 40px;
+}
 </style>

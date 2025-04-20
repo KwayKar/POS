@@ -4,7 +4,7 @@
       class="fixed top-0 left-0 h-full w-[100px] bg-gray-800 hidden lg:flex"
     />
 
-    <div class="layout">
+    <div class="layout" v-cloak>
       <div class="custom-container">
         <slot />
       </div>
@@ -23,6 +23,10 @@ export default {
 </script>
 
 <style scoped>
+[v-cloak] {
+  display: none;
+}
+
 .layout {
   width: 100%;
   margin-left: 0px;

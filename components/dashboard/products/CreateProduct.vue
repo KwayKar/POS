@@ -5,7 +5,6 @@
     <h3 class="text-lg font-semibold mb-4">Product Information</h3>
 
     <div>
-      <!-- Title -->
       <div class="form-field">
         <label class="label">Title</label>
         <Input
@@ -20,7 +19,6 @@
         />
       </div>
 
-      <!-- Category -->
       <div class="form-field">
         <label class="label">Category</label>
         <div class="flex gap-2">
@@ -31,7 +29,6 @@
         </div>
       </div>
 
-      <!-- Description -->
       <div class="form-field">
         <label class="label">Description</label>
         <Textarea
@@ -41,7 +38,6 @@
         />
       </div>
 
-      <!-- Quantity -->
       <div class="form-field">
         <label class="label">Quantity</label>
         <n-input-number
@@ -53,7 +49,6 @@
         />
       </div>
 
-      <!-- Price -->
       <div class="form-field">
         <label class="label">Price</label>
         <Input
@@ -73,7 +68,6 @@
       </div>
     </div>
 
-    <!-- Bottom Panel / Edit Button -->
     <div class="mt-6 flex justify-end">
       <button
         @click="createItem"
@@ -131,7 +125,6 @@ const createItem = () => {
     return;
   }
   errors.value.title = false;
-  console.log(selectedItem);
   emit("create-item", selectedItem.value);
 };
 

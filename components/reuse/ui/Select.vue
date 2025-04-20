@@ -143,7 +143,7 @@ const leave = (el, done) => {
 
 <style scoped>
 .select-box {
-  border: 1px solid #232323; 
+  border: 1px solid var(--gray-1); 
   border-radius: 7px;
 }
 

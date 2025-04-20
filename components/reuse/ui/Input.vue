@@ -15,11 +15,6 @@
 <script>
 export default {
   name: "Input",
-  data() {
-    return {
-      value: this.modelValue,
-    };
-  },
   props: {
     type: {
       type: String,
@@ -66,15 +61,16 @@ export default {
 <style scoped>
 input {
   background: var(--white-1);
-  border: 1px solid var(--black-1);
+  color: var(--black-1);
+  border: 1px solid var(--gray-1);
   border-radius: 7px;
   outline: none;
   height: 46px;
 }
 
 input:focus {
-  border-color: rgb(155, 246, 155);
-  outline: 2px solid var(--gray-1);
+  border-color: rgb(107, 179, 107);
+
 }
 
 input:disabled {
@@ -90,5 +86,10 @@ input[type="number"]::-webkit-outer-spin-button {
 
 input[type="number"] {
   -moz-appearance: textfield;
+}
+input:-webkit-autofill {
+  background-color: transparent;
+  transition: background-color 5000s ease-in-out 0s;
+  -webkit-text-fill-color: #000 !important;
 }
 </style>

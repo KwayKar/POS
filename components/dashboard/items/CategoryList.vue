@@ -3,9 +3,10 @@
     <Button
       v-for="category in categories"
       :key="category.id"
-      style="border: 1px solid var(--black-1)"
+      style="border: 1px solid var(--gray-2); height: 34px;"
       @click="$emit('select-category', category)"
       class="category-btn"
+      variant="secondary"
     >
       {{ category.name }}
     </Button>

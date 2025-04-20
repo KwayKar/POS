@@ -16,7 +16,7 @@ export default {
   },
 
   css: [
-    './assets/main.css',
+    '@/assets/main.css',
   ],
 
   postcss: {

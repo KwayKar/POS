@@ -1,6 +1,6 @@
 <template>
   <h3 class="modal-title">
-    {{ mode === 'edit' ? 'Update' : 'Create' }} Category
+    Create Category
   </h3>
 
   <div class="modal-content category-form">
@@ -56,14 +56,15 @@ import Input from "~/components/reuse/ui/Input.vue";
 import { useCategory } from "~/stores/product/category/useCategory";
 
 const props = defineProps({
-  categories: {
-    type: Array,
-    required: true,
-  },
+  inheritAttrs: false,
   mode: {
     type: String,
     default: "create", // or "edit"
   },
+  initialData: {
+    type: Object,
+    default: () => ({})
+  }
 });
 
 const { createCategory, updateCategory, getSelectedCategory } = useCategory();

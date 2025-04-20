@@ -42,10 +42,10 @@ export default {
 .custom-textarea {
   width: 100% !important;
   resize: none;
-  padding: 0.5rem;     
+  padding: 0.5rem 1rem;     
   box-sizing: border-box;
   outline: none;
-  border: 1px solid #232323; 
+  border: 1px solid var(--gray-1); 
   border-radius: 7px;
 
 }

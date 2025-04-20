@@ -4,10 +4,9 @@
       class="navPanel fixed top-0 left-0 lg:left-[100px] w-full lg:w-[calc(100%-100px)] h-16"
       style="z-index: 99"
     >
-      <component :is="currentNavComponent" />
       <NavPanelButton
         style="height: 42px; border: 1px solid var(--black-1)"
-        applyShadow="true"
+        :applyShadow="true"
         @click="openModal('create')"
       >
         Create Category
@@ -98,8 +97,8 @@ const gridClass = ref("grid grid-cols-4");
 const panelHeight = ref(0);
 
 function openModal(type, item) {
-  modal.value = { type, isOpen: true };
   selectedItem.value = { ...item };
+  modal.value = { type, isOpen: true };
 }
 
 function closeModal() {
@@ -147,13 +146,6 @@ onBeforeUnmount(() => {
   window.removeEventListener("resize", updateGridClass);
 });
 
-// Optional route-based logic
-const route = useRoute();
-const currentNavComponent = computed(() => {
-  if (route.path.includes("dashboard/products")) return "ProductsNav";
-  if (route.path.includes("dashboard/orders")) return "OrdersNav";
-  return null;
-});
 </script>
 
 <style scoped>

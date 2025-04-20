@@ -2,9 +2,9 @@
   <button
     :type="type"
     :class="[
-      'custom-button', 
-      variantClass, 
-      sizeClass, 
+      'custom-button',
+      variantClass,
+      sizeClass,
       applyShadow ? 'custom-btn-shadow' : '',
     ]"
     :style="{ backgroundColor: background, color: color }"
@@ -32,15 +32,15 @@ export default {
     },
     background: {
       type: String,
-      default: '',
+      default: "",
     },
     color: {
       type: String,
-      default: '',
+      default: "",
     },
     applyShadow: {
       type: Boolean,
-      default: false, 
+      default: false,
     },
   },
   computed: {
@@ -70,16 +70,19 @@ export default {
 
 <style scoped>
 .custom-button {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: var(--black-2);
+  background-color: var(--primary-text-color-1);
   color: var(--white-1);
+  border: 1px solid var(--black-1);
   font-size: var(--font-size-x-small);
-  border: 1px solid var(--white-1);
   padding: 6px 32px;
   border-radius: 24px;
   transition: background-color 0.3s ease;
+  height: 42px;
+}
+
+.custom-button:hover {
+  background-color: var(--white-1);
+  color: var(--black-1);
 }
 
 .custom-button:disabled {
@@ -91,7 +94,6 @@ export default {
   opacity: 0.85;
   background-color: var(--white-1);
   color: var(--black-1);
-  /* border: 1px solid var(--black-1); */
 }
 
 .custom-btn-primary {
@@ -100,14 +102,8 @@ export default {
 }
 
 .custom-btn-secondary {
-  background-color: var(--white-1);
-  color: var(--primary-text-color-1);
-}
-.custom-btn-secondary:hover {
-  opacity: 0.85;
-  background-color: var(--black-1);
+  background-color: var(--gray-500);
   color: var(--white-1);
-  border: 1px solid var(--black-1);
 }
 
 .custom-btn-danger {

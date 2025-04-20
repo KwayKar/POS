@@ -5,6 +5,7 @@ export const usePromotion = defineStore("promotion", {
     promotions: [
       {
         id: "PROMO001",
+        code: "PROMO001",
         type: "coupon", // 'coupon' | 'product'
         subtype: "percentage", // 'percentage' | 'fixed'
         code: "SAVE10",
@@ -16,6 +17,7 @@ export const usePromotion = defineStore("promotion", {
       },
       {
         id: "PROMO002",
+        code: "PROMO002",
         type: "coupon", // 'coupon' | 'product'
         subtype: "percentage", // 'percentage' | 'fixed'
         code: "SAVE10",
@@ -27,6 +29,7 @@ export const usePromotion = defineStore("promotion", {
       },
       {
         id: "PROMO008",
+        code: "PROMO008",
         type: "coupon", // 'coupon' | 'product'
         subtype: "Buy one get one", // 'percentage' | 'fixed'
         code: "SAVE10",

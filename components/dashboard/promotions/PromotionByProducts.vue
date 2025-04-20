@@ -36,7 +36,7 @@
               v-for="item in promotionByProducts"
               :key="item.id"
               class="border-t"
-              @click="openModal(item)"
+              @click="$emit('edit-item', item)"
             >
               <td class="px-6 py-3">{{ item?.id }}</td>
               <td class="px-6 py-3">{{ item?.item }}</td>
@@ -75,8 +75,6 @@ const promotionByProducts = computed(
 );
 
 function sortBy(key) {}
-
-function openModal(item) {}
 
 function formatDate(date) {
   return new Date(date).toLocaleDateString();

@@ -101,6 +101,10 @@
           secondKey="stock"
           secondType="number"
         />
+
+        <SelectProductColors
+          v-model="selectedItem.color"
+        />
       </div>
     </div>
 
@@ -120,7 +124,7 @@
       <Button
         @click="editItem"
         class="edit-btn"
-        applyShadow="'true'"
+        :applyShadow="'true'"
         style="
           border: 1px solid var(--black-1);
           background: var(--primary-text-color-1);
@@ -154,6 +158,7 @@ import Textarea from "~/components/reuse/ui/Textarea.vue";
 import { useCategory } from "~/stores/product/category/useCategory";
 import CreateCategory from "./categories/CreateCategory.vue";
 import ProductSizes from "./general/ProductSizes.vue";
+import SelectProductColors from "./general/SelectProductColors.vue";
 
 const categoryStore = useCategory();
 const props = defineProps({
@@ -211,6 +216,7 @@ const categoryOptions = computed(() =>
 @media screen and (max-width: 900px) {
   .panel-section {
     overflow-y: scroll;
+    height: calc(var(--max-modal-height-mobile) - 105px);
   }
 }
 
@@ -283,7 +289,7 @@ const categoryOptions = computed(() =>
 }
 
 .form-group {
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .form-label {
@@ -307,6 +313,7 @@ const categoryOptions = computed(() =>
   padding: 1rem;
   border-top: 1px solid var(--black-1);
   border-radius: 0 0 8px 8px;
+  background: var(--primary-bg-color-1);
 }
 @media screen and (max-width: 900px) {
   .bottom-panel {
@@ -314,7 +321,6 @@ const categoryOptions = computed(() =>
     bottom: 0;
     left: 0;
     width: 100vw;
-    background: var(--white-1);
   }
 }
 

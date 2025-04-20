@@ -5,7 +5,6 @@
         class="navPanel fixed top-0 left-0 lg:left-[100px] w-full lg:w-[calc(100%-100px)] h-16"
         style="z-index: 99"
       >
-        <component :is="currentNavComponent" />
         <NavPanelButton
           @click="openToCreateProduct"
           style="border: 1px solid var(--black-1)"
@@ -27,8 +26,8 @@
           v-if="modal.isOpen && modal.type === 'edit'"
           @close="closeModal"
           :width="modalWidth"
-          :height="'600px'"
           :minHeight="'740px'"
+          :isFullScreenMobile="true"
         >
           <ProductInfo
             :item="selectedItem"
@@ -42,6 +41,7 @@
           @close="closeModal"
           :width="'800px'"
           :minHeight="'400px'"
+          :isFullScreenMobile="true"
         >
           <CreateProduct
             @create-item="createItem"
@@ -176,8 +176,8 @@ const clothingItems = [
       { label: "L", stock: 4 },
     ],
     color: [
-      { id: 1, name: "Black", hex: "#000000" },
-      { id: 2, name: "White", hex: "#FFFFFF" },
+      { id: 1, name: "Black", image: "https://cdn.shopify.com/s/files/1/1367/5201/files/Sport7ShortGSDarkGreyGSBlackA1B3L-GB7X1_dcf3d3eb-fbaf-46f5-9891-df7be2773140_3840x.jpg?v=1722948233", hex: "#000000" },
+      { id: 2, name: "White", image: "https://cdn.shopify.com/s/files/1/1367/5201/files/Sport7ShortGSDarkGreyGSBlackA1B3L-GB7X1_dcf3d3eb-fbaf-46f5-9891-df7be2773140_3840x.jpg?v=1722948233", hex: "#FFFFFF" },
     ],
     images: ["https://cdn.shopify.com/s/files/1/1367/5201/files/Sport5ShortGSBlackA1B3M-BB2J1_8654cff7-5636-4919-92fe-78de8b3788a5_3840x.jpg?v=1722948231"],
   },
@@ -277,7 +277,6 @@ const selectedItem = ref(null);
 
 const categories = computed(() => categoryStore.getCategoryList);
 
-
 const openModal = (type, item) => {
   selectedItem.value = item;
   modal.value = {
@@ -344,9 +343,9 @@ const modalWidth = computed(() => {
   if (windowWidth.value > 1200) {
     return "1000px";
   } else if (windowWidth.value > 1100) {
-    return `${windowWidth.value - 40}px`;
+    return `${windowWidth.value - 100}px`;
   } else {
-    return `${windowWidth.value - 40}px`;
+    return `${windowWidth.value - 120}px`;
   }
 });
 </script>
