@@ -1,18 +1,17 @@
 <template>
-  <div>
-    <div
-      class="flex w-full items-center justify-between gap-2 smooth-transition mb-2"
-      :class="{
-        'transform translate-y-[-80px]': panelOpen,
-        'transform translate-y-0': !panelOpen,
-      }"
-      style="color: var(--gray-1); font-size: 1.2rem"
-    >
+  <div
+    class="order-section gap-2 smooth-transition"
+    :class="{
+      'transform translate-y-[-12px]': panelOpen,
+      'transform translate-y-[60px]': !panelOpen,
+    }"
+  >
+    <div style="color: var(--gray-1); font-size: 1.2rem">
       <!-- Subtotal -->
-      <div v-if="pricingInfo.subtotal" class="flex justify-between my-2">
+      <!-- <div v-if="pricingInfo.subtotal" class="flex justify-between my-2">
         <span>Subtotal:</span>
-        <span>{{ pricingInfo.subtotal  }}</span>
-      </div>
+        <span>{{ pricingInfo.subtotal }}</span>
+      </div> -->
 
       <!-- Discount -->
       <div v-if="pricingInfo.discount" class="flex justify-between my-2">
@@ -22,13 +21,7 @@
     </div>
 
     <!-- Submit and Option Buttons -->
-    <div
-      class="flex w-full items-center justify-between gap-2 smooth-transition"
-      :class="{
-        'transform translate-y-[-80px]': panelOpen,
-        'transform translate-y-0': !panelOpen,
-      }"
-    >
+    <div class="order-btn-section">
       <div
         class="option-button h-12 w-12 bg-white flex flex-col justify-center items-center rounded shadow cursor-pointer"
         @click="togglePanel"
@@ -44,13 +37,7 @@
     </div>
 
     <!-- Hidden Panel -->
-    <div
-      class="absolute bottom-0 left-0 w-full bg-gray-700 p-3 mt-5 text-white rounded smooth-transition"
-      :class="{
-        'translate-y-[calc(5px)]': panelOpen,
-        'translate-y-[calc(100px)]': !panelOpen,
-      }"
-    >
+    <div>
       <div class="flex justify-between w-full">
         <div class="flex space-x-4">
           <button
@@ -81,73 +68,73 @@
         </div>
       </div>
     </div>
-
-    <Modal
-      v-if="modal.isOpen && modal.type === 'discount'"
-      width="540px"
-      @close="closeModal"
-    >
-      <ApplyDiscount />
-    </Modal>
   </div>
+
+  <Modal v-if="modal.isOpen" :width="modalWidth" @close="closeModal">
+    <ApplyDiscount @close="closeModal" />
+  </Modal>
 </template>
 
-<script>
+<script setup>
+import { ref, defineProps, defineEmits, watch, onMounted } from "vue";
 import Icons from "~/components/reuse/icons/Icons.vue";
 import Modal from "~/components/reuse/ui/Modal.vue";
 import ApplyDiscount from "./ApplyDiscount.vue";
 
-export default {
-  components: {
-    Icons,
-    Modal,
-    ApplyDiscount,
-  },
-  data() {
-    return {
-      modal: {
-        isOpen: false,
-        type: "",
-      },
-      panelOpen: false
-    };
-  },
-  props: {
-    pricingInfo: {
-      type: Object,
-    },
-  },
-  watch: {
-    panelOpen(newVal) {
-      // Update parent's overflow style dynamically
-      if (this.$el.parentNode) {
-        if (newVal) {
-          this.$el.parentNode.style.overflow = "visible";
-        } else {
-          setTimeout(() => {
-            if (!this.panelOpen) {
-              this.$el.parentNode.style.overflow = "hidden";
-            }
-          }, 500);
-        }
-      }
-    },
-  },
-  methods: {
-    togglePanel() {
-      this.panelOpen = !this.panelOpen;
-    },
-    openModal(type) {
-      this.modal = { isOpen: true, type };
-    },
-    closeModal() {
-      this.modal = { isOpen: false, type: "" };
-    },
-  },
+const props = defineProps({
+  pricingInfo: Object,
+});
+
+const emit = defineEmits(["openModal"]);
+
+const modal = ref({ isOpen: false, type: "" });
+const panelOpen = ref(false);
+const windowWidth = ref("0");
+
+const togglePanel = () => {
+  panelOpen.value = !panelOpen.value;
 };
+
+const openModal = (type) => {
+  modal.value = { isOpen: true, type };
+  emit("openModal", type);
+};
+
+const closeModal = () => {
+  modal.value = { isOpen: false, type: "" };
+};
+
+const updateWindowWidth = () => {
+  windowWidth.value = window.innerWidth;
+};
+
+onMounted(() => {
+  updateWindowWidth();
+  window.addEventListener("resize", updateWindowWidth);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", updateWindowWidth);
+});
+
+const modalWidth = computed(() => {
+  if (windowWidth.value > 1200) {
+    return "540px";
+  } else {
+    return `${windowWidth.value - 120}px`;
+  }
+});
 </script>
 
+
 <style scoped>
+.order-section {
+  display: flex;
+  flex-direction: column;
+  margin-top: 5px;
+  background: var(--primary-bg-color-3);
+}
+
 .option-button {
   display: flex;
   align-items: center;
@@ -164,6 +151,14 @@ export default {
   height: 4px;
   background-color: #4a5568;
   border-radius: 50%;
+}
+
+.order-btn-section {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  flex: 1;
+  padding-bottom: 5px;
 }
 
 .submit-order {

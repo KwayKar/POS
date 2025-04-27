@@ -16,6 +16,9 @@ html {
 }
 :root {
   --primary-bg-color-1: #f8f6f1;
+  
+  --primary-bg-color-3: #1f2937; 
+
   --primary-btn-color: #68a182;
   --primary-btn-color-2: #89aa8c;
 
@@ -44,11 +47,15 @@ html {
 
   --gray-1: #b5b5b5;
   --gray-2: #a49f9f;
+  --gray-3: #666464;
   
   --pale-gray-1: #d3d3d3;
   --pale-gray-2: #e7e5e5;
   
   --dark-gray-1: #3e3e3e;
+
+  --green-1: #039446;
+  --green-2: #5cb183;
 
   --table-stripe: #f8f8f8;
   --line-gap: #e6e6e4;
@@ -59,12 +66,31 @@ html {
   --font-size-small: 0.95rem;
   --font-size-regular: 1.05rem;
   --font-size-large: 1.25rem;
+
+  --dashboard-top-nav-panel-height: 4.2rem;
+  --dashboard-top-nav-panel-height-px: 67.2px; 
 }
 
 body {
   background: var(--primary-bg-color-1);
   /* font-family: 'Roboto Slab', serif; */
   font-family: 'Manrope';
+}
+
+.dashboard-top-nav-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4.2rem; 
+  background-color: var(--primary-bg-color-1);
+  z-index: 99;
+}
+@media (min-width: 1024px) {
+  .dashboard-top-nav-panel {
+    left: 100px;
+    width: calc(100% - 100px);
+  }
 }
 
 .header2 {
@@ -80,7 +106,7 @@ label {
 }
 
 .navPanel {
-  border-bottom: 1px solid var(--black-1);
+  border-bottom: 1px solid var(--gray-2);
   background: var(--primary-bg-color-1);
   z-index: 99;
 }
@@ -89,7 +115,7 @@ label {
   width: 100%;
   border-collapse: collapse;
   background: transparent;
-  border: 1px solid var(--gray-2) !important;
+  border: 1px solid var(--gray-1) !important;
   box-shadow: none !important;
   overflow-x: auto;
   scrollbar-width: none;
@@ -148,6 +174,7 @@ th:hover .th-sort-arrow {
   color: var(--primary-text-color-1);
   padding: 22px 22px 15px;
   border-bottom: 1px solid var(--gray-1);
+  background: var(--primary-bg-color-1);
 }
 
 .modal-content {
@@ -179,6 +206,7 @@ th:hover .th-sort-arrow {
   justify-content: space-between;
   border-top: 1px solid var(--gray-1);
   border-radius: 0 0 8px 8px;
+  background: var(--primary-bg-color-1);
 }
 @media screen and (max-width: 900px) {
   .modal-submit-section {
@@ -186,7 +214,7 @@ th:hover .th-sort-arrow {
     bottom: 0;
     left: 0;
     width: 100vw;
-    background: var(--white-1);
+    background: var(--primary-bg-color-1);
   }
 }
 

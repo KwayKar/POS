@@ -1,191 +1,259 @@
 <template>
-  <div class="flex layout">
-    <!-- Left Panel -->
-    <div class="flex flex-col w-full lg:w-1/2 p-4">
-      <img :src="selectedItem?.image" alt="" class="rounded item-image" />
-      <h3 class="text-lg font-bold mt-4 text-center lg:text-left item-title">
-        {{ selectedItem?.title }} 
-        <span class="text-lg m2-4 text-center lg:text-left">
-          - ${{ selectedItem?.price }}
-        </span>
-      </h3>
+  <div class="add-order-layout">
+    <div class="modal-title">
+      <div class="item-name-price">
+        <h2 class="header2">{{ selectedItem?.title }}</h2>
+
+        <h3 class="text-lg font-bold text-center lg:text-left item-title">
+          <span class="text-lg text-center lg:text-left">
+            ${{ calculatedPrice }}
+          </span>
+        </h3>
+      </div>
     </div>
 
-    <!-- Right Panel -->
-    <div class="w-full lg:w-1/2 bg-gray-100 p-4 rounded">
-      <FormTitle>Order Information</FormTitle>
+    <div class="item-content flex layout">
+      <!-- Left Panel -->
+      <div class="left-panel">
+        <img :src="selectedItem?.images[0]" alt="" class="rounded item-image" />
+      </div>
 
-      <div class="mt-4 mb-8">
-        <label
-          for="quantity"
-          class="my-3 block text-sm font-medium text-gray-700"
-        >
-          Quantity
-        </label>
-        <div class="w-full">
-          <QuantitySelector
-            :value="form.quantity"
-            :min="1"
-            @updateValue="updateQuantity"
+      <!-- Right Panel -->
+      <div class="right-panel w-full lg:w-1/2 p-4">
+        <div class="mb-8">
+          <label for="quantity" class="form-label"> Quantity </label>
+          <div class="w-full">
+            <QuantitySelector
+              :value="form.quantity"
+              :min="1"
+              @updateValue="updateQuantity"
+            />
+          </div>
+        </div>
+
+        <!-- Sizes -->
+        <div v-if="selectedItem?.sizes" class="mb-8">
+          <label for="sizes" class="form-label"> Sizes </label>
+          <SelectSize
+            :sizes="selectedItem?.sizes"
+            @update:extraPrice="handleExtraPrice"
+          />
+        </div>
+
+        <div v-if="selectedItem?.sizes" class="mb-8">
+          <label for="removals" class="form-label"> Removals </label>
+          <ToggleOptions
+            :items="categorizedOptions.removal"
+            @update:extraPrice="handleExtraPrice"
+          />
+        </div>
+
+        <div v-if="selectedItem?.sizes" class="mb-8">
+          <label for="addons" class="form-label"> Addon </label>
+          <Addon
+            :addons="categorizedOptions.addon"
+            @update:extraPrice="handleExtraPrice"
+          />
+        </div>
+
+        <div v-if="selectedItem?.sizes" class="mb-8">
+          <label for="addons" class="form-label"> Choices </label>
+          <SelectSize
+            :sizes="categorizedOptions.choices"
+            @update:extraPrice="handleExtraPrice"
+          />
+        </div>
+
+        <!-- Preferences -->
+        <div class="mb-4">
+          <label for="preferences" class="form-label"> Preferences </label>
+          <Textarea
+            v-model="form.preferences"
+            :rows="2"
+            placeholder="Add Preferences"
           />
         </div>
       </div>
+    </div>
 
-      <!-- Sizes -->
-      <div v-if="selectedItem?.sizes" class="mb-8">
-        <label
-          for="preferences"
-          class="my-3 block text-sm font-medium text-gray-700"
-        >
-          Sizes
-        </label>
-        <RadioInput
-          :value="form?.size"
-          :options="sizeOptions"
-          @updateValue="updateSize"
-          id="sizes"
-        />
-      </div>
-
-      <!-- Preferences -->
-      <div class="mb-4">
-        <label
-          for="preferences"
-          class="my-3 block text-sm font-medium text-gray-700"
-        >
-          Preferences
-        </label>
-        <Textarea
-          v-model="form.preferences"
-          :rows="3"
-          placeholder="Add Preferences"
-        />
-      </div>
-
-      <!-- Submit Button -->
-      <div class="flex items-center space-x-2 mb-2">
+    <!-- Submit Button -->
+    <div class="modal-submit-section">
+      <div class="modal-submit-section-btn flex">
         <Button
-          v-if="modalType === 'edit'"
-          @click="removeItemFromOrder(item.id)"
-          class="flex items-center h-10 text-white rounded hover:bg-red-600"
-          style="background: var(--red-1)"
+          @click="emit('delete-item', selectedItem.id)"
+          variant="danger"
+          :style="'height: 42px'"
         >
-          <!-- Delete -->
-          <Icons icon="Trash" backgroundColor="'#f0f0f0'" />
+          Remove
         </Button>
-        <Button
+      </div>
+      <div class="modal-submit-section-btn flex justify-end">
+        <SubmitButton
           type="submit"
           @click="updateOrder"
-          class="flex-[2] h-10 text-white py-2 px-4 rounded hover:bg-blue-600"
-          style="background: var(--primary-btn-color-2)"
+          :applyShadow="true"
+          :style="'padding: 0 62px'"
         >
           Add
-        </Button>
+        </SubmitButton>
       </div>
     </div>
   </div>
 </template>
 
-<script>
-import FormTitle from "~/components/reuse/general/formTitle/FormTitle.vue";
-import Icons from "~/components/reuse/icons/Icons.vue";
+<script setup>
+import { ref, watch, onMounted } from "vue";
+import Addon from "~/components/reuse/ui/Addon.vue";
 import Button from "~/components/reuse/ui/Button.vue";
 import QuantitySelector from "~/components/reuse/ui/QuantitySelector.vue";
-import RadioInput from "~/components/reuse/ui/RadioInput.vue";
+import SelectSize from "~/components/reuse/ui/SelectSize.vue";
+import SubmitButton from "~/components/reuse/ui/SubmitButton.vue";
 import Textarea from "~/components/reuse/ui/Textarea.vue";
+import ToggleOptions from "~/components/reuse/ui/ToggleOptions.vue";
 
-export default {
-  components: {
-    QuantitySelector,
-    Button,
-    Textarea,
-    Icons,
-    RadioInput,
-    FormTitle
+defineProps({
+  item: {
+    type: Object,
+    required: true,
   },
-  props: {
-    item: {
-      type: Object,
-      required: true,
-    },
-    modalType:  {
-      type: String,
-      required: true,
-    },
-    value: {
-      type: Object,
-      default: () => ({
+  modalType: {
+    type: String,
+    required: true,
+  },
+  value: {
+    type: Object,
+    default: () => ({
+      quantity: 1,
+      preferences: "",
+      size: null,
+    }),
+  },
+});
+
+const emit = defineEmits(["update-item", "delete-item"]);
+const form = ref({ ...__props.value });
+const selectedItem = ref(__props.item);
+const extraPrice = ref(0); // for sides and sizes
+
+watch(
+  () => __props.modalType,
+  (newType) => {
+    if (newType === "edit") {
+      form.value = { ...__props.value };
+    } else {
+      form.value = {
         quantity: 1,
         preferences: "",
         size: null,
-      }),
+      };
     }
   },
-  data() {
-    return {
-      isModalOpen: false,
-      selectedItem: null,
-      form: { ...this.value },
-      sizeOptions: [
-        { id: "1", display: "Small" },
-        { id: "2", display: "Medium" },
-        { id: "3", display: "Large" },
-      ],
-    };
-  },
-  watch: {
-    modalType: {
-      immediate: true,
-      handler(newItem) {
-        if (newItem === "edit") {
-          this.form = {
-            ...this.value,
-          };
-        } else {
-          this.form = {
-            quantity: 1,
-            preferences: "",
-            size: null,
-          };
-        }
-      },
-    },
-    item: {
-      immediate: true,
-      handler(newItem) {
-        if (this.selectedItem) {
-          this.selectedItem = newItem;
-        } else {
-          this.selectedItem = newItem;
-        }
-      },
-    },
-  },
-  methods: {
-    updateOrder() {
-      const order = {
-        item: this.selectedItem,
-        quantity: this.form.quantity,
-      };
+  { immediate: true }
+);
 
-      // Include only if they exist
-      if (this.form.size) {
-        order.size = this.form.size;
-      }
-      if (this.form.preferences) {
-        order.preferences = this.form.preferences;
-      }
-      this.$emit("update-order-item", order);
-    },
-    removeItemFromOrder(id) {
-      this.$emit("delete-order-item", id);
-    },
-    updateQuantity(newQuantity) {
-      this.form.quantity = newQuantity;
-    },
-    updateSize(newValue) {
-      this.form.size = newValue;
-    },
+watch(
+  () => __props.item,
+  (newItem) => {
+    selectedItem.value = newItem;
   },
+  { immediate: true }
+);
+
+// onMounted(() => {
+//   console.log(selectedItem);
+// });
+
+const updateOrder = () => {
+  const order = {
+    item: selectedItem.value,
+    quantity: form.value.quantity,
+  };
+  if (form.value.size) order.size = form.value.size;
+  if (form.value.preferences) order.preferences = form.value.preferences;
+  emit("update-item", order);
 };
+
+const updateQuantity = (newQuantity) => {
+  form.value.quantity = newQuantity;
+};
+
+const handleExtraPrice = (price) => {
+  extraPrice.value = price;
+};
+
+const calculatedPrice = computed(() => {
+  return (selectedItem.value.price + extraPrice.value).toFixed(2);
+});
+
+const categorizedOptions = computed(() => {
+  const removal = [];
+  const addon = [];
+  const choices = [];
+
+  selectedItem?.value?.options.forEach((mod) => {
+    if (mod.type === 'removal') removal.push(mod);
+    if (mod.type === 'addon') addon.push(mod);
+    if (mod.type === 'choices') choices.push(mod);
+  });
+
+  return { removal, addon, choices };
+});
 </script>
+
+<style scoped>
+.add-order-layout {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.item-name-price {
+  display: flex;
+  justify-content: space-between;
+}
+
+.left-panel {
+  border-right: 1px solid var(--gray-2);
+  background: var(--primary-bg-color-1);
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 16px;
+}
+@media (min-width: 1024px) {
+  .left-panel {
+    width: 50%;
+  }
+}
+
+.right-panel {
+  background: var(--primary-bg-color-1);
+  overflow-y: auto;
+  height: 500px;
+}
+
+.item-content {
+  height: 100%;
+}
+@media screen and (max-width: 850px) {
+  .item-content {
+    display: flex;
+    flex-direction: column;
+    height: 90vh;
+    display: flex;
+    flex: 1 1 auto;
+  }
+}
+
+.item-image {
+  border-radius: 0.25rem;
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+@media screen and (max-width: 850px) {
+  .item-image {
+    max-height: 350px;
+    object-fit: contain;
+  }
+}
+</style>

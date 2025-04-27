@@ -35,6 +35,8 @@ export default {
         return "Dashboard / Reports";
       } else if (this.$route.path.includes("dashboard/promoions")) {
         return "Dashboard / Promoions";
+      } else if (this.$route.path.includes("dashboard/accept-orders")) {
+        return "Accept Orders";
       } else {
         return "Dashboard";
       }

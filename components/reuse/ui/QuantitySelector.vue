@@ -1,5 +1,5 @@
 <template>
-  <div class="quantity-selector w-full flex items-center bg-white">
+  <div :class="['quantity-selector', { 'focused': isFocused }]" class="quantity-selector w-full flex items-center bg-white">
     <button
       @click="decrement"
       :disabled="value <= min"
@@ -16,6 +16,8 @@
       :max="max"
       :step="step"
       class="quantity-input w-full rounded px-2 py-1 text-center"
+      @focus="isFocused = true"
+      @blur="isFocused = false"
       style="border: none; outline: none"
     />
     <button
@@ -28,69 +30,89 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: "QuantitySelector",
-  props: {
-    value: {
-      type: Number,
-      required: true,
-    },
-    min: {
-      type: Number,
-      default: 0,
-    },
-    max: {
-      type: Number,
-      default: 1000,
-    },
-    step: {
-      type: Number,
-      default: 1,
-    },
-  },
-  methods: {
-    increment() {
-      if (this.value + this.step <= this.max) {
-        this.emitValueChange(this.value + this.step);
-      }
-    },
-    decrement() {
-      if (this.value - this.step >= this.min) {
-        this.emitValueChange(this.value - this.step);
-      }
-    },
-    onInput(event) {
-      // Remove all non-numeric characters
-      let newValue = event.target.value.replace(/[^0-9]/g, "");
+<script setup>
+import { ref, defineProps, defineEmits } from 'vue';
 
-      if (newValue === "") {
-        newValue = 0;
-      } else {
-        newValue = parseInt(newValue, 10);
-      }
+const isFocused = ref(false);
 
-      if (!isNaN(newValue) && newValue >= this.min && newValue <= this.max) {
-        this.emitValueChange(newValue);
-      }
-    },
-    emitValueChange(newValue) {
-      this.$emit("updateValue", newValue);
-    },
-    onlyAllowNumbers(event) {
-      const char = String.fromCharCode(event.keyCode);
-      if (!/[0-9]/.test(char)) {
-        event.preventDefault();
-      }
-    },
+const props = defineProps({
+  value: {
+    type: Number,
+    required: true,
   },
+  min: {
+    type: Number,
+    default: 0,
+  },
+  max: {
+    type: Number,
+    default: 1000,
+  },
+  step: {
+    type: Number,
+    default: 1,
+  },
+});
+
+const emit = defineEmits(["updateValue"]);
+
+const increment = () => {
+  if (props.value + props.step <= props.max) {
+    triggerFocusEffect();
+    emitValueChange(props.value + props.step);
+  }
+};
+
+const decrement = () => {
+  if (props.value - props.step >= props.min) {
+    triggerFocusEffect();
+    emitValueChange(props.value - props.step);
+  }
+};
+
+const triggerFocusEffect = () => {
+  isFocused.value = true;
+  setTimeout(() => {
+    isFocused.value = false;
+  }, 600);
+};
+
+const onInput = (event) => {
+  let newValue = event.target.value.replace(/[^0-9]/g, "");
+
+  if (newValue === "") {
+    newValue = 0;
+  } else {
+    newValue = parseInt(newValue, 10);
+  }
+
+  if (!isNaN(newValue) && newValue >= props.min && newValue <= props.max) {
+    emitValueChange(newValue);
+  }
+};
+
+const emitValueChange = (newValue) => {
+  emit("updateValue", newValue);
+};
+
+const onlyAllowNumbers = (event) => {
+  const char = String.fromCharCode(event.keyCode);
+  if (!/[0-9]/.test(char)) {
+    event.preventDefault();
+  }
 };
 </script>
+
 
 <style scoped>
 .quantity-selector {
   border-radius: 22px;
   border: 1px solid var(--gray-1);
+  transition: border-color 0.2s ease;
+
+}
+.quantity-selector.focused {
+  border-color: var(--primary-btn-color);
 }
 .button {
   width: 40px;

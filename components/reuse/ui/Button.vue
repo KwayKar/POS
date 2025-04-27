@@ -111,7 +111,12 @@ export default {
 }
 
 .custom-btn-danger {
-  background-color: var(--red-500);
+  background-color: var(--red-1);
+  color: var(--white-1);
+}
+.custom-btn-danger:hover {
+  opacity: 0.7;
+  background-color: var(--red-1);
   color: var(--white-1);
 }
 

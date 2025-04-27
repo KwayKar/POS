@@ -3,43 +3,49 @@
     <div class="filter-section">
       <Button
         @click="$emit('filter-order', '')"
-        style="border: 1px solid var(--black-1)"
-        class="rounded mr-3"
+        style="border: 1px solid var(--gray-2)"
+        class="category-btn"
+        variant="secondary"
       >
         All
       </Button>
       <Button
         @click="$emit('filter-order', 'new')"
-        style="border: 1px solid var(--black-1)"
-        class="rounded mr-3"
+        style="border: 1px solid var(--gray-2)"
+        class="category-btn"
+        variant="secondary"
       >
         New
       </Button>
       <Button
         @click="$emit('filter-order', 'processing')"
-        style="border: 1px solid var(--black-1)"
-        class="rounded mr-3"
+        style="border: 1px solid var(--gray-2)"
+        class="category-btn"
+        variant="secondary"
       >
         Processing
       </Button>
       <Button
         @click="$emit('filter-order', 'ready')"
-        style="border: 1px solid var(--black-1)"
-        class="rounded mr-3"
+        style="border: 1px solid var(--gray-2)"
+        class="category-btn"
+        variant="secondary"
       >
         Ready
       </Button>
       <Button
         @click="$emit('filter-order', 'Completed')"
-        style="border: 1px solid var(--black-1)"
-        class="rounded mr-3"
+        style="border: 1px solid var(--gray-2)"
+        class="category-btn"
+        variant="secondary"
       >
         Completed
       </Button>
       <Button
         @click="$emit('filter-order', 'cancelled')"
-        style="border: 1px solid var(--black-1)"
-        class="rounded"
+        style="border: 1px solid var(--gray-2)"
+        class="category-btn"
+        variant="secondary"
       >
         Cancelled
       </Button>
@@ -240,6 +246,7 @@ onUnmounted(() => {
   scrollbar-width: none;
   -ms-overflow-style: none;
   padding: 16px 16px 0;
+  gap: 12px;
 }
 
 .filter-section button {

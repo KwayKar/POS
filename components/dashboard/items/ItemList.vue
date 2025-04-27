@@ -1,5 +1,6 @@
 <template>
   <div
+    ref="containerRef"
     class="min-h-screen flex flex-col"
     style="min-height: 100vh; display: flex; flex-direction: column"
   >
@@ -18,7 +19,7 @@
         <div
           v-for="item in filteredItems"
           :key="item.id"
-          @click="selectItem(item)"
+          @click="selectItem(item, 'edit')"
           class="product-item"
         >
           <div class="relative aspect-w-1 aspect-h-1">
@@ -60,33 +61,48 @@ const props = defineProps({
 const emit = defineEmits(["select-item"]);
 const panelHeight = ref(0);
 const selectedCategory = ref("All");
-const gridClass = ref("grid grid-cols-4");
+const containerWidth = ref(0);
+const containerRef = ref(null);
+let resizeObserver;
 
 function updatePanelHeight() {
   panelHeight.value = window.innerHeight - 135;
 }
 
-function getGridClass() {
-  const width = window.innerWidth;
-  if (width < 640) return "grid grid-cols-2";
-  if (width < 1200) return "grid grid-cols-3";
-  if (width < 1300) return "grid grid-cols-4";
-  return "grid grid-cols-4";
-}
+const gridClass = computed(() => {
+  const width = containerWidth.value;
+  if (width < 640) return 'grid grid-cols-2';
+  if (width < 950) return 'grid grid-cols-3';
+  if (width < 1300) return 'grid grid-cols-4';
+  return 'grid grid-cols-4';
+});
 
-function updateGridClass() {
-  gridClass.value = getGridClass();
-}
+const updateWidth = () => {
+  if (containerRef.value) {
+    containerWidth.value = containerRef.value.offsetWidth;
+  }
+};
 
 onMounted(() => {
-  updateGridClass();
   updatePanelHeight();
+  updateWidth(); 
+
+  if (containerRef.value) {
+    resizeObserver = new ResizeObserver(([entry]) => {
+      containerWidth.value = entry.contentRect.width;
+    });
+    resizeObserver.observe(containerRef.value);
+  }
+
   document.body.style.overflow = "hidden";
-  window.addEventListener("resize", updateGridClass);
+  window.addEventListener("resize", updateWidth);
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener("resize", updateGridClass);
+  window.removeEventListener("resize", updateWidth);
+  if (resizeObserver && containerRef.value) {
+    resizeObserver.unobserve(containerRef.value);
+  }
 });
 
 const uniqueCategories = computed(() => {
@@ -104,8 +120,8 @@ function filterItems(category) {
   selectedCategory.value = category.id;
 }
 
-function selectItem(item) {
-  emit("select-item", "edit", item);
+function selectItem(item, type) {
+  emit("select-item", item, type);
 }
 </script>
 
@@ -142,6 +158,7 @@ function selectItem(item) {
 .product-item {
   border: 1px solid var(--gray-2);
   border-radius: 0.5rem;
+  background: var(--white-1);
   box-shadow: 4px 4px 1px #bdbdbd6b;
   cursor: pointer;
   overflow: hidden;

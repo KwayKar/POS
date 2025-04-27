@@ -3,7 +3,7 @@
     <div class="header-section">
       <h2 class="header2">Item Information</h2>
     </div>
-    <div class="panel-section flex flex-col px-3 lg:flex-row gap-4 flex-grow">
+    <div class="panel-section">
       <!-- Left Panel - Image and Title -->
       <div class="left-panel">
         <div class="image-container">
@@ -213,10 +213,19 @@ const categoryOptions = computed(() =>
   margin: 20px 24px;
 }
 
-@media screen and (max-width: 900px) {
+.panel-section {
+  display: flex;
+  flex-direction: row;
+  padding-left: 12px;
+  padding-right: 12px;
+  gap: 1rem;
+  flex-grow: 1;
+}
+@media screen and (max-width: 850px) {
   .panel-section {
     overflow-y: scroll;
-    height: calc(var(--max-modal-height-mobile) - 105px);
+    flex-direction: column;
+    height: calc(var(--max-modal-height-mobile) - 145px);
   }
 }
 
@@ -244,7 +253,7 @@ const categoryOptions = computed(() =>
   object-fit: contain;
   border-radius: 10px;
 }
-@media screen and (max-width: 900px) {
+@media screen and (max-width: 850px) {
   .image-container > img {
     max-height: 300px;
   }
@@ -273,12 +282,16 @@ const categoryOptions = computed(() =>
   padding: 0 1rem 12rem;
   border-radius: 8px;
 }
-@media screen and (max-width: 900px) {
+
+@media screen and (max-width: 850px) {
   .right-panel {
     overflow-y: visible;
     height: auto;
     max-height: 100vh;
     margin-bottom: 100px;
+  }
+  .right-panel > :last-child  {
+    padding: 50px 0; 
   }
 }
 
@@ -315,7 +328,7 @@ const categoryOptions = computed(() =>
   border-radius: 0 0 8px 8px;
   background: var(--primary-bg-color-1);
 }
-@media screen and (max-width: 900px) {
+@media screen and (max-width: 850px) {
   .bottom-panel {
     position: fixed;
     bottom: 0;

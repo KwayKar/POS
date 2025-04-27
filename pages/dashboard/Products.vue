@@ -39,8 +39,8 @@
         <Modal
           v-if="modal.isOpen && modal.type === 'create'"
           @close="closeModal"
-          :width="'800px'"
-          :minHeight="'400px'"
+          :width="modalWidth"
+          :minHeight="'740px'"
           :isFullScreenMobile="true"
         >
           <CreateProduct
@@ -252,6 +252,13 @@ const clothingItems = [
 ];
 
 const items = ref([]);
+const modal = ref({
+  type: null,
+  isOpen: false,
+});
+const selectedItem = ref(null);
+const windowWidth = ref(0);
+const categories = computed(() => categoryStore.getCategoryList);
 
 watch(
   () => admin.businessType,
@@ -268,16 +275,8 @@ watch(
   { immediate: true }
 );
 
-const modal = ref({
-  type: null,
-  isOpen: false,
-});
-
-const selectedItem = ref(null);
-
-const categories = computed(() => categoryStore.getCategoryList);
-
-const openModal = (type, item) => {
+const openModal = (item, type) => {
+  console.log(item, type)
   selectedItem.value = item;
   modal.value = {
     type,
@@ -328,8 +327,6 @@ const updateCategories = (newCategories) => {
   categories.value = newCategories;
 };
 
-const windowWidth = ref(0);
-
 const updateWindowWidth = () => {
   windowWidth.value = window.innerWidth;
 };
@@ -337,6 +334,10 @@ const updateWindowWidth = () => {
 onMounted(() => {
   updateWindowWidth();
   window.addEventListener("resize", updateWindowWidth);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateWindowWidth);
 });
 
 const modalWidth = computed(() => {

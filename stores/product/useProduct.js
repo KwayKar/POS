@@ -14,6 +14,11 @@ export const useProduct = defineStore("order", {
         images: [
           "https://res.cloudinary.com/sweetgreen/image/upload/f_webp,q_auto:good/dpr_2/c_crop,h_0.7,w_0.4/w_343/v1702672435/gravy/production/Gravy::MasterProduct/Q423_OLO_MisoSalmonGlazedPlate_3600x2400_2_orq1kg",
         ],
+        sizes: [
+          { label: "S", value: "ID_001" },
+          { label: "M", value: "ID_002" },
+          { label: "L", value: "ID_003" }
+        ]
       },
       {
         id: 2,
@@ -24,6 +29,18 @@ export const useProduct = defineStore("order", {
         images: [
           "https://res.cloudinary.com/sweetgreen/image/upload/f_webp,q_auto:good/dpr_2/c_crop,h_0.7,w_0.4/w_343/v1726538887/gravy/production/Gravy::MasterProduct/SG_OLO_Crispy_Rice_Bowl_3600x2400_lattbf",
         ],
+        sizes: [
+          { label: "Small", extraPrice: 1000 },
+          { label: "Medium", extraPrice: 2500 },
+          { label: "Large", extraPrice: 4500 }
+        ],
+        options: [
+          { id: 1, label: 'No Cheese', type: 'removal' },
+          { id: 2, label: 'Extra Bacon', type: 'addon', maxLimit: 3, startAt: 0 },
+          { id: 3, label: 'Choose Sauce', type: 'choices' },
+          { id: 4, label: 'No Pickles', type: 'removal' },
+          { id: 5, label: 'Add Avocado', type: 'addon', maxLimit: 3, startAt: 1 },
+        ]
       },
       {
         id: 3,
@@ -91,23 +108,6 @@ export const useProduct = defineStore("order", {
     getProductList: (state) => state.items,
   },
   actions: {
-    // getOrderDetails(id) {
-    //   return this.orders.find((o) => o.id === id);
-    // },
-    // createOrder(order) {
-    //   this.orders.push(order);
-    // },
-    // updateOrder(id, updates) {
-    //   const idx = this.orders.findIndex((o) => o.id === id);
-    //   if (idx !== -1) this.orders[idx] = { ...this.orders[idx], ...updates };
-    // },
-    // deleteOrder(id) {
-    //   this.orders = this.orders.filter((o) => o.id !== id);
-    // },
-    // filterOrders(status) {
-    //   this.filteredOrders = this.orders.filter(
-    //     (order) => order.status === status
-    //   );
-    // },
+
   },
 });

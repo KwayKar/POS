@@ -91,7 +91,7 @@ export default {
 .overlay {
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.44);
+  background-color: #0000008a;
   display: flex;
   align-items: center;
   justify-content: center;

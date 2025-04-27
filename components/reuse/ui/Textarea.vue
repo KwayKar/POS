@@ -51,7 +51,6 @@ export default {
 }
 
 .custom-textarea:focus {
-  border-color: rgb(155, 246, 155);
-  outline: 2px solid var(--gray-1);  
+  border: 1px solid var(--primary-btn-color);
 }
 </style>

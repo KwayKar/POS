@@ -332,9 +332,6 @@ onBeforeUnmount(() => {
   font-size: 1rem;
 }
 
-.discount-type > button {
-}
-
 .icon-button {
   height: 100%;
   padding: 0.5rem 0.9rem;
@@ -360,7 +357,7 @@ onBeforeUnmount(() => {
 .submit-button {
   padding: 0.5rem 1.25rem;
   background-color: black;
-  color: white;
+  color: var(--white-1);
   border-radius: 6px;
   font-weight: 600;
   border: none;
@@ -442,7 +439,7 @@ input:focus {
   gap: 8px;
   padding: 8px 12px;
   border: 1px solid #ccc;
-  background-color: #fff;
+  background-color: var(--white-1);
   cursor: pointer;
   border-radius: 4px;
 }

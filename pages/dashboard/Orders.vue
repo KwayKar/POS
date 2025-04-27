@@ -6,7 +6,7 @@
     >
       <component :is="currentNavComponent" />
       <NavPanelButton
-        style="height: 42px; border: 1px solid var(--black-1)"
+        style="height: 42px; border: 1px solid var(--black-2)"
         :applyShadow="true"
         >Accept Order</NavPanelButton
       >
