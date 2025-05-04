@@ -9,7 +9,7 @@
 
     <div
       class="wrap-items wrap-product-items"
-      :style="{ overflowY: 'auto', height: panelHeight - 140 + 'px' }"
+      :style="{ overflowY: 'auto', height: panelHeight + 'px' }"
     >
       <div class="product-items" :class="gridClass">
         <div
@@ -28,8 +28,8 @@
               height="500"
             />
           </div>
-          <div class="p-4">
-            <h2 class="item-title text-xl">{{ item.title }}</h2>
+          <div class="p-3">
+            <h2 class="item-title">{{ item.title }}</h2>
             <p class="text-m">{{ item.price }}</p>
           </div>
         </div>
@@ -39,14 +39,17 @@
     <div class="modal-submit-section">
       <div class="modal-submit-section-btn">
         <div class="flex-1">
-          <p style="margin-right: 22px">{{ selectedItems.length }} Items Selected</p>
+          <p style="margin-right: 22px">
+            {{ selectedItems.length }} Items Selected
+          </p>
         </div>
 
         <SubmitButton
           @click="submitSelected"
           :applyShadow="true"
-          style="height: 40px;"
-        >Add</SubmitButton>
+          style="height: 40px"
+          >Add</SubmitButton
+        >
       </div>
     </div>
   </div>
@@ -64,10 +67,11 @@ const productStore = useProduct();
 
 const emit = defineEmits(["add-selected-items", "close"]);
 
-const panelHeight = computed(() => props.height);
+const panelHeight = ref();
 const selectedCategory = ref("All");
 const gridClass = ref("grid grid-cols-4");
 const selectedItems = ref([]);
+const isMobile = ref(false);
 
 const props = defineProps({
   initialSelected: {
@@ -76,7 +80,7 @@ const props = defineProps({
   },
   height: {
     type: Number,
-    default: 200, 
+    default: 700,
   },
 });
 
@@ -92,16 +96,24 @@ function updateGridClass() {
   gridClass.value = getGridClass();
 }
 
+function updatePanelHeight() {
+  const mobileScreen = window.innerWidth <= 900;
+  isMobile.value = mobileScreen;
+  panelHeight.value = mobileScreen ? window.innerHeight : props.height - 140;
+}
+
 onMounted(() => {
-  selectedItems.value = [...props.initialSelected]; 
+  selectedItems.value = [...props.initialSelected];
   updateGridClass();
-  panelHeight.value = Number(props.height);
+  updatePanelHeight();
   document.body.style.overflow = "hidden";
   window.addEventListener("resize", updateGridClass);
+  window.addEventListener("resize", updatePanelHeight);
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("resize", updateGridClass);
+  window.removeEventListener("resize", updatePanelHeight);
 });
 
 const categories = computed(() => categoryStore.getCategoryList);
@@ -174,7 +186,12 @@ function submitSelected() {
 .product-items {
   gap: 20px;
   flex: 1;
-  margin: 2px 0 200px;
+  margin: 2px 0 100px;
+}
+@media screen and (max-width: 900px) {
+  .product-items {
+    margin: 2px 0 200px;
+  }
 }
 
 .wrap-product-items::-webkit-scrollbar {
@@ -189,22 +206,24 @@ function submitSelected() {
 .product-item {
   border: 1px solid var(--gray-2);
   border-radius: 0.5rem;
-  box-shadow: 4px 4px 1px #bdbdbd6b;
+  /* box-shadow: 4px 4px 1px #bdbdbd6b; */
   cursor: pointer;
   overflow: hidden;
 }
 .product-item.selected-item {
-  border: 1px solid #7ab470;
+  border: 1px solid #e4ffe0;
   outline: 1px solid #7ab470;
 }
 
 .product-image {
-  background: #e9e9e9;
+  background: var(--very-light-gray);
+  border-bottom: 1px solid #e3e3e3;
 }
 
 .item-title {
+  font-size: 1.1rem;
   font-weight: 600;
   color: var(--forest-green);
+  margin-bottom: 0.4rem;
 }
-
 </style>

@@ -2,7 +2,7 @@
   <div class="overlay" @click.self="close">
     <div
       class="modal-layer rounded shadow-lg"
-      :class="isFullScreenMobile ? 'modal-layout-mobile' : 'modal-layout'"
+      :class="modalClass"
       :style="computedModalStyles"
     >
       <div class="close-button" @click="close">
@@ -21,70 +21,65 @@
   </div>
 </template>
 
-<script>
-import Icons from "../icons/Icons.vue";
+<script setup>
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
+import Icons from '../icons/Icons.vue';
+import { defineProps, defineEmits } from 'vue';
 
-export default {
-  components: {
-    Icons,
-  },
-  props: {
-    width: {
-      type: String,
-      default: "700px",
-    },
-    height: {
-      type: String,
-      default: "auto",
-    },
-    maxHeight: {
-      type: String,
-      default: "95vh",
-    },
-    minHeight: {
-      type: [String, Number],
-      default: "0px",
-    },
-    isFullScreenMobile: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  computed: {
-    computedModalStyles() {
-      return {
-        width: this.width,
-        height: this.height,
-        maxHeight: this.maxHeight,
-        minHeight: this.minHeight,
-        position: 'relative'
-      };
-    },
-  },
-  methods: {
-    setModalHeight() {
-      const height = window.innerHeight;
-      document.documentElement.style.setProperty(
-        "--modal-height",
-        `${height}px`
-      );
-      document.documentElement.style.setProperty(
-        "--max-modal-height-mobile",
-        `${height}px`
-      );
-    },
-    close() {
-      this.$emit("close");
-    },
-  },
-  mounted() {
-    this.setModalHeight();
-    window.addEventListener("resize", this.setModalHeight);
-  },
-  beforeUnmount() {
-    window.removeEventListener("resize", this.setModalHeight);
-  },
-};
+const props = defineProps({
+  width: { type: String, default: '700px' },
+  height: { type: String, default: 'auto' },
+  maxHeight: { type: String, default: '95vh' },
+  minHeight: { type: [String, Number], default: '0px' },
+  isFullScreenMobile: { type: Boolean, default: false }, // still allowed to be passed
+});
+
+const emit = defineEmits(['close']);
+
+const isMobileScreen = ref(false);
+
+// Updates only on screens <= 900px
+function updateScreenStatus() {
+  isMobileScreen.value = window.innerWidth <= 900;
+}
+
+onMounted(() => {
+  updateScreenStatus();
+  window.addEventListener('resize', updateScreenStatus);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateScreenStatus);
+});
+
+// Combined logic: only apply prop if on mobile screen
+const modalClass = computed(() => {
+  return isMobileScreen.value && props.isFullScreenMobile
+    ? 'modal-layout-mobile'
+    : 'modal-layout';
+});
+
+const computedModalStyles = computed(() => ({
+  width: props.width,
+  height: props.height,
+  maxHeight: props.maxHeight,
+  minHeight: props.minHeight,
+  position: 'relative',
+}));
+
+function setModalHeight() {
+  const height = window.innerHeight;
+  document.documentElement.style.setProperty('--modal-height', `${height}px`);
+  document.documentElement.style.setProperty('--max-modal-height-mobile', `${height}px`);
+}
+
+function close() {
+  emit('close');
+}
+
+onMounted(() => {
+  setModalHeight();
+});
 </script>
 
 <style scoped>

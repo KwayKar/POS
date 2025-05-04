@@ -52,7 +52,8 @@ export default {
     loaders: {
       css: {
         additionalData: `@import "~assets/css/form.css";` 
-      }
+      },
+      // transpile: ['vuedraggable'],
     }
   },
 

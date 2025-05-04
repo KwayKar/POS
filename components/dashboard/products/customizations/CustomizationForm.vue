@@ -3,14 +3,13 @@
     <div class="header-section">
       <h2 class="header2">Item Information</h2>
     </div>
-    
     <div class="panel-section">
       <!-- Left Panel - Image and Title -->
       <div class="left-panel">
         <div class="image-container">
           <img
-            v-if="selectedItem?.images.length"
-            :src="selectedItem?.images[0]"
+            v-if="selectedItem?.image"
+            :src="selectedItem?.image"
             alt="Item Image"
             class="item-image"
           />
@@ -43,46 +42,14 @@
           />
         </div>
 
-        <div class="form-group">
+        <div class="form-group flex-[2]">
           <div class="flex items-center justify-between mb-1">
             <label for="category" class="form-label">Category</label>
-            <button
-              @click="openAddCategoryModal"
-              class="text-gray-500 hover:text-black"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-            </button>
           </div>
           <Select v-model="selectedItem.category" :options="categoryOptions" />
         </div>
 
-        <div class="flex gap-4">
-          <div class="form-group flex-1">
-            <label for="quantity" class="form-label">Quantity</label>
-            <Input
-              type="number"
-              v-model="selectedItem.quantity"
-              :min="1"
-              :max="10"
-              placeholder="Edit Quantity"
-              :class="['form-input', errors.price ? 'input-error' : '']"
-              id="quantity"
-            />
-          </div>
-
+        <div v-if="selectedItem.category === 'addon'" class="flex gap-4">
           <div class="form-group flex-1">
             <label for="price" class="form-label">Price</label>
             <Input
@@ -93,24 +60,71 @@
               id="price"
             />
           </div>
+
+          <div class="form-group flex-1">
+            <label class="form-label">Max Limit</label>
+            <Input
+              type="number"
+              v-model="selectedItem.maxLimit"
+              placeholder="Enter Max Limit"
+              class="form-input"
+            />
+          </div>
         </div>
 
-        <ProductSizes
-          v-model="selectedItem.size"
-          label="Product has different sizes?"
-          secondLabel="Stock"
-          secondKey="stock"
-          secondType="number"
-        />
+        <!-- Show Price input only for addon -->
+        <div v-if="selectedItem.category === 'addon'" class="flex gap-4">
+          <div class="form-group flex-1">
+            <label class="form-label">Already Included?</label>
+            <Toggle v-model="selectedItem.alreadyIncludes" />
+          </div>
+        </div>
 
-        <SelectProductColors v-model="selectedItem.color" />
+        <!-- Show Sugar Level Options -->
+        <div v-if="selectedItem.category === 'sugarLevel'" class="form-group">
+          <label class="form-label">Sugar Level Options</label>
+
+          <div
+            v-for="(option, index) in selectedItem.sugarOptions"
+            :key="index"
+            class="flex gap-4 mb-3"
+          >
+            <div class="flex-1">
+              <Input
+                v-model="option.label"
+                placeholder="Sugar Level"
+                class="form-input"
+              />
+            </div>
+
+            <button
+              type="button"
+              class="remove-btn text-red-500 font-bold"
+              @click="openModal('delete', index)"
+            >
+              ✕
+            </button>
+          </div>
+
+          <Button
+            type="button"
+            @click="addSugarOption"
+            style="
+              font-size: 0.9rem;
+              height: 34px;
+              border: 1px solid var(--black-1);
+            "
+          >
+            Add
+          </Button>
+        </div>
       </div>
     </div>
 
-    <!-- Bottom Panel / Edit and Remove Buttons -->
     <div class="bottom-panel">
       <Button
-        @click="() => emit('remove-item', selectedItem.id)"
+        @click="deleteItem"
+        v-if="mode.value === 'edit'"
         style="
           border: 1px solid var(--black-1);
           background: var(--red-1);
@@ -120,8 +134,9 @@
       >
         Delete
       </Button>
+
       <Button
-        @click="submitForm"
+        @click="submitItem"
         class="edit-btn"
         :applyShadow="'true'"
         style="
@@ -129,107 +144,74 @@
           background: var(--primary-text-color-1);
           color: var(--white-1);
           height: 40px;
+          margin-left: auto;
         "
       >
         {{ mode === "edit" ? "Update" : "Create" }}
       </Button>
     </div>
   </div>
-
-  <Modal
-    v-if="modal.isOpen && modal.type === 'category'"
-    width="420px"
-    height="auto"
-    @close="closeModal"
-  >
-    <CreateCategory @close="closeModal" />
-  </Modal>
 </template>
 
 <script setup>
-import { reactive, defineProps, defineEmits } from "vue";
+import { reactive } from "vue";
 import EditPencil2 from "~/components/reuse/icons/EditPencil2.vue";
 import Button from "~/components/reuse/ui/Button.vue";
 import Input from "~/components/reuse/ui/Input.vue";
-import Modal from "~/components/reuse/ui/Modal.vue";
 import Select from "~/components/reuse/ui/Select.vue";
 import Textarea from "~/components/reuse/ui/Textarea.vue";
-import { useCategory } from "~/stores/product/category/useCategory";
-import CreateCategory from "./categories/CreateCategory.vue";
-import ProductSizes from "./general/ProductSizes.vue";
-import SelectProductColors from "./general/SelectProductColors.vue";
+import Toggle from "~/components/reuse/ui/Toggle.vue";
+import { useProductCustomization } from "~/stores/product/useProductCustomization";
+import { generateId } from "~/utils/generateId";
 
-const categoryStore = useCategory();
+const options = useProductCustomization();
+const categoryOptions = [
+  { label: "Addon", value: "addon" },
+  { label: "Free Choices", value: "freeChoices" },
+  { label: "Removal", value: "removal" },
+  { label: "Sugar Level", value: "sugarLevel" },
+];
+const selectedItem = ref({
+  image: "",
+  title: "",
+  description: "",
+  price: 0,
+});
+
 const props = defineProps({
-  item: {
-    type: Object,
-    required: true,
-  },
   mode: {
     type: String,
     default: "create",
   },
 });
-const emit = defineEmits(["create-item", "edit-item", "remove-item"]);
+const emit = defineEmits(["close"]);
+
 const errors = reactive({});
-const modal = reactive({
-  isOpen: false,
-  type: null,
-});
-const selectedItem = ref({
-  title: "",
-  category: "",
-  price: "",
-  description: "",
-  images: [
-    "https://res.cloudinary.com/sweetgreen/image/upload/f_webp,q_auto:good/dpr_2/c_crop,h_0.7,w_0.4/w_343/v1702672435/gravy/production/Gravy::MasterProduct/Q423_OLO_MisoSalmonGlazedPlate_3600x2400_2_orq1kg",
-  ],
-});
 
-const submitForm = () => {
-  if (props.mode === "edit") {
-    emit("edit-item", {
-      ...selectedItem.value,
-      title: selectedItem.value.title,
-      description: selectedItem.value.description,
-      quantity: selectedItem.value.quantity,
-      price: selectedItem.value.price,
-      size: selectedItem.value.size,
-    });
-  } else if (props.mode === "create") {
-    console.log(selectedItem)
-    emit("create-item", {
-      ...selectedItem.value,
-      title: selectedItem.value.title,
-      description: selectedItem.value.description,
-      quantity: selectedItem.value.quantity,
-      price: selectedItem.value.price,
-      size: selectedItem.value.size,
-    });
+const addSugarOption = () => {
+  if (!selectedItem.sugarOptions) {
+    selectedItem.sugarOptions = [];
   }
+  selectedItem.sugarOptions.push({ label: "", value: 0 });
 };
 
-const openAddCategoryModal = () => {
-  modal.isOpen = true;
-  modal.type = "category";
+const submitItem = () => {
+  if (props.mode === "create") {
+    selectedItem.value.id = generateId(); 
+    options.addCustomization(selectedItem.value);
+  } else {
+    options.updateCustomization(selectedItem.value);
+  }
+  emit("close");
 };
 
-const closeModal = () => {
-  modal.isOpen = false;
-  modal.type = "";
-};
-
-const categoryOptions = computed(() =>
-  categoryStore.getCategoryList.map((cat) => ({
-    label: cat.name,
-    value: cat.id,
-  }))
-);
+const deleteItem = () => {};
 
 onMounted(() => {
-  if (props.mode === "edit") {
-    console.log(props.item)
-    selectedItem.value = { ...props.item };
+  if (props.mode === "create") {
+    selectedItem.value = selectedItem;
+  } else {
+    selectedItem.value = options.selectedItem;
   }
 });
 </script>
@@ -305,7 +287,7 @@ onMounted(() => {
   overflow-y: auto;
   height: 600px;
   max-height: 700px;
-  padding: 0 1rem 12rem;
+  padding: 0 1rem 1rem;
   border-radius: 8px;
 }
 
@@ -314,10 +296,10 @@ onMounted(() => {
     overflow-y: visible;
     height: auto;
     max-height: 100vh;
-    margin-bottom: 100px;
+    margin-bottom: 30px;
   }
   .right-panel > :last-child {
-    padding: 50px 0;
+    padding: 0 0 50px;
   }
 }
 

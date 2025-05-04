@@ -16,6 +16,7 @@
           v-for="customization in filteredItems"
           :key="customization.id"
           class="customization-card"
+          @click="openEditModal(customization)"
         >
           <img
             :src="customization.image"
@@ -23,25 +24,39 @@
             class="customization-image"
           />
           <div class="customization-info">
-            <h3>{{ customization.label }}</h3>
-              <p>{{ customization.type }}</p>
-              <div class="customization-info-details">
-                <div v-if="customization.maxLimit">
-                    <span>Max: {{ customization.maxLimit }}</span>
-                </div>
-                <div v-if="customization.startAt !== undefined">
-                    <span>Start At: {{ customization.startAt }}</span>
-                </div>
+            <h3>{{ customization.title }}</h3>
+            <p>{{ customization.type }}</p>
+            <div class="customization-info-details">
+              <div v-if="customization.maxLimit">
+                <span>Max: {{ customization.maxLimit }}</span>
               </div>
+              <div v-if="customization.startAt !== undefined">
+                <span>Start At: {{ customization.startAt }}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
+
+  <Modal
+    v-if="modal.isOpen && modal.type === 'edit'"
+    @close="closeModal"
+  >
+    <SelectProducts
+      :initial-selected="[]"
+      :height="700"
+      @add-selected-items="handleSelectedProducts"
+      @close="closeModal"
+    />
+  </Modal>
 </template>
 
 <script setup>
 import CategoryList from "~/components/dashboard/items/CategoryList.vue";
+import SelectProducts from "~/components/dashboard/items/SelectProducts.vue";
+import Modal from "~/components/reuse/ui/Modal.vue";
 import { useProductCustomization } from "~/stores/product/useProductCustomization";
 
 const store = useProductCustomization();
@@ -49,6 +64,7 @@ const containerRef = ref(null);
 const panelHeight = ref(0);
 const containerWidth = ref(0);
 const selectedCategory = ref("All");
+const modal = ref({ type: null, isOpen: false });
 let resizeObserver;
 
 const customizations = store.getCustomizations;
@@ -67,6 +83,19 @@ const filteredItems = computed(() => {
 
 const filterItems = (category) => {
   selectedCategory.value = category.id;
+};
+
+const openEditModal = (item) => {
+  modal.value = {
+    type: "edit", isOpen: true
+  };
+  store.setSelectedItem(item)
+}
+
+const closeModal = () => {
+  modal.value = {
+    type: "edit", isOpen: false 
+  };
 }
 
 const updateWidth = () => {
@@ -127,6 +156,7 @@ onBeforeUnmount(() => {
   background: var(--white-1);
   box-shadow: 4px 4px 1px #bdbdbd6b;
   overflow: hidden;
+  cursor: pointer;
 }
 
 .customization-image {
@@ -159,8 +189,8 @@ onBeforeUnmount(() => {
 }
 
 .customization-info-details {
- display: flex;
- gap: 20px;
+  display: flex;
+  gap: 20px;
 }
 
 .wrap-items {

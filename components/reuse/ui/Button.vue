@@ -105,9 +105,9 @@ export default {
 }
 .custom-btn-secondary:hover {
   opacity: 0.85;
-  background-color: var(--black-1);
+  background-color: var(--black-2);
   color: var(--white-1);
-  border: 1px solid var(--black-1);
+  border: 1px solid var(--black-2);
 }
 
 .custom-btn-danger {

@@ -1,7 +1,7 @@
 export const state = () => ({
   name: "Aung",
   id: null,
-  role: "waiter",
+  role: "manager",
 });
 
 export const mutations = {

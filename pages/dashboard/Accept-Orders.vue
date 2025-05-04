@@ -9,7 +9,7 @@
         <ItemList
           :items="items"
           :categories="categories"
-          @select-item="openModal"
+          @select-item="(item) => openModal(item, 'create')"
         />
       </div>
 
@@ -29,7 +29,7 @@
           v-if="!isMobile"
           :order="order"
           :pricingInfo="pricingInfo"
-          @edit-order="openModal"
+          @edit-order="(item) => openModal(item, 'edit')"
           @closeDrawer="closeDrawer"
         />
 
@@ -156,7 +156,7 @@ const handleDeleteOrderItem = (itemId) => {
   selectedItem.value = null;
 };
 
-const openModal = (item) => {
+const openModal = (item, type) => {
   const existingOrder = order.value.find((o) => o.item.id === item.id);
   if (existingOrder) {
     Object.assign(orderForm, existingOrder);
@@ -165,8 +165,9 @@ const openModal = (item) => {
     orderForm.preferences = null;
   }
   selectedItem.value = item;
+  console.log(item, existingOrder, order)
   modal.isOpen = true;
-  modal.type = existingOrder ? "edit" : "create";
+  modal.type = type;
 };
 
 const closeModal = () => {

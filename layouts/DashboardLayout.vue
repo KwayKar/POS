@@ -38,7 +38,7 @@ export default {
 }
 
 .custom-container {
-  padding-top: 3rem; 
+  padding-top: 2.9rem; 
   display: flex;
   overflow: hidden;
   margin-top: 18px;

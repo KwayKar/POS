@@ -118,11 +118,14 @@ const closeModal = () => {
   };
 };
 
-onMounted(() => {
-  if (entries.value.length > 0) {
-    hasSizes.value = true;
-  }
-});
+watch(
+  () => props.modelValue,
+  (newVal) => {
+    entries.value = [...newVal];
+    hasSizes.value = newVal.length > 0;
+  },
+  { immediate: true, deep: true }
+);
 
 watch(
   entries,

@@ -70,9 +70,9 @@ export default {
 
 <style scoped>
 .custom-button {
-  background-color: var(--primary-text-color-1);
+  background-color: var(--black-2);
   color: var(--white-1);
-  border: 1px solid var(--black-1);
+  border: 1px solid var(--black-2);
   font-size: var(--font-size-x-small);
   padding: 6px 32px;
   border-radius: 24px;

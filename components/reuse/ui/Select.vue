@@ -1,7 +1,7 @@
 <template>
   <div class="select-box relative w-full" ref="selectWrapper">
     <button
-      class="w-full px-5 py-2 text-left border rounded-md flex items-center justify-between focus:outline-none"
+      class="select-btn w-full px-5 py-2 text-left rounded-md flex items-center justify-between focus:outline-none"
       :style="{
         background: 'var(--white-1)',
         fontSize: '0.95rem',
@@ -143,6 +143,9 @@ const leave = (el, done) => {
 
 <style scoped>
 .select-box {
+}
+
+.select-btn {
   border: 1px solid var(--gray-1); 
   border-radius: 7px;
 }

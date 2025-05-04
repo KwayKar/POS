@@ -23,7 +23,7 @@ export default {
   components: { NavSvgIcon },
   data() {
     return {
-      userRole: "waiter", 
+      userRole: "manager", 
       navigationItems: {
         manager: [
           { title: "Order", icon: "ShoppingCartOutlined", path: "/orders" },

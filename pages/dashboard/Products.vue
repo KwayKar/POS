@@ -8,7 +8,7 @@
         <NavPanelButton
           @click="openToCreateProduct"
           style="border: 1px solid var(--black-1)"
-        >
+        > 
           Create Product
         </NavPanelButton>
       </NavPanel>
@@ -31,6 +31,7 @@
         >
           <ProductInfo
             :item="selectedItem"
+            :mode="'edit'"
             @edit-item="updateItem"
             @remove-item="removeItem"
           />
@@ -43,9 +44,14 @@
           :minHeight="'740px'"
           :isFullScreenMobile="true"
         >
-          <CreateProduct
+          <!-- <CreateProduct
             @create-item="createItem"
             @open-category-modal="openCategoryModal"
+          /> -->
+          <ProductInfo
+            :item="selectedItem"
+            :mode="'create'"
+            @create-item="createItem"
           />
         </Modal>
 
@@ -65,7 +71,7 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, toRaw } from "vue";
 import ItemList from "~/components/dashboard/items/ItemList.vue";
 import NavPanel from "~/components/dashboard/panels/NavPanel.vue";
 import ProductInfo from "~/components/dashboard/products/ProductInfo.vue";
@@ -196,7 +202,7 @@ const clothingItems = [
       { id: 1, name: "Black", hex: "#000000" },
       { id: 2, name: "White", hex: "#FFFFFF" },
     ],
-    images: ["https://cdn.shopify.com/s/files/1/1367/5201/files/Sport7ShortGSDarkGreyGSBlackA1B3L-GB7X1_dcf3d3eb-fbaf-46f5-9891-df7be2773140_3840x.jpg?v=1722948233"],
+    images: ["https://cdn.shopify.com/s/files/1/0156/6146/files/Running2in1ShortGSWhiteA6A8F-WB5711478_59192bfd-3fb7-466a-ab88-ecc3a5d408a6_3840x.jpg?v=1737639267"],
   },
   {
     id: 103,
@@ -260,23 +266,22 @@ const selectedItem = ref(null);
 const windowWidth = ref(0);
 const categories = computed(() => categoryStore.getCategoryList);
 
-watch(
-  () => admin.businessType,
-  (newType) => {
-    const typeMap = {
-      clothing: clothingItems, 
-      food: foodItems,
-    };
+onMounted(() => {
+  const typeMap = {
+    clothing: clothingItems,
+    food: foodItems,
+  };
 
-    items.value = Array.isArray(typeMap[newType]?.value)
-      ? typeMap[newType].value
-      : typeMap[newType] || [];
-  },
-  { immediate: true }
-);
+  const rawItems = typeMap[admin.businessType];
+
+  items.value = Array.isArray(rawItems?.value)
+    ? [...rawItems.value]  // Clone the array to avoid shared reactivity
+    : Array.isArray(rawItems)
+      ? [...rawItems]
+      : [];
+});
 
 const openModal = (item, type) => {
-  console.log(item, type)
   selectedItem.value = item;
   modal.value = {
     type,
@@ -294,10 +299,13 @@ const closeModal = () => {
 
 const createItem = (item) => {
   items.value.push(item);
+  closeModal();
 };
 
 const updateItem = (updatedItem) => {
-  const index = items.value.findIndex((item) => item.id === updatedItem.id);
+  const index = items.value.findIndex(item => {
+    return item.id === updatedItem.id
+});
   if (index !== -1) {
     items.value[index] = { ...updatedItem };
   }
@@ -305,6 +313,7 @@ const updateItem = (updatedItem) => {
 };
 
 const removeItem = (itemToRemove) => {
+  console.log(itemToRemove)
   items.value = items.value.filter((item) => item.id !== itemToRemove);
   closeModal();
 };

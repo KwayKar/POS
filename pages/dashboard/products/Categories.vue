@@ -77,8 +77,6 @@
 
 <script setup>
 import { ref, computed } from "vue";
-import { useRoute } from "vue-router";
-
 import NavPanel from "~/components/dashboard/panels/NavPanel.vue";
 import ConfirmDelete from "~/components/reuse/ui/ConfirmDelete.vue";
 import Modal from "~/components/reuse/ui/Modal.vue";
@@ -121,9 +119,10 @@ function updateGridClass() {
 function updatePanelHeight() {
   panelHeight.value = window.innerHeight - 64;
 }
+
 function editItem(item) {
-    categoryStore.setSelectedCategoryID(item.id);
-    openModal("edit", item);
+  categoryStore.setSelectedCategoryID(item.id);
+  openModal("edit", item);
 }
 
 function confirmDelete(item) {
@@ -145,7 +144,6 @@ onMounted(() => {
 onBeforeUnmount(() => {
   window.removeEventListener("resize", updateGridClass);
 });
-
 </script>
 
 <style scoped>

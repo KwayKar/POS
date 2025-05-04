@@ -21,6 +21,8 @@ html {
 
   --primary-btn-color: #68a182;
   --primary-btn-color-2: #89aa8c;
+  --primary-btn-color-3: #e9f2eb;
+
 
   /* for text bold */
   --olive-gray: #616354;
@@ -51,6 +53,11 @@ html {
   
   --pale-gray-1: #d3d3d3;
   --pale-gray-2: #e7e5e5;
+
+  /* image background */
+  --very-light-gray: #efefef; 
+  
+  --hover-color: #f0f0f0;
   
   --dark-gray-1: #3e3e3e;
 
@@ -69,6 +76,8 @@ html {
 
   --dashboard-top-nav-panel-height: 4.2rem;
   --dashboard-top-nav-panel-height-px: 67.2px; 
+
+  --global-padding-space: 1rem;
 }
 
 body {
@@ -95,6 +104,12 @@ body {
 
 .header2 {
   font-size: var(--font-size-large);
+  font-weight: 600;
+  color: var(--black-2);
+}
+
+.header3 {
+  font-size: 1.15rem;
   font-weight: 600;
   color: var(--black-2);
 }
@@ -236,5 +251,6 @@ th:hover .th-sort-arrow {
   justify-content: center;
   box-sizing: border-box;
   background: var(--pale-red-1);
+  border: 1px solid #ffcccc;
   border-radius: 50%;
 }

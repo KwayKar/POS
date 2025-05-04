@@ -32,7 +32,7 @@
         </div>
 
         <!-- Sizes -->
-        <div v-if="selectedItem?.sizes" class="mb-8">
+        <div v-if="selectedItem?.sizes?.length" class="mb-8">
           <label for="sizes" class="form-label"> Sizes </label>
           <SelectSize
             :sizes="selectedItem?.sizes"
@@ -40,7 +40,7 @@
           />
         </div>
 
-        <div v-if="selectedItem?.sizes" class="mb-8">
+        <div v-if="categorizedOptions?.removal?.length" class="mb-8">
           <label for="removals" class="form-label"> Removals </label>
           <ToggleOptions
             :items="categorizedOptions.removal"
@@ -48,7 +48,7 @@
           />
         </div>
 
-        <div v-if="selectedItem?.sizes" class="mb-8">
+        <div v-if="categorizedOptions?.addon?.length" class="mb-8">
           <label for="addons" class="form-label"> Addon </label>
           <Addon
             :addons="categorizedOptions.addon"
@@ -56,10 +56,10 @@
           />
         </div>
 
-        <div v-if="selectedItem?.sizes" class="mb-8">
+        <div v-if="categorizedOptions?.choices?.length" class="mb-8">
           <label for="addons" class="form-label"> Choices </label>
-          <SelectSize
-            :sizes="categorizedOptions.choices"
+          <FreeChoice
+            :choices="categorizedOptions.choices"
             @update:extraPrice="handleExtraPrice"
           />
         </div>
@@ -80,6 +80,7 @@
     <div class="modal-submit-section">
       <div class="modal-submit-section-btn flex">
         <Button
+          v-if="modalType === 'edit'"
           @click="emit('delete-item', selectedItem.id)"
           variant="danger"
           :style="'height: 42px'"
@@ -102,16 +103,17 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from "vue";
-import Addon from "~/components/reuse/ui/Addon.vue";
+import { ref, watch } from "vue";
+import Addon from "~/components/dashboard/products/customizations/types/Addon.vue";
 import Button from "~/components/reuse/ui/Button.vue";
 import QuantitySelector from "~/components/reuse/ui/QuantitySelector.vue";
-import SelectSize from "~/components/reuse/ui/SelectSize.vue";
+import SelectSize from "~/components/dashboard/products/customizations/types/SelectSize.vue";
 import SubmitButton from "~/components/reuse/ui/SubmitButton.vue";
 import Textarea from "~/components/reuse/ui/Textarea.vue";
-import ToggleOptions from "~/components/reuse/ui/ToggleOptions.vue";
+import ToggleOptions from "~/components/dashboard/products/customizations/types/ToggleOptions.vue";
+import FreeChoice from "../products/customizations/types/FreeChoice.vue";
 
-defineProps({
+const props = defineProps({
   item: {
     type: Object,
     required: true,
@@ -133,7 +135,7 @@ defineProps({
 const emit = defineEmits(["update-item", "delete-item"]);
 const form = ref({ ...__props.value });
 const selectedItem = ref(__props.item);
-const extraPrice = ref(0); // for sides and sizes
+const extraPrice = ref(0); 
 
 watch(
   () => __props.modalType,
@@ -159,10 +161,6 @@ watch(
   { immediate: true }
 );
 
-// onMounted(() => {
-//   console.log(selectedItem);
-// });
-
 const updateOrder = () => {
   const order = {
     item: selectedItem.value,
@@ -170,6 +168,7 @@ const updateOrder = () => {
   };
   if (form.value.size) order.size = form.value.size;
   if (form.value.preferences) order.preferences = form.value.preferences;
+  console.log(order)
   emit("update-item", order);
 };
 
@@ -190,14 +189,20 @@ const categorizedOptions = computed(() => {
   const addon = [];
   const choices = [];
 
-  selectedItem?.value?.options.forEach((mod) => {
-    if (mod.type === 'removal') removal.push(mod);
-    if (mod.type === 'addon') addon.push(mod);
-    if (mod.type === 'choices') choices.push(mod);
+  const options =
+    selectedItem?.value && "options" in selectedItem.value
+      ? selectedItem.value.options
+      : [];
+
+  options.forEach((mod) => {
+    if (mod.type === "removal") removal.push(mod);
+    if (mod.type === "addon") addon.push(mod);
+    if (mod.type === "choices") choices.push(mod);
   });
 
   return { removal, addon, choices };
 });
+
 </script>
 
 <style scoped>

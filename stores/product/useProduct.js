@@ -40,6 +40,7 @@ export const useProduct = defineStore("order", {
           { id: 3, label: 'Choose Sauce', type: 'choices' },
           { id: 4, label: 'No Pickles', type: 'removal' },
           { id: 5, label: 'Add Avocado', type: 'addon', maxLimit: 3, startAt: 1 },
+          { id: 6, label: 'White Rice', type: 'choices' },
         ]
       },
       {
