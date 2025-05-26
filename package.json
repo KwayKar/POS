@@ -9,7 +9,7 @@
     "generate": "nuxt generate"
   },
   "dependencies": {
-    "@nuxt/image": "^1.8.1",
+    "@nuxt/image": "^1.10.0",
     "@pinia/nuxt": "^0.10.1",
     "@popperjs/core": "^2.11.8",
     "autoprefixer": "^10.4.20",

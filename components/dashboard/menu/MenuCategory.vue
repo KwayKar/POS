@@ -4,45 +4,59 @@
       class="category-sidebar"
       ref="menuCategoryRef"
       :style="{
-        width: typeof panelWidth === 'number' ? `${panelWidth}px` : panelWidth,
+        width: '100%',
       }"
     >
-      <div class="wrap-header">
-        <h2 class="header2">Categories</h2>
-        <button class="mobile-menu-btn hide-on-desktop" @click="toggleDrawer">
-          Categories
-        </button>
+      <div class="wrap-header hide-on-desktop">
+        <Button class="mobile-menu-btn hide-on-desktop" @click="toggleDrawer">
+          Sort Order
+        </Button>
       </div>
 
-      <ul
-        :style="{
-          height:
-            typeof panelHeight === 'number' ? `${panelHeight}px` : panelHeight,
-        }"
-        class="category-list hide-on-mobile"
-      >
-        <draggable
-          v-model="items"
-          item-key="id"
-          :animation="300"
-          ghost-class="ghost"
-          chosen-class="chosen"
-          :drag-class="'dragging'"
+      <div class="wrap-categories">
+        <ul
+          :style="{
+            flex: 1,
+            height:
+              typeof panelHeight === 'number' ? `${panelHeight}px` : panelHeight,
+          }"
+          class="category-list hide-on-mobile"
         >
-          <template #item="{ element, index }">
-            <li
-              :key="element.id"
-              :style="{
-                marginRight: index === items.length - 1 ? '150px' : '',
-              }"
-            >
-              {{ element.category }}
-            </li>
-          </template>
-        </draggable>
-      </ul>
+          <draggable
+            v-model="items"
+            item-key="id"
+            :animation="300"
+            ghost-class="ghost"
+            chosen-class="chosen"
+            :drag-class="'dragging'"
+            style="display: flex;"
+          >
+            <template #item="{ element, index }">
+              <li
+                :key="element.id"
+                :class="['category-item', { 'animate-wiggle': enableSort }]"
+                @click="$emit('select', element.id)"
+                :style="{
+                  marginRight: index === items.length - 1 ? '150px' : '',
+                }"
+              >
+                {{ element.category }}
+              </li>
+            </template>
+          </draggable>
+        </ul> 
 
-      
+        <div style="margin: 0 20px; display: flex; align-items: center;">
+          <Button
+            style="border: 1px solid var(--black-1); height: 38px"
+            variant="primary"
+            @click="enableSortingDesktop"
+            :style="{ background: enableSort ? 'var(--green-2)' : '' }"
+          >
+            {{ !enableSort ? 'Sort Order' : 'Done' }}
+          </Button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -82,16 +96,22 @@ import { storeToRefs } from "pinia";
 import { useMenu } from "~/stores/menu/useMenu";
 import draggable from "vuedraggable";
 import Drawer from "~/components/reuse/ui/Drawer.vue";
+import Button from "~/components/reuse/ui/Button.vue";
 
 const menu = useMenu();
 const { items, selectedCategory } = storeToRefs(menu);
 const { setSortedCategories } = menu;
 
 const menuCategoryRef = ref(null);
-const panelHeight = ref("auto");
+const panelHeight = ref("70px");
 const panelWidth = ref("auto");
 const isMobile = ref(false);
 const isDrawerOpen = ref(false);
+const enableSort = ref(false);
+const modal = ref({
+  type: null,
+  isOpen: false,
+});
 
 const updatePanelHeight = () => {
   const isDesktop = window.innerWidth >= 1100;
@@ -99,9 +119,10 @@ const updatePanelHeight = () => {
   if (menuCategoryRef.value) {
     if (isDesktop) {
       panelWidth.value = menuCategoryRef.value.offsetWidth;
-      panelHeight.value = menuCategoryRef.value.offsetHeight;
+      panelHeight.value = '70px';
     } else {
       panelWidth.value = '100%';
+      panelHeight.value = '100%';
     }
   }
 };
@@ -120,6 +141,10 @@ const toggleDrawer = () => {
   isDrawerOpen.value = !isDrawerOpen.value;
 };
 
+const enableSortingDesktop = () => {
+  enableSort.value = !enableSort.value;
+}
+
 const onSortEnd = () => {
   setSortedCategories([...items.value]);
 };
@@ -130,6 +155,7 @@ const onSortEnd = () => {
   display: flex;
   flex-direction: row;
   width: 100%;
+  background: var(--primary-bg-color-1);
 }
 @media screen and (max-width: 1099px) {
   .category-layout {
@@ -143,13 +169,24 @@ const onSortEnd = () => {
   }
 }
 
+.wrap-categories {
+  width: 100%; 
+  display: flex; 
+  border-bottom: 1px solid var(--gray-2);
+}
+@media screen and (max-width: 1099px) {
+  .wrap-categories {
+    display: none;
+  }
+}
+
 .category-sidebar {
   width: 100%;
 }
 
 .wrap-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   width: 100%;
   flex: 1;
   padding: 0.5rem 0 1.5rem;
@@ -165,11 +202,21 @@ const onSortEnd = () => {
 }
 
 .category-list {
-  overflow-y: auto;
-  height: 100vh;
-  padding-bottom: 10rem;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  display: flex;
+  flex-direction: row; 
+  overflow-x: auto;
+  /* overflow-y: hidden; */
+  white-space: nowrap;
+  scrollbar-width: none; 
+  -ms-overflow-style: none; 
+}
+
+.category-list::-webkit-scrollbar {
+  display: none;
+}
+
+.category-list > div {
+  width: 500px;
 }
 
 @media screen and (max-width: 1099px) {
@@ -186,13 +233,30 @@ const onSortEnd = () => {
 
 .category-list li {
   font-size: 1.05rem;
+  cursor: pointer;
+  width: 150px;
+  margin-right: 12px;
+  font-weight: 600;
+  color: var(--black-2);
+
+  min-width: 100px; /* or however wide you want each item */
+  flex-shrink: 0; 
+
   display: flex;
   align-items: center;
-  padding: 20px 5px 35px;
-  cursor: pointer;
-  height: 36px;
-  background: transparent;
-  width: 100%;
+  justify-content: center;
+  animation: bounce-in 0.4s ease;
+}
+
+.category-item {
+  justify-content: flex-start;
+}
+@media screen and (max-width: 1000px) {
+  .category-list li {
+    justify-content: flex-start;
+    margin-bottom: 24px;
+    animation: bounce-in 0s ease;
+  }
 }
 
 @media (max-width: 1099px) {
@@ -218,11 +282,36 @@ const onSortEnd = () => {
 }
 
 .chosen {
-  background: #fff !important;
+  background: var(--white-1) !important;
   z-index: 99;
   box-shadow: none !important;
   outline: none !important;
   padding: 14px 20px;
   overflow: hidden;
+}
+
+
+@keyframes bounce-in {
+  0% {
+    transform: scale(0.95);
+  }
+  60% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.category-item.animate-wiggle {
+  animation: wiggle 0.6s ease-in-out infinite;
+}
+
+@keyframes wiggle {
+  0% { transform: rotate(0); }
+  25% { transform: rotate(3deg); }
+  50% { transform: rotate(-3deg); }
+  75% { transform: rotate(3deg); }
+  100% { transform: rotate(0); }
 }
 </style>

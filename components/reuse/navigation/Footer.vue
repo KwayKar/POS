@@ -1,7 +1,7 @@
 <template>
   <footer class="footer box-border">
     <div 
-      class="footer-content container m-auto max-w-[var(--full-width-panel-size)] px-4 py-6" 
+      class="footer-content container m-auto" 
     >
     <div class="footer-header">Kway Kar</div>
     
@@ -32,25 +32,25 @@
       </div>
     </div>
 
-    <div class="footer-bottom flex justify-center items-center h-10 pt-5">
-      <p>&copy; 2024 My Company. All Rights Reserved.</p>
+    <div class="footer-bottom">
+      <p>&copy; {{ year }} Company Name. All Rights Reserved.</p>
     </div>
   </div>
   </footer>
   
 </template>
 
-<script>
-export default {
-  name: "Footer",
-};
+<script setup>
+import { ref } from 'vue'
+
+const year = ref(new Date().getFullYear())
 </script>
 
 <style scoped>
 
 .footer {
   width: 100%;
-  color: white;
+  color: var(--white-1);
   padding: 20px 0;
   font-size: 14px;
   overflow: hidden;
@@ -68,7 +68,15 @@ export default {
 }
 
 .footer-content {
-  background-color: #1a1a1a; border-radius: var(--site-border-radius)
+  padding: 22px;
+  background-color: var(--black-1); border-radius: var(--site-border-radius);
+  max-width: var(--full-width-panel-size);
+}
+@media only screen and (max-width: 600px) {
+  .footer-content {
+    padding: 20px 18px;
+    max-width: calc(100% - 30px);
+  }
 }
 
 .footer-container {
@@ -103,19 +111,19 @@ export default {
 }
 
 .footer-section a {
-  color: #f4f4f4;
+  color: var(--gray-1);
   text-decoration: none;
   transition: color 0.3s ease;
   font-size: 14px;
 }
 
 .footer-section a:hover {
-  color: #4d90fe;
+  color: var(--white-1);
 }
 
 .footer-bottom {
   text-align: center;
-  margin-top: 30px;
+  margin: 30px 0 0px;
   border-top: 1px solid #333;
 }
 
@@ -124,6 +132,7 @@ export default {
   font-size: 14px;
   color: #aaa;
 }
+
 
 @media (max-width: 768px) {
   .footer-container {
@@ -139,7 +148,6 @@ export default {
   .footer-bottom {
     margin-top: 40px;
     text-align: left;
-    padding-left: 20px;
   }
 
   .footer-header {
@@ -156,5 +164,13 @@ export default {
     font-size: 14px;
     line-height: 1.8;
   }
+}
+
+.footer-bottom {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 40px;
+  padding-top: 20px;
 }
 </style>

@@ -40,7 +40,6 @@ export default {
 .custom-container {
   padding-top: 2.9rem; 
   display: flex;
-  overflow: hidden;
   margin-top: 18px;
 }
 </style>

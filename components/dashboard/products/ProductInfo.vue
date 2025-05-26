@@ -197,7 +197,6 @@ const submitForm = () => {
       size: selectedItem.value.size,
     });
   } else if (props.mode === "create") {
-    console.log(selectedItem)
     emit("create-item", {
       ...selectedItem.value,
       title: selectedItem.value.title,
@@ -228,7 +227,6 @@ const categoryOptions = computed(() =>
 
 onMounted(() => {
   if (props.mode === "edit") {
-    console.log(props.item)
     selectedItem.value = { ...props.item };
   }
 });
@@ -243,11 +241,10 @@ onMounted(() => {
   display: flex;
   flex-direction: row;
   padding-left: 12px;
-  padding-right: 12px;
   gap: 1rem;
   flex-grow: 1;
 }
-@media screen and (max-width: 850px) {
+@media screen and (max-width: 900px) {
   .panel-section {
     overflow-y: scroll;
     flex-direction: column;
@@ -279,7 +276,7 @@ onMounted(() => {
   object-fit: contain;
   border-radius: 10px;
 }
-@media screen and (max-width: 850px) {
+@media screen and (max-width: 900px) {
   .image-container > img {
     max-height: 300px;
   }
@@ -305,11 +302,11 @@ onMounted(() => {
   overflow-y: auto;
   height: 600px;
   max-height: 700px;
-  padding: 0 1rem 12rem;
+  padding: 0 2rem 12rem 1rem;
   border-radius: 8px;
 }
 
-@media screen and (max-width: 850px) {
+@media screen and (max-width: 900px) {
   .right-panel {
     overflow-y: visible;
     height: auto;

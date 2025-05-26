@@ -15,10 +15,11 @@
       </div>
     </div>
 
-    <div v-if="selectedSize" class="selected-info">
+    <div v-if="selectedSize?.extraPrice" class="selected-info item-size-price">
       <p class="extra-price" v-if="selectedSize.extraPrice">
         +{{ formatPrice(selectedSize.extraPrice) }}
       </p>
+      <span>(Total - {{ formatPrice(selectedSize.extraPrice + itemPrice) }})</span>
     </div>
   </div>
 </template>
@@ -26,26 +27,46 @@
 <script setup>
 import { ref } from "vue";
 
-defineProps({
+const props = defineProps({
   sizes: {
     type: Array,
     required: true,
   },
+  itemPrice: {
+    type: Number,
+  },
+  modelValue: {
+    type: Object, // The selected size object
+    default: null,
+  },
 });
 
 const selectedSize = ref(null);
-const emit = defineEmits(["update:extraPrice"]);
+const emit = defineEmits(["update:selectedSize", "update:extraPrice"]);
 
 const selectSize = (size) => {
   selectedSize.value = size;
-  if (size?.extraPrice) {
-    emit("update:extraPrice", size?.extraPrice || 0);
-  }
+  emit("update:selectedSize", size);
 };
 
 const formatPrice = (price) => {
   return `${parseFloat(price).toFixed(2)}`;
 };
+
+onMounted(() => {
+  if (props.modelValue) {
+    selectSize(props.modelValue);
+  } else if (props.sizes?.length) {
+    selectSize(props.sizes[0]);
+  }
+});
+
+// watch(
+//   () => props.modelValue,
+//   (newVal) => {
+//     if (newVal) selectSize(newVal);
+//   }
+// );
 </script>
 
 <style scoped>
@@ -94,6 +115,19 @@ const formatPrice = (price) => {
 .extra-price {
   font-size: 0.95rem;
   color: var(--green-1);
+}
+
+.item-size-price {
+  display: flex;
+  align-items: center;
   margin-top: 12px;
+}
+
+.item-size-price > p {
+  margin-right: 15px;
+}
+
+.item-size-price > span {
+  color: #807d7d;
 }
 </style>

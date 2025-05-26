@@ -27,10 +27,17 @@ export default {
   },
 
   image: {
-    provider: 'static', 
-    domains: ['https://images.ctfassets.net'],
-    static: {
-      dir: 'assets/images'
+    provider: 'ipx',
+    domains: ['*'],
+    placeholders: {
+      // default placeholder: 'blur'
+      blur: true
+    },
+    screens: {
+      sm: 320,
+      md: 768,
+      lg: 1024,
+      xl: 1280
     }
   },
 

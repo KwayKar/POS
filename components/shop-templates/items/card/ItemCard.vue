@@ -1,5 +1,9 @@
 <template>
-  <div class="item-card" :style="{ background: theme.background }">
+  <div
+    class="item-card"
+    :style="{ background: theme.background }"
+    @click="selectItem"
+  >
     <img
       :src="item.images[0]"
       alt="item image"
@@ -21,10 +25,15 @@
 import { useRestaurant } from "~/stores/shop/useRestaurant";
 
 const { theme } = useRestaurant();
+const emit = defineEmits(['select']);
 
-defineProps({
+const props = defineProps({
   item: Object,
 });
+
+function selectItem() {
+  emit('select', props.item);
+}
 </script>
 
 <style scoped>

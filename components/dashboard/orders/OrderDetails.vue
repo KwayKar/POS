@@ -228,7 +228,9 @@ export default {
   border-radius: 24px;
   box-shadow: 1px 2px 4px #d9d9d97d;
   border: 1px solid var(--black-2);
-  @media screen and (min-width: 850px) {
+}
+@media screen and (min-width: 850px) {
+  .order-details {
     max-width: 450px;
   }
 }

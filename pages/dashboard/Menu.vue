@@ -14,12 +14,12 @@
       </NavPanel>
 
       <div class="menu-wrapper">
-        <div class="menu-left">
-          <MenuCategory />
+        <div class="menu-categories">
+          <MenuCategory @select="scrollToCategory" />
         </div>
 
-        <div class="menu-right">
-          <MenuItems />
+        <div class="menu-items">
+          <MenuItems ref="menuItemsRef" />
         </div>
       </div>
     </DashboardLayout>
@@ -42,12 +42,20 @@ import Modal from "~/components/reuse/ui/Modal.vue";
 import CustomizationForm from "~/components/dashboard/products/customizations/CustomizationForm.vue";
 import MenuCategory from "~/components/dashboard/menu/MenuCategory.vue";
 import MenuItems from "~/components/dashboard/menu/MenuItems.vue";
+import { ref } from 'vue';
+import { useRestaurant } from "~/stores/shop/useRestaurant";
 
 const modal = ref({
   type: null,
   isOpen: false,
 });
 const windowWidth = ref(0);
+const menuItemsRef = ref();
+const menu = useRestaurant();
+
+const onCategorySelect = (id) => {
+  menuItemsRef.value?.scrollToCategory(id);
+};
 
 const openToCreateOption = () => {
   modal.value = {
@@ -68,40 +76,60 @@ const updateWindowWidth = () => {
 };
 
 onMounted(() => {
+  if (typeof window !== 'undefined' && 'scrollRestoration' in window.history) {
+    window.history.scrollRestoration = 'manual';
+    window.scrollTo({ top: 0 });
+  }
+
   updateWindowWidth();
   window.addEventListener("resize", updateWindowWidth);
-
-  document.body.style.overflow = "hidden";
+  // document.body.style.overflow = "hidden";
 });
 
 onUnmounted(() => {
   window.removeEventListener("resize", updateWindowWidth);
   document.body.style.overflow = "";
 });
+
+function scrollToCategory(id) {  
+  const el = document.querySelector(`[data-category-id="${id}"]`);
+  const container = document.querySelector('.menu-items'); // or use ref!
+
+  if (el && container) {
+    const y = el.getBoundingClientRect().top + window.pageYOffset - 130;
+    window.scrollTo({ top: y, behavior: 'smooth' });
+  }
+}
+
 </script>
 
 <style scoped>
 .menu-wrapper {
   display: flex;
-  height: 100vh;
   width: 100%;
-  overflow: hidden;
+  z-index: 1;
 }
 
-.menu-right {
+.menu-items {
   flex: 1;
 }
 
 @media (min-width: 1100px) {
   .menu-wrapper {
-    flex-direction: row;
-  }
-
-  .menu-left {
     display: flex;
-    width: 300px;
-    border-right: 1px solid var(--gray-2);
-    padding: 16px;
+    flex-direction: column;
+    /* height: 100%; */
+    width: 100%;
+  }
+  .menu-categories {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+
+    position: sticky;
+    top: 64px;
+    left: 0px;
+    z-index: 9999;
   }
 }
 
@@ -112,7 +140,7 @@ onUnmounted(() => {
     height: 100%;
     width: 100%;
   }
-  .menu-left {
+  .menu-categories {
     display: flex;
     flex-direction: row;
     width: 100%;

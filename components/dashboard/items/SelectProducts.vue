@@ -2,9 +2,14 @@
   <div class="min-h-screen flex flex-col" style="min-height: 100vh">
     <div class="wrap-category-list p-4 pb-0 shrink-0">
       <CategoryList
+        v-if="displayCategories"
         :categories="uniqueCategories"
+        :selected="selectedCategory"
         @select-category="filterItems"
       />
+      <div v-else style="height: 48px">
+        <h3 class="header3">Product List</h3>
+      </div>
     </div>
 
     <div
@@ -68,7 +73,7 @@ const productStore = useProduct();
 const emit = defineEmits(["add-selected-items", "close"]);
 
 const panelHeight = ref();
-const selectedCategory = ref("All");
+const selectedCategory = ref("all");
 const gridClass = ref("grid grid-cols-4");
 const selectedItems = ref([]);
 const isMobile = ref(false);
@@ -81,6 +86,10 @@ const props = defineProps({
   height: {
     type: Number,
     default: 700,
+  },
+  displayCategories: {
+    type: Boolean,
+    default: true,
   },
 });
 
@@ -106,7 +115,6 @@ onMounted(() => {
   selectedItems.value = [...props.initialSelected];
   updateGridClass();
   updatePanelHeight();
-  document.body.style.overflow = "hidden";
   window.addEventListener("resize", updateGridClass);
   window.addEventListener("resize", updatePanelHeight);
 });
@@ -135,7 +143,7 @@ const uniqueCategories = computed(() => {
 });
 
 const filteredItems = computed(() => {
-  return selectedCategory.value && selectedCategory.value !== "All"
+  return selectedCategory.value && selectedCategory.value !== "all"
     ? items.value.filter((item) => item.category === selectedCategory.value)
     : items.value;
 });

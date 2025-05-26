@@ -99,7 +99,14 @@ const props = defineProps({
 const emit = defineEmits(["update:modelValue"]);
 
 const hasSizes = ref(false);
-const entries = ref([...props.modelValue]);
+const entries = computed({
+  get() {
+    return props.modelValue;
+  },
+  set(val) {
+    emit("update:modelValue", val);
+  },
+});
 const modal = ref({ type: "", isOpen: false, selectedIndex: null });
 
 const openModal = (type, index) => {

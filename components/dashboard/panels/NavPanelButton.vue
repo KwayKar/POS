@@ -78,9 +78,9 @@ export default {
   font-size: var(--font-size-x-small);
   padding: 6px 32px;
   border-radius: 24px;
-  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--box-shadow-2);
   transition: background-color 0.3s ease;
-  margin-right: 3vw;
+  margin-right: 1rem;
 }
 
 .custom-button:disabled {

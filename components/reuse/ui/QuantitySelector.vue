@@ -15,7 +15,7 @@
       :min="min"
       :max="max"
       :step="step"
-      class="quantity-input w-full rounded px-2 py-1 text-center"
+      class="quantity-input rounded px-2 py-1 text-center"
       @focus="isFocused = true"
       @blur="isFocused = false"
       style="border: none; outline: none"
@@ -114,14 +114,19 @@ const onlyAllowNumbers = (event) => {
 .quantity-selector.focused {
   border-color: var(--primary-btn-color);
 }
+.quantity-input {
+  flex: 1;
+  min-width: 0;
+}
 .button {
-  width: 40px;
+  width: 30px;
   height: 30px;
   border: 1px solid var(--gray-2);
   border-radius: 50%;
   display: flex;
   justify-content: center;
   align-self: center;
+  flex-shrink: 0;
   font-size: 1.2rem;
   box-sizing: border-box;
 }

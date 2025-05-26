@@ -73,7 +73,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: var(--black-2);
+  background-color: var(--black-1);
   color: var(--white-1);
   font-size: var(--font-size-x-small);
   border: 1px solid var(--white-1);
@@ -89,9 +89,9 @@ export default {
 
 .custom-button:hover {
   opacity: 0.85;
-  background-color: var(--white-1);
+  background-color: var(--white-2);
   color: var(--black-1);
-  /* border: 1px solid var(--black-1); */
+  border: 1px solid var(--black-1);
 }
 
 .custom-btn-primary {
@@ -105,9 +105,9 @@ export default {
 }
 .custom-btn-secondary:hover {
   opacity: 0.85;
-  background-color: var(--black-2);
+  background-color: var(--black-1);
   color: var(--white-1);
-  border: 1px solid var(--black-2);
+  border: 1px solid var(--black-1);
 }
 
 .custom-btn-danger {
@@ -136,6 +136,6 @@ export default {
 }
 
 .custom-btn-shadow {
-  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--box-shadow-2);
 }
 </style>

@@ -2,9 +2,14 @@
   <div
     ref="menuItemsRef"
     class="menu-container"
-    :style="{ height: panelHeight }"
   >
-    <div v-for="category in items" :key="category.id" class="wrap-items">
+    <div
+      v-for="category in items"
+      :key="category.id"
+      class="wrap-items"
+      :ref="(el) => sectionRefs.set(category.id, el)"
+      :data-category-id="category.id"
+    >
       <h2 class="header2 category-title">{{ category.category }}</h2>
 
       <draggable
@@ -85,6 +90,7 @@
       <SelectProducts
         :initial-selected="selectedItems"
         :height="700"
+        :displayCategories="false"
         @add-selected-items="handleSelectedProducts"
         @close="closeModal"
       />
@@ -127,6 +133,8 @@ import ConfirmDelete from "~/components/reuse/ui/ConfirmDelete.vue";
 import ToggleSnoozeItem from "./ToggleSnoozeItem.vue";
 
 const menu = useMenu();
+
+// don't delete !
 const { items, selectedCategory, selectedItems } = storeToRefs(menu);
 
 const menuItemsRef = ref(null);
@@ -139,6 +147,10 @@ const modal = ref({ type: "", isOpen: false, selectedItem: null });
 const popperDirections = reactive({});
 const popperRefs = new Map();
 const selectedPopperElement = ref();
+const sectionRefs = new Map();
+
+console.log(sectionRefs)
+// const emit = defineEmits(["categoryInView"]);
 
 const togglePopper = (id) => {
   if (id === null) {
@@ -230,13 +242,16 @@ const updatePanelSize = () => {
 };
 
 onMounted(async () => {
-  await nextTick();
+  // await nextTick();
   updatePanelSize();
   window.addEventListener("resize", updatePanelSize);
   document.addEventListener("click", handleClickOutside);
 });
 
 onUnmounted(() => {
+  sectionRefs.clear();
+  popperRefs.clear();
+
   window.removeEventListener("resize", updatePanelSize);
   document.removeEventListener("click", handleClickOutside);
 });
@@ -297,12 +312,12 @@ const closeModal = () => {
 }
 
 .category-title {
-  margin-bottom: 0.75rem;
+  margin: 0.75rem 0;
 }
 
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
 }
 
@@ -354,6 +369,18 @@ const closeModal = () => {
   height: 100px;
   object-fit: cover;
   border-radius: 6px;
+}
+@media screen and (min-width: 1300px) {
+  .menu-image img {
+    width: 115px;
+    height: 115px;
+  }
+}
+@media screen and (min-width: 1600px) {
+  .menu-image img {
+    width: 130px;
+    height: 130px;
+  }
 }
 
 .menu-dots {
@@ -408,6 +435,14 @@ const closeModal = () => {
 
 .menu-popper p:hover {
   background: var(--hover-color);
+}
+
+@media (max-width: 1250px) {
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
 }
 
 @media (max-width: 700px) {

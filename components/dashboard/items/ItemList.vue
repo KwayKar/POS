@@ -7,6 +7,7 @@
     <div class="wrap-category-list p-4 pb-0 shrink-0">
       <CategoryList
         :categories="uniqueCategories"
+        :selected="selectedCategory"
         @select-category="filterItems"
       />
     </div>
@@ -60,13 +61,13 @@ const props = defineProps({
 
 const emit = defineEmits(["select-item"]);
 const panelHeight = ref(0);
-const selectedCategory = ref("All");
+const selectedCategory = ref("all");
 const containerWidth = ref(0);
 const containerRef = ref(null);
 let resizeObserver;
 
 function updatePanelHeight() {
-  panelHeight.value = window.innerHeight - 135;
+  panelHeight.value = window.innerHeight - 130;
 }
 
 const gridClass = computed(() => {
@@ -111,7 +112,7 @@ const uniqueCategories = computed(() => {
 });
 
 const filteredItems = computed(() => {
-  return selectedCategory.value && selectedCategory.value !== "All"
+  return selectedCategory.value && selectedCategory.value !== "all"
     ? props.items.filter((item) => item.category === selectedCategory.value)
     : props.items;
 });

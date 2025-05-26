@@ -19,8 +19,8 @@
       </div>
 
       <!-- Right Panel -->
-      <div class="right-panel w-full lg:w-1/2 p-4">
-        <div class="mb-8">
+      <div class="right-panel w-full p-4">
+        <div class="mb-8 max-w-[250px]">
           <label for="quantity" class="form-label"> Quantity </label>
           <div class="w-full">
             <QuantitySelector
@@ -36,15 +36,9 @@
           <label for="sizes" class="form-label"> Sizes </label>
           <SelectSize
             :sizes="selectedItem?.sizes"
-            @update:extraPrice="handleExtraPrice"
-          />
-        </div>
-
-        <div v-if="categorizedOptions?.removal?.length" class="mb-8">
-          <label for="removals" class="form-label"> Removals </label>
-          <ToggleOptions
-            :items="categorizedOptions.removal"
-            @update:extraPrice="handleExtraPrice"
+            :modelValue="item?.selectedSize"
+            :itemPrice="item.price"
+            @update:selectedSize="handleSelectedSize"
           />
         </div>
 
@@ -52,7 +46,8 @@
           <label for="addons" class="form-label"> Addon </label>
           <Addon
             :addons="categorizedOptions.addon"
-            @update:extraPrice="handleExtraPrice"
+            :selectdValues="item?.selectedAddons"
+            @updateValue="handleAddons"
           />
         </div>
 
@@ -60,7 +55,17 @@
           <label for="addons" class="form-label"> Choices </label>
           <FreeChoice
             :choices="categorizedOptions.choices"
-            @update:extraPrice="handleExtraPrice"
+            :selectdValues="item?.selectedChoices"
+            @updateValue="handleChoices"
+          />
+        </div>
+
+        <div v-if="categorizedOptions?.removal?.length" class="mb-8">
+          <label for="removals" class="form-label"> Removals </label>
+          <ToggleOptions
+            :items="categorizedOptions.removal"
+            :selectdValues="item?.selectedRemovalOptions"
+            @updateValue="handleRemovalOptions"
           />
         </div>
 
@@ -103,7 +108,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { reactive, ref, watch } from "vue";
 import Addon from "~/components/dashboard/products/customizations/types/Addon.vue";
 import Button from "~/components/reuse/ui/Button.vue";
 import QuantitySelector from "~/components/reuse/ui/QuantitySelector.vue";
@@ -135,7 +140,14 @@ const props = defineProps({
 const emit = defineEmits(["update-item", "delete-item"]);
 const form = ref({ ...__props.value });
 const selectedItem = ref(__props.item);
-const extraPrice = ref(0); 
+const extraPrice = ref(0);
+const formData = reactive({
+  selectedSize: '',
+  selectedAddons: [],
+  selectedChoices: [],
+  selectedRemovalOptions: [],
+  quantity: 1
+}); 
 
 watch(
   () => __props.modalType,
@@ -168,7 +180,7 @@ const updateOrder = () => {
   };
   if (form.value.size) order.size = form.value.size;
   if (form.value.preferences) order.preferences = form.value.preferences;
-  console.log(order)
+
   emit("update-item", order);
 };
 
@@ -203,6 +215,18 @@ const categorizedOptions = computed(() => {
   return { removal, addon, choices };
 });
 
+onMounted(async () => {
+  if (selectedItem?.cartId) {
+    Object.assign(formData, {
+      selectedSize: selectedItem.selectedSize,
+      selectedAddons: selectedItem.selectedAddons,
+      selectedChoices: selectedItem.selectedChoices,
+      selectedRemovalOptions: selectedItem.selectedRemovalOptions,
+      quantity: selectedItem.quantity
+    });
+  } 
+});
+
 </script>
 
 <style scoped>
@@ -226,7 +250,7 @@ const categorizedOptions = computed(() => {
 }
 @media (min-width: 1024px) {
   .left-panel {
-    width: 50%;
+    width: 45%;
   }
 }
 
@@ -234,6 +258,7 @@ const categorizedOptions = computed(() => {
   background: var(--primary-bg-color-1);
   overflow-y: auto;
   height: 500px;
+  width: 55%;
 }
 
 .item-content {

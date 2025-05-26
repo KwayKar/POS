@@ -1,42 +1,51 @@
 <template>
-  <div class="overlay" @click.self="close">
-    <div
-      class="modal-layer rounded shadow-lg"
-      :class="modalClass"
-      :style="computedModalStyles"
-    >
-      <div class="close-button" @click="close">
-        <Icons icon="Cross" fillColor="var(--black-1)" />
-      </div>
-
+  <teleport to="#modal-root">
+    <div class="overlay" @click.self="close">
       <div
-        :style="{
-          height: height,
-          overflow: 'hidden',
-        }"
+        class="rounded shadow-lg"
+        :class="[
+          modalBaseClass,
+          showModalAnimation ? 'modal-scale-enter-active' : '',
+          modalClass,
+        ]"
+        :style="computedModalStyles"
       >
-        <slot></slot>
+        <div class="close-button" @click="close">
+          <Icons icon="Cross" fillColor="var(--black-1)" />
+        </div>
+
+        <div
+          :style="{
+            height: height,
+            overflow: 'hidden',
+          }"
+        >
+          <slot></slot>
+        </div>
       </div>
     </div>
-  </div>
+  </teleport>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
-import Icons from '../icons/Icons.vue';
-import { defineProps, defineEmits } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
+import Icons from "../icons/Icons.vue";
+import { defineProps, defineEmits } from "vue";
 
 const props = defineProps({
-  width: { type: String, default: '700px' },
-  height: { type: String, default: 'auto' },
-  maxHeight: { type: String, default: '95vh' },
-  minHeight: { type: [String, Number], default: '0px' },
-  isFullScreenMobile: { type: Boolean, default: false }, // still allowed to be passed
+  width: { type: String, default: "700px" },
+  height: { type: String, default: "auto" },
+  maxHeight: { type: String, default: "95vh" },
+  minHeight: { type: [String, Number], default: "0px" },
+  isFullScreenMobile: { type: Boolean, default: false },
+  animateOnDisplay: { type: Boolean, default: false },
 });
 
-const emit = defineEmits(['close']);
+const emit = defineEmits(["close"]);
 
+const modalBaseClass = ref('');
 const isMobileScreen = ref(false);
+const showModalAnimation = ref(false);
 
 // Updates only on screens <= 900px
 function updateScreenStatus() {
@@ -45,18 +54,32 @@ function updateScreenStatus() {
 
 onMounted(() => {
   updateScreenStatus();
-  window.addEventListener('resize', updateScreenStatus);
+  window.addEventListener("resize", updateScreenStatus);
+
+  if (props.animateOnDisplay) {
+    modalBaseClass.value = 'modal-layer';
+    nextTick(() => {
+      requestAnimationFrame(() => {
+        showModalAnimation.value = true;
+      });
+    });
+  } else {
+    modalBaseClass.value = 'modal-layer-without-animation';
+    showModalAnimation.value = false;
+  }
+
+  setModalHeight();
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener('resize', updateScreenStatus);
+  window.removeEventListener("resize", updateScreenStatus);
 });
 
-// Combined logic: only apply prop if on mobile screen
+// only apply prop if on mobile screen
 const modalClass = computed(() => {
   return isMobileScreen.value && props.isFullScreenMobile
-    ? 'modal-layout-mobile'
-    : 'modal-layout';
+    ? "modal-layout-mobile"
+    : "modal-layout";
 });
 
 const computedModalStyles = computed(() => ({
@@ -64,17 +87,20 @@ const computedModalStyles = computed(() => ({
   height: props.height,
   maxHeight: props.maxHeight,
   minHeight: props.minHeight,
-  position: 'relative',
+  position: "relative",
 }));
 
 function setModalHeight() {
   const height = window.innerHeight;
-  document.documentElement.style.setProperty('--modal-height', `${height}px`);
-  document.documentElement.style.setProperty('--max-modal-height-mobile', `${height}px`);
+  document.documentElement.style.setProperty("--modal-height", `${height}px`);
+  document.documentElement.style.setProperty(
+    "--max-modal-height-mobile",
+    `${height}px`
+  );
 }
 
 function close() {
-  emit('close');
+  emit("close");
 }
 
 onMounted(() => {
@@ -99,7 +125,11 @@ onMounted(() => {
   border-radius: 12px;
   background: var(--primary-bg-color-1);
 }
-
+@media screen and (max-width: 1050px) {
+  .modal-layout {
+    top: 0;
+  }
+}
 @media screen and (max-width: 900px) {
   .modal-layout-mobile {
     position: relative;
@@ -125,6 +155,7 @@ onMounted(() => {
   justify-content: center;
   border-radius: 50%;
   cursor: pointer;
+  z-index: 9999;
 }
 @media screen and (max-width: 900px) {
   .close-button {
@@ -136,4 +167,21 @@ onMounted(() => {
     background-color: transparent;
   }
 }
+
+.modal-layer {
+  transform: scale(0.95);
+  opacity: 0;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.modal-layer-without-animation {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.modal-scale-enter-active {
+  transform: scale(1);
+  opacity: 1;
+}
+
 </style>

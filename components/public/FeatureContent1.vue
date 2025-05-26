@@ -9,34 +9,27 @@
       :class="[
         'flex items-center w-full wrap-section',
       ]"
-      :style="{ flexFlow: reverseOrder && isDesktop ? 'row-reverse' : 'row', gap: isDesktop ? '6rem' : '2rem' }"
+      :style="{ flexFlow: reverseOrder && isDesktop ? 'row-reverse' : 'row' }"
     >
       <!-- Image Section -->
-      <div class="w-full md:w-1/2 mb-4 md:mb-0">
-        <img
+      <div class="relative w-full w-full md:w-1/2 mb-4 md:mb-0">
+       
+        <NuxtImg
           :src="imageSrc"
           :alt="title"
-          class="w-full h-auto rounded-lg shadow-md"
+          fit="contain"
+          class="custom-image w-full h-full object-cover"
+          width="343"
+          height="193"
+          placeholder="blur"
         />
       </div>
 
       <!-- Content Section -->
       <div class="w-full md:w-1/2 flex flex-col space-y-4 text-left content">
-        <h2 class="title">
-          {{ title }}
-        </h2>
-        <p class="description">
-          {{ description }}
-        </p>
-        <div>
-          <LinkButton 
-            :href="link" 
-            size="large" 
-            class="bg-blue-500 text-white hover:bg-blue-600"
-          >
-            Learn More
-          </LinkButton>
-        </div>
+        <slot>
+         
+        </slot>
       </div>
     </div>
   </section>
@@ -95,20 +88,29 @@ export default {
 
 <style scoped>
 .wrap-section {
-  padding: 6%;
+  padding: 0.75rem;
   display: flex;
   flex-direction: column;
+  margin-bottom: 3rem;
+  gap: 2.75rem;
 }
-
-@media screen and (min-width: 768px) {
+@media screen and (min-width: 850px) {
+  .wrap-section {
+    padding: 4% 6%;
+    flex-direction: row;
+    gap: 4rem;
+  }
+}
+@media screen and (min-width: 1025px) {
   .wrap-section {
     padding: 4% 8%;
     flex-direction: row;
+    gap: 6rem;
   }
 }
 
-.content {
-  @media screen and (min-width: 850px) {
+@media screen and (min-width: 850px) {
+  .content {
     max-width: 44%;
     line-height: 1.6;
   }
@@ -123,7 +125,7 @@ export default {
   font-size: 1.2rem;
 }
 
-@media screen and (max-width: 600px) {
+@media screen and (max-width: 767px) {
   .title {
     font-size: 1.25rem;
   }
@@ -135,4 +137,12 @@ export default {
     flex-flow: column !important;
   }
 }
+
+.custom-image {
+  width: 100%;
+  height: auto;
+  border-radius: 1rem; 
+  border: 2px solid var(--black-1);
+}
+
 </style>

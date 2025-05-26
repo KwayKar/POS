@@ -86,8 +86,18 @@ export default {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  min-height: 90vh;
-  padding: 50px;
+  padding: 2rem;
+}
+@media screen and (min-width: 601px) {
+  .hero {
+    padding: 3rem;
+  }
+}
+@media screen and (min-width: 1025px) {
+  .hero {
+    min-height: 90vh;
+    padding: 50px;
+  }
 }
 
 .hero-content {
@@ -108,17 +118,22 @@ export default {
 .subtitle {
   font-size: 1.2rem;
   margin-bottom: 10px;
-  color: #777;
+  color: var(--black-3);
 }
 
 .title {
-  font-size: 3rem;
+  font-size: 2.7rem;
   font-weight: bold;
   line-height: 1.4;
 }
 @media screen and (min-width: 601px) {
  .title {
-  font-size: 4rem;
+  font-size: 3.2rem;
+ } 
+}
+@media screen and (min-width: 1025px) {
+ .title {
+  font-size: 3.5rem;
  } 
 }
 
@@ -146,7 +161,7 @@ export default {
 }
 
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .hero-content {
     flex-direction: column;
   }

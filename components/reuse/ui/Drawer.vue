@@ -1,16 +1,18 @@
 <template>
-  <transition name="slide">
-    <div class="drawer" v-if="isOpen">
-      <div class="drawer-header">
-        <h2 class="header2">Categories</h2>
-        <button class="close-btn" @click="emit('close')">✕</button>
+  <teleport to="#modal-root">
+    <transition name="slide">
+      <div class="drawer" v-if="isOpen">
+        <div class="drawer-header">
+          <h2 class="header2">Categories</h2>
+          <button class="close-btn" @click="emit('close')">✕</button>
+        </div>
+        
+        <div class="drawer-body">
+          <slot />
+        </div>
       </div>
-      
-      <div class="drawer-body">
-        <slot />
-      </div>
-    </div>
-  </transition>
+    </transition>
+  </teleport>
 </template>
 
 <script setup>
@@ -29,7 +31,7 @@ const emit = defineEmits(["close"]);
   width: 100%;
   height: 100vh;
   background: var(--white-1);
-  z-index: 1000;
+  z-index: 9999;
   box-shadow: -2px 0 10px rgba(0, 0, 0, 0.15);
 }
 

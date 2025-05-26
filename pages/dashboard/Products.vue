@@ -282,7 +282,7 @@ onMounted(() => {
 });
 
 const openModal = (item, type) => {
-  selectedItem.value = item;
+  selectedItem.value = { ...item };
   modal.value = {
     type,
     isOpen: true,
@@ -313,7 +313,6 @@ const updateItem = (updatedItem) => {
 };
 
 const removeItem = (itemToRemove) => {
-  console.log(itemToRemove)
   items.value = items.value.filter((item) => item.id !== itemToRemove);
   closeModal();
 };

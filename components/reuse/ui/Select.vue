@@ -1,7 +1,7 @@
 <template>
   <div class="select-box relative w-full" ref="selectWrapper">
     <button
-      class="select-btn w-full px-5 py-2 text-left rounded-md flex items-center justify-between focus:outline-none"
+      class="select-btn w-full text-left rounded-md flex items-center justify-between focus:outline-none"
       :style="{
         background: 'var(--white-1)',
         fontSize: '0.95rem',
@@ -18,7 +18,7 @@
         <svg
           class="w-full h-full"
           viewBox="0 0 20 20"
-          fill="currentColor"
+          fill="var(--black-3)"
           aria-hidden="true"
         >
           <path
@@ -37,27 +37,30 @@
       @enter="enter"
       @leave="leave"
     >
-      <ul
-        v-if="isOpen"
-        :id="dropdownId"
-        class="absolute left-0 w-full mt-2 bg-white border border-gray-300 rounded-md shadow-lg z-10 max-h-[200px] overflow-y-auto"
-        @click="closeDropdown"
-      >
-        <li
-          v-for="option in options"
-          :key="option.value"
-          class="px-4 py-2 text-gray-700 hover:bg-gray-100 cursor-pointer"
-          @click="selectOption(option)"
+      <teleport to="#select-option">
+        <ul
+          v-if="isOpen"
+          :id="dropdownId"
+          :style="dropdownStyles"
+          class="dropdown-list fixed left-0 w-full mt-2 bg-white border border-gray-300 rounded-md shadow-lg z-10 max-h-[200px] overflow-y-auto"
+          @click="closeDropdown"
         >
-          {{ option.label }}
-        </li>
-      </ul>
+          <li
+            v-for="option in options"
+            :key="option.value"
+            class="px-4 py-2 text-gray-700 hover:bg-gray-100 cursor-pointer"
+            @click="selectOption(option)"
+          >
+            {{ option.label }}
+          </li>
+        </ul>
+      </teleport>
     </transition>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, nextTick } from "vue";
 
 const props = defineProps({
   options: {
@@ -104,6 +107,9 @@ onMounted(() => {
     );
   }
 
+  window.addEventListener("scroll", updateDropdownPosition);
+  window.addEventListener("resize", updateDropdownPosition);
+
   document.addEventListener("click", handleClickOutside);
 });
 
@@ -119,6 +125,32 @@ watch(
     );
   }
 );
+
+const dropdownStyles = ref({
+  top: '0px',
+  left: '0px',
+  width: '100px'
+});
+
+const updateDropdownPosition = () => {
+  if (selectWrapper.value) {
+    const rect = selectWrapper.value.getBoundingClientRect();
+    dropdownStyles.value = {
+      top: `${rect.bottom + window.scrollY}px`,
+      left: `${rect.left + window.scrollX}px`,
+      width: `${rect.width}px`,
+    };
+  }
+};
+
+watch(isOpen, async (open) => {
+  if (open) {
+    await nextTick(); // ensure DOM update (Teleport renders)
+    setTimeout(() => {
+      updateDropdownPosition();
+    }, 10);
+  }
+});
 
 const beforeEnter = (el) => {
   el.style.transform = "translateY(-10px) scaleY(0.95)";
@@ -145,9 +177,14 @@ const leave = (el, done) => {
 .select-box {
 }
 
+.dropdown-list {
+  z-index: 9999;
+}
+
 .select-btn {
-  border: 1px solid var(--gray-1); 
+  border: 1px solid var(--gray-1);
   border-radius: 7px;
+  padding: 10px 10px 10px 18px;
 }
 
 .dropdown-drop-enter-active,

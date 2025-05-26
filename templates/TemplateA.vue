@@ -6,7 +6,7 @@
       :activeCategory="activeCategory"
       @select="onSelect"
     />
-    <ItemList :categories="categories" @categoryInView="onCategoryInView" />
+    <ItemList :categories="categories" @categoryInView="$emit('categoryInView', $event)" />
   </div>
 </template>
 
@@ -21,4 +21,6 @@ defineProps({
   onSelect: Function,
   onCategoryInView: Function,
 });
+defineEmits(['categoryInView']);
+
 </script>

@@ -31,18 +31,12 @@
     <p v-if="formError" class="text-red-500 mt-2">{{ formError }}</p>
 
     <div class="flex justify-end my-2">
-      <Button
-        type="button"
+      <SubmitButton
         @click="handleSubmit"
-        style="
-          border: 1px solid var(--black-1);
-          background: var(--primary-text-color-1);
-          color: var(--white-1);
-          height: 40px;
-        "
+        :apply-shadow="true"
       >
-        {{ mode === 'edit' ? 'Update' : 'Create' }}
-      </Button>
+        {{ mode === "edit" ? "Update" : "Create" }}
+      </SubmitButton>
     </div>
   </div>
 </template>
@@ -50,9 +44,9 @@
 <script setup>
 import { ref, watch } from "vue";
 import { defineProps, defineEmits } from "vue";
-import Button from "~/components/reuse/ui/Button.vue";
 import FileUploads from "~/components/reuse/ui/FileUploads.vue";
 import Input from "~/components/reuse/ui/Input.vue";
+import SubmitButton from "~/components/reuse/ui/SubmitButton.vue";
 import { useCategory } from "~/stores/product/category/useCategory";
 
 const props = defineProps({
@@ -126,6 +120,7 @@ watch(
 <style scoped>
 .category-form {
   width: 100%;
+  margin-bottom: 20px;
 }
 .upload-section {
   width: 100%;

@@ -86,7 +86,6 @@ const productStore = useProduct();
 const posStore = usePosStore();
 
 const items = computed(() => productStore.getProductList || []);
-// // Roles middleware (Nuxt 3 way)
 // definePageMeta({
 //   middleware: 'auth',
 //   roles: ['admin'],
@@ -165,7 +164,6 @@ const openModal = (item, type) => {
     orderForm.preferences = null;
   }
   selectedItem.value = item;
-  console.log(item, existingOrder, order)
   modal.isOpen = true;
   modal.type = type;
 };
@@ -205,7 +203,7 @@ const pricingInfo = computed(() => {
 
 const modalWidth = computed(() => {
   if (windowWidth.value > 1200) {
-    return "800px";
+    return "850px";
   } else if (windowWidth.value > 1100) {
     return `${windowWidth.value - 100}px`;
   } else {

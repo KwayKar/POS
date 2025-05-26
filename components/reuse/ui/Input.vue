@@ -42,9 +42,7 @@ export default {
   },
   computed: {
     inputStyle() {
-      return {
-        "--color": this.error ? "red" : "blue",
-      };
+      return this.error ? { borderColor: "var(--red-1)" } : {};
     },
     value: {
       get() {
@@ -70,7 +68,6 @@ input {
 
 input:focus {
   border-color: rgb(107, 179, 107);
-
 }
 
 input:disabled {

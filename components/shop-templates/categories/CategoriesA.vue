@@ -36,6 +36,7 @@ const props = defineProps({
 });
 
 defineEmits(["select"]);
+
 </script>
 
 <style scoped>
@@ -44,7 +45,7 @@ defineEmits(["select"]);
   white-space: nowrap;
   padding: 12px 16px;
   position: sticky;
-  top: 0;
+  top: 72px;
   z-index: 10;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
 }

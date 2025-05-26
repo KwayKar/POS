@@ -44,8 +44,6 @@
         @cancel="closeModal"
       />
     </Modal>
-
-  
   </div>
 </template>
 

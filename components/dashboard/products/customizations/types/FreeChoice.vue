@@ -6,12 +6,21 @@
         :key="index"
         class="choice-box"
         @click="toggleChoice(choice)"
+        :style="{ 
+          width: choice?.image ? '170px' : undefined,
+          borderRadius: choice?.image ? '12px' : '24px',
+          textWrap: !item?.image ? 'nowrap' : 'wrap'
+        }"
         :class="[
           selectedChoices.some((c) => c.label === choice.label)
             ? 'selected'
             : '',
         ]"
       >
+        <div class="image" v-if="choice.image">
+          <img :src="choice.image" alt="Choice Image" />
+        </div>
+
         {{ choice.label }}
       </div>
     </div>
@@ -30,11 +39,21 @@ const props = defineProps({
     type: Number,
     default: 2,
   },
+  selectdValues: {
+    type: Array,
+    default: null,
+  }
 });
 
-const emit = defineEmits(["update:selectedChoices"]);
+const emit = defineEmits(["updateValue"]);
 
 const selectedChoices = ref([]);
+
+onMounted(() => {
+  if (props.selectdValues && props.selectdValues.length > 0) {
+    selectedChoices.value = [...props.selectdValues];
+  }
+});
 
 const toggleChoice = (choice) => {
   const exists = selectedChoices.value.find((c) => c.label === choice.label);
@@ -47,13 +66,10 @@ const toggleChoice = (choice) => {
   } else {
     if (selectedChoices.value.length < props.maxChoice) {
       selectedChoices.value.push(choice);
-    } else {
-      // Optional: alert or warn if max reached
-      console.warn(`You can select up to ${props.maxChoice} choices.`);
-    }
+    } 
   }
 
-  emit("update:selectedChoices", selectedChoices.value);
+  emit("updateValue", selectedChoices.value);
 };
 </script>
 
@@ -61,17 +77,28 @@ const toggleChoice = (choice) => {
 .choice-selector {
   display: flex;
   flex-wrap: wrap;
+  gap: 16px;
+  justify-content: flex-start;
 }
 
 .choice-box {
-  padding: 10px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: column;
+  padding: 8px 16px;
   border: 1px solid #ccc;
-  border-radius: 24px;
   cursor: pointer;
   user-select: none;
   font-size: 14px;
-  margin-right: 12px;
   transition: background 0.2s;
+  flex: 0 1 calc(33.333% - 16px);
+}
+@media screen and (max-width: 700px) {
+  .choice-box {
+    flex: 0 1 calc(50% - 10px);
+    box-sizing: border-box;
+  }
 }
 
 .choice-box + .choice-box {
@@ -83,8 +110,14 @@ const toggleChoice = (choice) => {
 }
 
 .choice-box.selected {
-  background-color: var(--green-2);
-  color: var(--white-1);
+  background-color: var(--primary-btn-color-3);
   border-color: var(--green-2);
+}
+
+.image img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  margin-bottom: 12px;
 }
 </style>

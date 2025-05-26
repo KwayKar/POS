@@ -93,7 +93,6 @@
 import NavPanel from "~/components/dashboard/panels/NavPanel.vue";
 import Modal from "~/components/reuse/ui/Modal.vue";
 import DashboardLayout from "~/layouts/DashboardLayout.vue";
-import EditStaff from "~/components/dashboard/staff/EditStaff.vue";
 import { validateEmail } from "@/utils/validateEmail";
 import ConfirmDelete from "~/components/reuse/ui/ConfirmDelete.vue";
 import bcrypt from 'bcryptjs';

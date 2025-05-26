@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 
 export const useMenu = defineStore("menu", () => {
+
   const items = ref([
     {
       category: "Breakfast",
@@ -15,6 +16,14 @@ export const useMenu = defineStore("menu", () => {
           description: "Warm, golden potatoes with green goddess drizzle.",
           images: [
             "https://res.cloudinary.com/sweetgreen/image/upload/f_webp,q_auto:good/dpr_2/c_crop,h_0.7,w_0.4/w_343/v1702673576/gravy/production/Gravy::MasterProduct/Q423_OLO_RoastedSweetPotatoesGreenGoddess_3600x2400_l2lxcx",
+          ],
+          options: [
+            { id: 1, label: 'No Cheese', type: 'removal' },
+            { id: 2, label: 'Extra Bacon', type: 'addon', maxLimit: 3, startAt: 0 },
+            { id: 3, label: 'Choose Sauce', type: 'choices' },
+            { id: 4, label: 'No Pickles', type: 'removal' },
+            { id: 5, label: 'Add Avocado', type: 'addon', maxLimit: 3, startAt: 1 },
+            { id: 6, label: 'White Rice', type: 'choices' },
           ],
           snooze: false,
         },
@@ -37,6 +46,25 @@ export const useMenu = defineStore("menu", () => {
           description: "Description goes here",
           images: [
             "https://res.cloudinary.com/sweetgreen/image/upload/f_webp,q_auto:good/dpr_2/c_crop,h_0.7,w_0.4/w_343/v1726538633/gravy/production/Gravy::MasterProduct/SG_OLO_Kale_Caesar_Steak_3600x2400_quqea9",
+          ],
+          snooze: false,
+        },
+        {
+          id: 4,
+          title: "Item 3",
+          category: "Drinks",
+          price: 40,
+          description: "Warm, golden potatoes with green goddess drizzle.",
+          images: [
+            "https://res.cloudinary.com/sweetgreen/image/upload/f_webp,q_auto:good/dpr_2/c_crop,h_0.7,w_0.4/w_343/v1702673576/gravy/production/Gravy::MasterProduct/Q423_OLO_RoastedSweetPotatoesGreenGoddess_3600x2400_l2lxcx",
+          ],
+          options: [
+            { id: 1, label: 'No Cheese', type: 'removal' },
+            { id: 2, label: 'Extra Bacon', type: 'addon', maxLimit: 3, startAt: 0 },
+            { id: 3, label: 'Choose Sauce', type: 'choices' },
+            { id: 4, label: 'No Pickles', type: 'removal' },
+            { id: 5, label: 'Add Avocado', type: 'addon', maxLimit: 3, startAt: 1 },
+            { id: 6, label: 'White Rice', type: 'choices' },
           ],
           snooze: false,
         },
@@ -196,6 +224,6 @@ export const useMenu = defineStore("menu", () => {
     setSortedCategories,
     addItemsToCategory,
     removeItemFromCategory,
-    toggleSnoozeItem
+    toggleSnoozeItem,
   };
 });
