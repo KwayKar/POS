@@ -2,7 +2,9 @@
   <div>
     <div class="section-title">
       <label class="form-label">{{ label }}</label>
-      <Toggle v-model="hasSizes" />
+      <div class="wrap-toggle">
+        <Toggle v-model="hasSizesComputed" />
+      </div>
     </div>
 
     <div v-if="hasSizes">
@@ -79,6 +81,10 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  hasSizes: {
+    type: Boolean,
+    default: false,
+  },
   label: {
     type: String,
     default: "Enable option?",
@@ -96,12 +102,11 @@ const props = defineProps({
     default: "number",
   },
 });
-const emit = defineEmits(["update:modelValue"]);
+const emit = defineEmits(["update:modelValue", "update:hasSizes"]);
 
-const hasSizes = ref(false);
 const entries = computed({
   get() {
-    return props.modelValue;
+    return Array.isArray(props.modelValue) ? props.modelValue : [];
   },
   set(val) {
     emit("update:modelValue", val);
@@ -128,8 +133,15 @@ const closeModal = () => {
 watch(
   () => props.modelValue,
   (newVal) => {
-    entries.value = [...newVal];
-    hasSizes.value = newVal.length > 0;
+    const normalized = Array.isArray(newVal) ? [...newVal] : [];
+    entries.value = normalized;
+
+    if (props.hasSizes && normalized.length === 0) {
+      entries.value.push({
+        label: "",
+        [props.secondKey]: props.secondType === "number" ? 0 : "",
+      });
+    }
   },
   { immediate: true, deep: true }
 );
@@ -142,8 +154,13 @@ watch(
   { deep: true }
 );
 
-watch(hasSizes, (value) => {
-  if (value && entries.value.length === 0) {
+const hasSizesComputed = computed({
+  get: () => props.hasSizes,
+  set: (val) => emit("update:hasSizes", val),
+});
+
+watch(hasSizesComputed, (val) => {
+  if (val && entries.value.length === 0) {
     entries.value.push({
       label: "",
       [props.secondKey]: props.secondType === "number" ? 0 : "",
@@ -172,5 +189,13 @@ const removeEntry = (index) => {
 .section-title > label {
   font-size: 1.05rem;
   margin-right: 32px;
+  flex: 1;
 }
+
+.wrap-toggle {
+  flex: 1; 
+  display: flex; 
+  align-items: center;
+}
+
 </style>

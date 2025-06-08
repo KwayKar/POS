@@ -87,7 +87,7 @@ const updateWidth = () => {
 onMounted(() => {
   updatePanelHeight();
   updateWidth(); 
-
+  
   if (containerRef.value) {
     resizeObserver = new ResizeObserver(([entry]) => {
       containerWidth.value = entry.contentRect.width;

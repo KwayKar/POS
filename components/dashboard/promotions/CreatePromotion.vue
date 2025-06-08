@@ -122,15 +122,16 @@
 
   <Modal
     v-if="modal.isOpen && modal.type === 'select-products'"
-    @close="closeModal"
+    @close="emit('close')"
     :width="modalWidth"
     :height="modalHeight + 'px'"
     :minHeight="'400px'"
+    :isFullScreenMobile="true"
   >
     <SelectProducts
       :initial-selected="form.products"
       @add-selected-items="handleSelectedProducts"
-      @close="closeModal"
+      @close="emit('close')"
     />
   </Modal>
 </template>

@@ -7,11 +7,19 @@
       <!-- Left Panel - Image and Title -->
       <div class="left-panel">
         <div class="image-container">
-          <img
+          <NuxtImg
             v-if="selectedItem?.image"
-            :src="selectedItem?.image"
+            :src="selectedItem.image"
             alt="Item Image"
+            width="100%"
             class="item-image"
+            placeholder="blur"
+          />
+          <img
+            v-else
+            src="https://www.datocms-assets.com/60253/1739877561-kiteslogo2png.png?dpr=2&fit=fill&fm=webp&h=193&w=343"
+            alt="Placeholder"
+            class="placeholder-image"
           />
 
           <div class="edit-button">
@@ -44,12 +52,12 @@
 
         <div class="form-group flex-[2]">
           <div class="flex items-center justify-between mb-1">
-            <label for="category" class="form-label">Category</label>
+            <label for="type" class="form-label">Type</label>
           </div>
-          <Select v-model="selectedItem.category" :options="categoryOptions" />
+          <Select v-model="selectedItem.type" :options="typeOptions" />
         </div>
 
-        <div v-if="selectedItem.category === 'addon'" class="flex gap-4">
+        <div v-if="selectedItem.type === 'addon'" class="flex gap-4">
           <div class="form-group flex-1">
             <label for="price" class="form-label">Price</label>
             <Input
@@ -72,16 +80,8 @@
           </div>
         </div>
 
-        <!-- Show Price input only for addon -->
-        <div v-if="selectedItem.category === 'addon'" class="flex gap-4">
-          <div class="form-group flex-1">
-            <label class="form-label">Already Included?</label>
-            <Toggle v-model="selectedItem.alreadyIncludes" />
-          </div>
-        </div>
-
         <!-- Show Sugar Level Options -->
-        <div v-if="selectedItem.category === 'sugarLevel'" class="form-group">
+        <!-- <div v-if="selectedItem.type === 'sugarLevel'" class="form-group">
           <label class="form-label">Sugar Level Options</label>
 
           <div
@@ -117,16 +117,17 @@
           >
             Add
           </Button>
-        </div>
+        </div>  -->
       </div>
     </div>
 
     <div class="bottom-panel">
       <Button
         @click="deleteItem"
-        v-if="mode.value === 'edit'"
+        v-if="mode === 'edit'"
+        variant="danger"
         style="
-          border: 1px solid var(--black-1);
+          border: 1px solid var(--red-1);
           background: var(--red-1);
           color: var(--white-1);
           height: 40px;
@@ -160,22 +161,22 @@ import Button from "~/components/reuse/ui/Button.vue";
 import Input from "~/components/reuse/ui/Input.vue";
 import Select from "~/components/reuse/ui/Select.vue";
 import Textarea from "~/components/reuse/ui/Textarea.vue";
-import Toggle from "~/components/reuse/ui/Toggle.vue";
 import { useProductCustomization } from "~/stores/product/useProductCustomization";
 import { generateId } from "~/utils/generateId";
 
 const options = useProductCustomization();
-const categoryOptions = [
+const typeOptions = [
   { label: "Addon", value: "addon" },
-  { label: "Free Choices", value: "freeChoices" },
+  { label: "Free Choices", value: "choices" },
   { label: "Removal", value: "removal" },
-  { label: "Sugar Level", value: "sugarLevel" },
 ];
 const selectedItem = ref({
   image: "",
   title: "",
   description: "",
-  price: 0,
+  price: undefined,
+  type: "",
+  maxLimit: 1,
 });
 
 const props = defineProps({
@@ -188,30 +189,36 @@ const emit = defineEmits(["close"]);
 
 const errors = reactive({});
 
-const addSugarOption = () => {
-  if (!selectedItem.sugarOptions) {
-    selectedItem.sugarOptions = [];
-  }
-  selectedItem.sugarOptions.push({ label: "", value: 0 });
-};
+const submitItem = async () => {
+  const payload = {
+    id: generateId(),
+    image: selectedItem.value.image,
+    title: selectedItem.value.title,
+    description: selectedItem.value.description,
+    price: selectedItem.value.price,
+    maxLimit: selectedItem.value.maxLimit,
+    type: selectedItem.value.type,
+  };
 
-const submitItem = () => {
   if (props.mode === "create") {
-    selectedItem.value.id = generateId(); 
-    options.addCustomization(selectedItem.value);
+    await options.addCustomization(payload);
   } else {
-    options.updateCustomization(selectedItem.value);
+    const id = selectedItem.value.id;
+    await options.updateCustomization(id, payload);
   }
   emit("close");
 };
 
-const deleteItem = () => {};
+const deleteItem = async () => {
+  await options.deleteCustomization(selectedItem.value.id);
+  emit("close");
+};
 
 onMounted(() => {
   if (props.mode === "create") {
     selectedItem.value = selectedItem;
   } else {
-    selectedItem.value = options.selectedItem;
+    selectedItem.value = { ...options.selectedItem };
   }
 });
 </script>
@@ -254,6 +261,8 @@ onMounted(() => {
 
 .image-container {
   position: relative;
+  width: 100%;
+  min-height: 200px;
 }
 
 .image-container > img {

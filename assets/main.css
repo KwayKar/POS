@@ -217,6 +217,12 @@ th:hover .th-sort-arrow {
   margin: 4px 0;
 }
 
+.error-message {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--red-1);
+}
+
 .modal-submit-section {
   display: flex;
   justify-content: space-between;

@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen flex flex-col" style="min-height: 100vh">
+  <div class="flex flex-col">
     <div class="wrap-category-list p-4 pb-0 shrink-0">
       <CategoryList
         v-if="displayCategories"
@@ -112,6 +112,8 @@ function updatePanelHeight() {
 }
 
 onMounted(() => {
+  productStore.fetchProducts();
+
   selectedItems.value = [...props.initialSelected];
   updateGridClass();
   updatePanelHeight();
@@ -125,7 +127,7 @@ onBeforeUnmount(() => {
 });
 
 const categories = computed(() => categoryStore.getCategoryList);
-const items = computed(() => productStore.getProductList || []);
+const items = computed(() => productStore.items || []);
 
 const uniqueCategories = computed(() => {
   const rawCategories = categories.value;
@@ -143,9 +145,10 @@ const uniqueCategories = computed(() => {
 });
 
 const filteredItems = computed(() => {
-  return selectedCategory.value && selectedCategory.value !== "all"
-    ? items.value.filter((item) => item.category === selectedCategory.value)
-    : items.value;
+  return items.value;
+  //  selectedCategory.value && selectedCategory.value !== "all"
+  //   ? items.value.filter((item) => item.category === selectedCategory.value)
+  //   : items.value;
 });
 
 function filterItems(category) {

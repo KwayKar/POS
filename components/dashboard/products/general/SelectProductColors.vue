@@ -2,7 +2,9 @@
   <div>
     <div class="section-title">
       <label class="form-label">Product has colors?</label>
-      <Toggle v-model="hasColors" />
+      <div class="wrap-toggle">
+        <Toggle v-model="hasColors" />
+      </div>
     </div>
 
     <div v-if="hasColors">
@@ -12,7 +14,7 @@
         <div v-for="product in entries" :key="product.id" class="variant-item">
           <button
             class="remove-btn"
-            @click="openModal('delete')"
+            @click="openModal('delete', product.id)"
           >
             ✕
           </button>
@@ -21,9 +23,9 @@
             v-if="product.image"
             class="product-color-image"
             :src="product.image"
-            :alt="product.name"
+            :alt="product.title || product.name"
           />
-          <span>{{ product.name }}</span>
+          <span>{{ product?.color }}</span>
         </div>
       </div>
     </div>
@@ -32,13 +34,13 @@
   <Modal
     v-if="modal.isOpen && modal.type === 'select-products'"
     @close="closeModal"
-    :width="'1200px'"
-    :height="700 + 'px'"
-    :minHeight="'400px'"
+    :width="modalWidth"
+    :height="modalHeight + 'px'"
+    :minHeight="'500px'"
+    :isFullScreenMobile="true"
   >
     <SelectProducts
       :initial-selected="[]"
-      :height="700"
       @add-selected-items="handleSelectedProducts"
       @close="closeModal"
     />
@@ -61,7 +63,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, computed } from "vue";
 import Toggle from "~/components/reuse/ui/Toggle.vue";
 import SelectProducts from "../../items/SelectProducts.vue";
 import Modal from "~/components/reuse/ui/Modal.vue";
@@ -74,21 +76,60 @@ const props = defineProps({
   },
 });
 const emit = defineEmits(["update:modelValue"]);
+const windowWidth = ref(0);
 
-const modal = ref({ type: "", isOpen: false });
+const modal = ref({ type: "", isOpen: false, selectedItem: null });
 const hasColors = ref(false);
 const entries = ref([...props.modelValue]);
 
-const handleSelectedProducts = (selectedProducts) => {};
+const handleSelectedProducts = (selectedProducts) => {
+  const existingIds = entries.value.map((p) => p.id);
+  const newEntries = selectedProducts
+    .filter((p) => !existingIds.includes(p.id))
+    .map((p) => ({
+      ...p,
+      image: p.images?.[0] || null,
+    }));
 
-const removeProduct = (productToRemove) => {
-  entries = entries.filter(p => p.id !== productToRemove.id);
+  entries.value.push(...newEntries);
+
+  emit("update:modelValue", entries.value); 
+  closeModal();
 };
 
-const openModal = (type) => {
+const removeProductColor = () => {
+  const updatedValue = entries.value && entries.value.filter(p => p.id !== modal.value.selectedItem);
+  emit("update:modelValue", updatedValue); 
+  closeModal();
+};
+
+const updateWindowWidth = () => {
+  windowWidth.value = window.innerWidth;
+};
+
+const modalWidth = computed(() => {
+  if (windowWidth.value > 1200) {
+    return "1200px";
+  } else if (windowWidth.value > 1100) {
+    return `${windowWidth.value - 100}px`;
+  } else {
+    return `${windowWidth.value - 120}px`;
+  }
+});
+
+const modalHeight = computed(() => {
+  if (windowWidth.value > 900) {
+    return "700px";
+  } else {
+    return `auto`;
+  }
+});
+
+const openModal = (type, id) => {
   modal.value = {
     type,
     isOpen: true,
+    selectedItem: id
   };
 };
 
@@ -96,25 +137,26 @@ const closeModal = () => {
   modal.value = {
     type: "",
     isOpen: false,
+    selectedItem: null
   };
 };
 
-const removeProductColor = () => {
-  console.log('Remove with context')
-}
-
 onMounted(() => {
+  updateWindowWidth();
+  window.addEventListener("resize", updateWindowWidth);
+
   if (entries.value.length > 0) {
     hasColors.value = true;
   }
 });
 
 watch(
-  entries,
-  (val) => {
-    emit("update:modelValue", val);
+  () => props.modelValue,
+  (newValue) => {
+    entries.value = [...newValue];
+    hasColors.value = entries.value.length > 0;
   },
-  { deep: true }
+  { immediate: true }
 );
 </script>
 
@@ -127,12 +169,19 @@ watch(
 .section-title > label {
   font-size: 1.05rem;
   margin-right: 32px;
+  flex: 1;
 }
 
 .variants-list {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+  align-items: center;
+}
+
+.wrap-toggle {
+  flex: 1; 
+  display: flex; 
   align-items: center;
 }
 
@@ -161,6 +210,7 @@ watch(
   border-radius: 8px;
   font-size: 14px;
   border: 1px solid var(--gray-1);
+  text-align: center;
 }
 
 .variant-item span {

@@ -113,9 +113,10 @@ export default {
 .custom-btn-danger {
   background-color: var(--red-1);
   color: var(--white-1);
+  border: 1px solid #c67070 !important;
 }
 .custom-btn-danger:hover {
-  opacity: 0.7;
+  opacity: 1;
   background-color: var(--red-1);
   color: var(--white-1);
 }
@@ -135,7 +136,7 @@ export default {
   padding: 8px 48px;
 }
 
-.custom-btn-shadow {
+.custom-btn-shadow, .custom-btn-danger {
   box-shadow: var(--box-shadow-2);
 }
 </style>

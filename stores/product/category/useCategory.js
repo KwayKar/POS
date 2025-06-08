@@ -1,12 +1,10 @@
 import { defineStore } from "pinia";
+import axios from "axios";
+import { useRuntimeConfig } from "nuxt/app";
 
 export const useCategory = defineStore("category", {
   state: () => ({
-    categories: [
-      { id: "CAT001", name: "Burgers", description: "All kinds of burgers", image: "" },
-      { id: "CAT002", name: "Drinks", description: "Refreshing beverages", image: "" },
-      { id: "CAT003", name: "Pasta", description: "Italian pastas", image: "https://cdn.shopify.com/s/files/1/1367/5201/files/Running2in1ShortGSWhiteA6A8F-WB5711478_b28f5058-72c9-422f-a0c5-ab04b8ca7463_3840x.jpg?v=1737639280" },
-    ],
+    categories: [],
     selectedCategoryID: null,
     filteredCategories: [],
   }),
@@ -18,6 +16,16 @@ export const useCategory = defineStore("category", {
   },
 
   actions: {
+    async fetchCategories() {
+      try {
+        const config = useRuntimeConfig();
+        const response = await axios.get(`${config.public.apiBaseUrl}/categories`);
+        this.categories = response.data; 
+      } catch (error) {
+        console.error('Failed to fetch categories');
+      }
+    },
+
     setSelectedCategoryID(id) {
       this.selectedCategoryID = id;
     },

@@ -1,4 +1,10 @@
 export default {
+  runtimeConfig: {
+    public: {
+      apiBaseUrl: process.env.API_BASE_URL || 'http://localhost:4001',
+    },
+  },
+  
   head: {
     title: 'firstest',
     htmlAttrs: {

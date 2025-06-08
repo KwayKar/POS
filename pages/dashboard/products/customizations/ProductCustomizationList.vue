@@ -27,11 +27,11 @@
             <h3>{{ customization.title }}</h3>
             <p>{{ customization.type }}</p>
             <div class="customization-info-details">
+              <div v-if="customization.price !== undefined">
+                <span>Price: {{ customization.price }}</span>
+              </div>
               <div v-if="customization.maxLimit">
                 <span>Max: {{ customization.maxLimit }}</span>
-              </div>
-              <div v-if="customization.startAt !== undefined">
-                <span>Start At: {{ customization.startAt }}</span>
               </div>
             </div>
           </div>
@@ -42,20 +42,19 @@
 
   <Modal
     v-if="modal.isOpen && modal.type === 'edit'"
+    width="820px"
+    height="auto"
+    :isFullScreenMobile="true"
     @close="closeModal"
   >
-    <SelectProducts
-      :initial-selected="[]"
-      :height="700"
-      @add-selected-items="handleSelectedProducts"
-      @close="closeModal"
-    />
+    <CustomizationForm :mode="'edit'" @close="closeModal" />
   </Modal>
 </template>
 
 <script setup>
 import CategoryList from "~/components/dashboard/items/CategoryList.vue";
 import SelectProducts from "~/components/dashboard/items/SelectProducts.vue";
+import CustomizationForm from "~/components/dashboard/products/customizations/CustomizationForm.vue";
 import Modal from "~/components/reuse/ui/Modal.vue";
 import { useProductCustomization } from "~/stores/product/useProductCustomization";
 
@@ -67,18 +66,21 @@ const selectedCategory = ref("All");
 const modal = ref({ type: null, isOpen: false });
 let resizeObserver;
 
-const customizations = store.getCustomizations;
-const categories = store.getCustomizationCategories;
+const customizations = computed(() => store.customizations);
+const categories = computed(() => store.categories);
 
 const uniqueCategories = computed(() => {
-  const categorySet = new Set(categories && categories.map((item) => item));
+  const categorySet = new Set(categories.value?.map((item) => item));
   return [{ id: "all", name: "All" }, ...categorySet];
 });
 
 const filteredItems = computed(() => {
-  return selectedCategory.value && selectedCategory.value !== "All"
-    ? customizations.filter((item) => item.category === selectedCategory.value)
-    : customizations;
+  if (!customizations.value || customizations.value.length === 0) return [];
+
+  return customizations.value
+  // selectedCategory.value && selectedCategory.value !== "all"
+  //   ? customizations.value.filter((item) => item.category === selectedCategory.value)
+  //   : customizations.value;
 });
 
 const filterItems = (category) => {
@@ -117,7 +119,7 @@ const gridClass = computed(() => {
   return "grid grid-cols-5";
 });
 
-onMounted(() => {
+onMounted(async() => {
   updatePanelHeight();
   updateWidth();
 
@@ -203,6 +205,9 @@ onBeforeUnmount(() => {
 .wrap-product-items {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+.product-options:last-child {
+  margin-bottom: 120px;
 }
 
 .wrap-product-items::-webkit-scrollbar {
