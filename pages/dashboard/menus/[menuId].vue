@@ -44,6 +44,7 @@ import MenuCategory from "~/components/dashboard/menu/MenuCategory.vue";
 import MenuItems from "~/components/dashboard/menu/MenuItems.vue";
 import { ref } from 'vue';
 import { useRestaurant } from "~/stores/shop/useRestaurant";
+import { useMenu } from "~/stores/menu/useMenu";
 
 const modal = ref({
   type: null,
@@ -51,7 +52,8 @@ const modal = ref({
 });
 const windowWidth = ref(0);
 const menuItemsRef = ref();
-const menu = useRestaurant();
+// const menu = useRestaurant();
+const menu = useMenu();
 
 const onCategorySelect = (id) => {
   menuItemsRef.value?.scrollToCategory(id);
@@ -75,7 +77,8 @@ const updateWindowWidth = () => {
   windowWidth.value = window.innerWidth;
 };
 
-onMounted(() => {
+onMounted(async() => {
+  await menu.fetchItems();
   if (typeof window !== 'undefined' && 'scrollRestoration' in window.history) {
     window.history.scrollRestoration = 'manual';
     window.scrollTo({ top: 0 });

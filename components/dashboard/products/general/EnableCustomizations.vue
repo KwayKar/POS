@@ -1,47 +1,49 @@
 <template>
   <div>
     <div class="section-title">
-      <label class="form-label">Product has colors?</label>
+      <label class="form-label">{{ title }}?</label>
       <div class="wrap-toggle">
-        <Toggle v-model="hasColors" />
+        <Toggle v-model="hasItems" />
       </div>
     </div>
 
-    <div v-if="hasColors">
+    <div v-if="hasItems">
       <div class="variants-list">
-        <button class="add-btn" @click="openModal('select-products')">+</button>
+        <button class="add-btn" @click="openModal('select-item')">+</button>
 
-        <div v-for="product in entries" :key="product.id" class="variant-item">
+        <div v-for="item in entries" :key="item.id" class="variant-item">
           <button
             class="remove-btn"
-            @click="openModal('delete', product.id)"
+            @click="openModal('delete', item.id)"
           >
             ✕
           </button>
 
           <img
-            v-if="product.image"
+            v-if="item.image"
             class="product-color-image"
-            :src="product.image"
-            :alt="product.title || product.name"
+            :src="item.image"
+            :alt="item.title"
           />
-          <span>{{ product?.color }}</span>
+          <span>{{ item?.title }}</span>
         </div>
       </div>
     </div>
   </div>
 
   <Modal
-    v-if="modal.isOpen && modal.type === 'select-products'"
+    v-if="modal.isOpen && modal.type === 'select-item'"
     @close="closeModal"
     :width="modalWidth"
     :height="modalHeight + 'px'"
     :minHeight="'500px'"
     :isFullScreenMobile="true"
   >
-    <SelectProducts
-      :initial-selected="modelValue"
-      @add-selected-items="handleSelectedProducts"
+    <SelectCustomizations
+      :title="props.title"
+      :type="props.type"
+      :initial-selected="props.modelValue"
+      @add-selected-items="handleSelectedItems"
       @close="closeModal"
     />
   </Modal>
@@ -53,42 +55,49 @@
     @close="closeModal"
   >
     <ConfirmDelete
-      @remove-item="removeProductColor"
+      @remove-item="removeItem"
       @close="closeModal"
     >
       Are you sure you want to delete?
     </ConfirmDelete>
   </Modal>
-
 </template>
 
 <script setup>
 import { ref, onMounted, watch, computed } from "vue";
 import Toggle from "~/components/reuse/ui/Toggle.vue";
-import SelectProducts from "../../items/SelectProducts.vue";
 import Modal from "~/components/reuse/ui/Modal.vue";
 import ConfirmDelete from "~/components/reuse/ui/ConfirmDelete.vue";
+import SelectCustomizations from "../../items/SelectCustomizations.vue";
 
 const props = defineProps({
   modelValue: {
     type: Array,
     default: () => [],
   },
+  type: {
+    type: String,
+    default: "",
+  },
+  title: {
+    type: String,
+    default: "",
+  },
 });
 const emit = defineEmits(["update:modelValue"]);
 const windowWidth = ref(0);
 
 const modal = ref({ type: "", isOpen: false, selectedItem: null });
-const hasColors = ref(false);
+const hasItems = ref(false);
 const entries = ref([...props.modelValue]);
 
-const handleSelectedProducts = (selectedProducts) => {
+const handleSelectedItems = (selectedItems) => {
   const existingIds = entries.value.map((p) => p.id);
-  const newEntries = selectedProducts
+  const newEntries = selectedItems && selectedItems
     .filter((p) => !existingIds.includes(p.id))
     .map((p) => ({
       ...p,
-      image: p.images?.[0] || null,
+      image: p.image || null,
     }));
 
   entries.value.push(...newEntries);
@@ -97,7 +106,7 @@ const handleSelectedProducts = (selectedProducts) => {
   closeModal();
 };
 
-const removeProductColor = () => {
+const removeItem = () => {
   const updatedValue = entries.value && entries.value.filter(p => p.id !== modal.value.selectedItem);
   emit("update:modelValue", updatedValue); 
   closeModal();
@@ -146,7 +155,7 @@ onMounted(() => {
   window.addEventListener("resize", updateWindowWidth);
 
   if (entries.value.length > 0) {
-    hasColors.value = true;
+    hasItems.value = true;
   }
 });
 
@@ -154,7 +163,7 @@ watch(
   () => props.modelValue,
   (newValue) => {
     entries.value = [...newValue];
-    hasColors.value = entries.value.length > 0;
+    hasItems.value = entries.value.length > 0;
   },
   { immediate: true }
 );

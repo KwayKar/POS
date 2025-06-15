@@ -30,6 +30,7 @@
             chosen-class="chosen"
             :drag-class="'dragging'"
             style="display: flex;"
+            @end="onSortEnd"
           >
             <template #item="{ element, index }">
               <li
@@ -40,7 +41,7 @@
                   marginRight: index === items.length - 1 ? '150px' : '',
                 }"
               >
-                {{ element.category }}
+                {{ element.name }}
               </li>
             </template>
           </draggable>
@@ -83,7 +84,7 @@
               marginRight: index === items.length - 1 ? '150px' : '',
             }"
           >
-            {{ element.category }}
+            {{ element.name }}
           </li>
         </template>
       </draggable>

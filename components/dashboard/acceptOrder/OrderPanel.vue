@@ -38,7 +38,7 @@
             <!-- Quantity and Price -->
             <div class="flex justify-between items-center mb-2">
               <div class="flex items-center">
-                <p class="text-m">${{ order.item.price }}</p>
+                <p class="text-m">${{ order.item.basePrice }}</p>
                 <span
                   class="px-2 py-1 ml-4 text-m rounded text-white"
                   style="background: var(--primary-btn-color)"
@@ -49,7 +49,7 @@
 
               <div>
                 <p class="text-m">
-                  {{ order.quantity * order.item.price }}
+                  {{ order.quantity * order.item.basePrice }}
                 </p>
               </div>
             </div>
@@ -129,7 +129,6 @@ onMounted(async () => {
   padding: 18px;
   margin: 0;
   overflow: hidden;
-  z-index: 999;
   background: var(--primary-bg-color-3);
 }
 @media screen and (max-width: 1024px) {

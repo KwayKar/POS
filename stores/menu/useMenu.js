@@ -1,11 +1,12 @@
+import axios from "axios";
+import { useRoute, useRuntimeConfig } from "nuxt/app";
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 
 export const useMenu = defineStore("menu", () => {
-
   const items = ref([
     {
-      category: "Breakfast",
+      name: "Breakfast",
       id: 1,
       items: [
         {
@@ -18,12 +19,24 @@ export const useMenu = defineStore("menu", () => {
             "https://res.cloudinary.com/sweetgreen/image/upload/f_webp,q_auto:good/dpr_2/c_crop,h_0.7,w_0.4/w_343/v1702673576/gravy/production/Gravy::MasterProduct/Q423_OLO_RoastedSweetPotatoesGreenGoddess_3600x2400_l2lxcx",
           ],
           options: [
-            { id: 1, label: 'No Cheese', type: 'removal' },
-            { id: 2, label: 'Extra Bacon', type: 'addon', maxLimit: 3, startAt: 0 },
-            { id: 3, label: 'Choose Sauce', type: 'choices' },
-            { id: 4, label: 'No Pickles', type: 'removal' },
-            { id: 5, label: 'Add Avocado', type: 'addon', maxLimit: 3, startAt: 1 },
-            { id: 6, label: 'White Rice', type: 'choices' },
+            { id: 1, label: "No Cheese", type: "removal" },
+            {
+              id: 2,
+              label: "Extra Bacon",
+              type: "addon",
+              maxLimit: 3,
+              startAt: 0,
+            },
+            { id: 3, label: "Choose Sauce", type: "choices" },
+            { id: 4, label: "No Pickles", type: "removal" },
+            {
+              id: 5,
+              label: "Add Avocado",
+              type: "addon",
+              maxLimit: 3,
+              startAt: 1,
+            },
+            { id: 6, label: "White Rice", type: "choices" },
           ],
           snooze: false,
         },
@@ -59,19 +72,31 @@ export const useMenu = defineStore("menu", () => {
             "https://res.cloudinary.com/sweetgreen/image/upload/f_webp,q_auto:good/dpr_2/c_crop,h_0.7,w_0.4/w_343/v1702673576/gravy/production/Gravy::MasterProduct/Q423_OLO_RoastedSweetPotatoesGreenGoddess_3600x2400_l2lxcx",
           ],
           options: [
-            { id: 1, label: 'No Cheese', type: 'removal' },
-            { id: 2, label: 'Extra Bacon', type: 'addon', maxLimit: 3, startAt: 0 },
-            { id: 3, label: 'Choose Sauce', type: 'choices' },
-            { id: 4, label: 'No Pickles', type: 'removal' },
-            { id: 5, label: 'Add Avocado', type: 'addon', maxLimit: 3, startAt: 1 },
-            { id: 6, label: 'White Rice', type: 'choices' },
+            { id: 1, label: "No Cheese", type: "removal" },
+            {
+              id: 2,
+              label: "Extra Bacon",
+              type: "addon",
+              maxLimit: 3,
+              startAt: 0,
+            },
+            { id: 3, label: "Choose Sauce", type: "choices" },
+            { id: 4, label: "No Pickles", type: "removal" },
+            {
+              id: 5,
+              label: "Add Avocado",
+              type: "addon",
+              maxLimit: 3,
+              startAt: 1,
+            },
+            { id: 6, label: "White Rice", type: "choices" },
           ],
           snooze: false,
         },
       ],
     },
     {
-      category: "Lunch",
+      name: "Lunch",
       id: 2,
       items: [
         {
@@ -159,6 +184,25 @@ export const useMenu = defineStore("menu", () => {
   ]);
 
   const selectedCategory = ref(null);
+  const route = useRoute();
+  const menuId = route.params.menuId;
+  const config = useRuntimeConfig();
+
+  const fetchItems = async () => {
+    // loading.value = true;
+    // error.value = null;
+    try {
+      const response = await axios.get(
+        `${config.public.apiBaseUrl}/menus/${menuId}`
+      );
+      items.value = response.data.categories;
+    } catch (err) {
+      console.log(err);
+      // error.value = "Failed to load products";
+    } finally {
+      // loading.value = false;
+    }
+  };
 
   const onSelectCategory = (categoryId) => {
     const category = items.value.find((c) => c.id === categoryId);
@@ -169,8 +213,22 @@ export const useMenu = defineStore("menu", () => {
     selectedCategory.value = category;
   };
 
-  const setSortedCategories = (categories) => {
+  const setSortedCategories = async (categories) => {
     items.value = categories;
+    try {
+      const categoryIds = categories.map((cat) => cat.id);
+      const res = await $fetch(
+        `${config.public.apiBaseUrl}/menus/${menuId}/categories/sort`,
+        {
+          method: "PATCH",
+          body: { categories: categoryIds },
+        }
+      );
+
+      items.value = [...sortedCategories];
+    } catch (error) {
+      console.error("Failed to update category order", error);
+    }
   };
 
   const categoryList = computed(
@@ -183,21 +241,62 @@ export const useMenu = defineStore("menu", () => {
     // })
   );
 
-  const addItemsToCategory = (newItems) => {
-    const category = items.value.find(
-      (c) => c.id === selectedCategory.value.id
-    );
+  const addItemsToCategory = async (newItems) => {
+    const selectedCategoryId = selectedCategory.value.id;
+    const category = items.value.find((c) => c.id === selectedCategoryId);
+
     if (category) {
-      category.items = newItems;
+      const res = await $fetch(
+        `${config.public.apiBaseUrl}/menus/${menuId}/categories/${selectedCategoryId}/items`,
+        {
+          method: "POST",
+          body: { productIds: newItems.map((item) => item.productId || item.id) },
+        }
+      );
+
+            console.log(items.value)
+
+      const targetCategory = items.value.find(
+        (cat) => cat.id === selectedCategoryId
+      );
+
+      if (targetCategory) {
+        targetCategory.items = [
+          ...(targetCategory.items || []),
+          ...(res?.newItems || [])
+        ];
+      } else {
+        console.warn('Category not found in items.value');
+      }
     }
   };
 
-  const removeItemFromCategory = (categoryId, itemId) => {
+  const removeItemFromCategory = async (categoryId, itemId) => {
     const category = items.value.find((c) => c.id === categoryId);
     if (category) {
       category.items = category.items.filter((item) => item.id !== itemId);
+
+      await $fetch(
+        `${config.public.apiBaseUrl}/menus/${menuId}/categories/${categoryId}/items/${itemId}`,
+        { method: "DELETE" }
+      );
     }
   };
+
+  const sortMenuItems = async (categoryId, newItems) => {
+    const category = items.value.find((cat) => cat.id === categoryId);
+    if (category) {
+      category.items = newItems;
+
+      await $fetch(
+        `${config.public.apiBaseUrl}/menus/${menuId}/categories/${categoryId}/items/sort`,
+        {
+          method: "PATCH",
+          body: { items: newItems.map((item) => item.id) },
+        }
+      );
+    }
+  }
 
   const selectedItems = computed(() => {
     const found = items.value.find(
@@ -206,21 +305,33 @@ export const useMenu = defineStore("menu", () => {
     return found ? found.items : [];
   });
 
-  const toggleSnoozeItem = (categoryId, itemId) => {
+  const toggleSnoozeItem = async (categoryId, itemId) => {
     const category = items.value.find((c) => c.id === categoryId);
-    if (category) {
-      category.items = category.items.map((item) =>
-        item.id === itemId ? { ...item, snooze: !item.snooze } : item
-      );
-    }
+    if (!category) return;
+
+    const item = category.items.find((i) => i.id === itemId);
+    if (!item) return;
+    item.snoozed = !item.snoozed;
+
+    console.log("patch");
+    await axios.patch(
+      `${config.public.apiBaseUrl}/menus/${menuId}/items/${item.id}`,
+      {
+        snoozed: item.snoozed,
+        overridePrice: item.overridePrice,
+        sortOrder: item.sortOrder,
+      }
+    );
   };
 
   return {
+    fetchItems,
     items,
     onSelectCategory,
     selectedCategory,
     setCategory,
     selectedItems,
+    sortMenuItems,
     setSortedCategories,
     addItemsToCategory,
     removeItemFromCategory,

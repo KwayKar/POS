@@ -37,7 +37,7 @@
           <SelectSize
             :sizes="selectedItem?.sizes"
             :modelValue="item?.selectedSize"
-            :itemPrice="item.price"
+            :itemPrice="item.basePrice"
             @update:selectedSize="handleSelectedSize"
           />
         </div>

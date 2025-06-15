@@ -81,21 +81,27 @@ import ItemList from "~/components/dashboard/items/ItemList.vue";
 import { useProduct } from "~/stores/product/useProduct";
 import SubmitButton from "~/components/reuse/ui/SubmitButton.vue";
 import { usePosStore } from "~/stores/pos/usePOS";
+import { useCategory } from "~/stores/product/category/useCategory";
 
 const productStore = useProduct();
 const posStore = usePosStore();
 
-const items = computed(() => productStore.getProductList || []);
 // definePageMeta({
 //   middleware: 'auth',
 //   roles: ['admin'],
 // });
 
-const categories = ref([
-  { id: 1, name: "Salads" },
-  { id: 2, name: "Drinks" },
-  { id: 3, name: "Desserts" },
-]);
+const categoryStore = useCategory();
+const categories = computed(() => categoryStore.getCategoryList);
+const items = computed(() => productStore.items || []); 
+
+// computed(() =>
+//   categoryStore.getCategoryList.map((cat) => ({
+//     name: cat.name,
+//     id: cat.id,
+//   }))
+// );
+
 const selectedItem = ref(null);
 const order = ref([]);
 const isDrawerOpen = ref(false);
@@ -114,7 +120,7 @@ const orderForm = reactive({
 
 const panelWidth = reactive({
   windowPanel: 0,
-  navPanel: 100,
+  navPanel: 99,
   itemPanel: 0,
   orderPanel: 400,
 });
@@ -130,6 +136,9 @@ const calculateItemListWidth = () => {
 };
 
 onMounted(() => {
+  productStore.fetchProducts();
+  categoryStore.fetchCategories();
+
   calculateItemListWidth();
   window.addEventListener("resize", calculateItemListWidth);
 });

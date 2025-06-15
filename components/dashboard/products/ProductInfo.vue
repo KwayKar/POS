@@ -73,7 +73,10 @@
         </div>
 
         <div class="flex gap-4">
-          <div :class="['form-group w-1/2']">
+          <div
+            :class="['form-group w-1/2']"
+            v-if="(isRestaurant && !hasSizes) || !isRestaurant"
+          >
             <label for="basePrice" class="form-label">Price</label>
             <Input
               type="number"
@@ -84,9 +87,7 @@
             />
           </div>
 
-          <div
-            :class="['form-group w-1/2', hasSizes ? 'invisible' : 'visible']"
-          >
+          <div :class="['form-group w-1/2']" v-if="!isRestaurant && !hasSizes">
             <label for="quantity" class="form-label">Quantity</label>
             <Input
               type="number"
@@ -105,15 +106,46 @@
           :hasSizes="hasSizes"
           @update:hasSizes="(val) => (hasSizes = val)"
           label="Product has different sizes?"
-          secondLabel="Stock"
+          :secondLabel="
+            adminStore.businessType === 'restaurant' ? 'Price' : 'Stock'
+          "
           secondKey="quantity"
           secondType="number"
         />
 
-        <SelectProductColors
-          v-model:modelValue="selectedItem.colorVariants"
-          @update:modelValue="handleColorsUpdate"
-        />
+        <div v-if="adminStore.businessType !== 'restaurant'">
+          <SelectProductColors
+            v-model:modelValue="selectedItem.colorVariants"
+            @update:modelValue="handleColorsUpdate"
+          />
+        </div>
+
+        <div v-if="adminStore.businessType === 'restaurant'">
+          <EnableCustomizations
+            type="addon"
+            title="Addons"
+            v-model:modelValue="selectedItem.addons"
+            @update:modelValue="handleAddonsUpdate"
+          />
+        </div>
+
+        <div v-if="adminStore.businessType === 'restaurant'">
+          <EnableCustomizations
+            type="choice"
+            title="Choices"
+            v-model:modelValue="selectedItem.choices"
+            @update:modelValue="handleChoicesUpdate"
+          />
+        </div>
+
+        <div v-if="adminStore.businessType === 'restaurant'">
+          <EnableCustomizations
+            type="removal"
+            title="Removals"
+            v-model:modelValue="selectedItem.removals"
+            @update:modelValue="handleRemovalsUpdate"
+          />
+        </div>
       </div>
     </div>
 
@@ -173,6 +205,7 @@ import SelectProductColors from "./general/SelectProductColors.vue";
 import { useProduct } from "~/stores/product/useProduct";
 import MultiSelect from "~/components/reuse/ui/MultiSelect.vue";
 import { useAdmin } from "~/stores/admin/useAdmin";
+import EnableCustomizations from "./general/EnableCustomizations.vue";
 
 const categoryStore = useCategory();
 const productStore = useProduct();
@@ -211,54 +244,52 @@ const selectedItem = ref({
   ],
   ...props.item,
   colorVariants: [],
+
+  addons: [],
+  removals: [],
+  choices: [],
 });
 const hasSizes = ref(selectedItem.value.sizes?.length > 0);
 const loading = ref(false);
 const error = ref(null);
+const isRestaurant = adminStore.businessType === "restaurant";
 
 const submitForm = async () => {
+  const hasCustomizations =
+    (selectedItem.value?.addons && selectedItem.value?.addons.length > 0) ||
+    (selectedItem.value?.removals && selectedItem.value?.removals.length > 0) ||
+    (selectedItem.value?.choices && selectedItem.value?.choices.length > 0);
+
   if (props.mode === "edit") {
-    // emit("edit-item", {
-    //   ...selectedItem.value,
-    //   title: selectedItem.value.title,
-    //   description: selectedItem.value.description,
-    //   quantity: selectedItem.value.quantity,
-    //   price: selectedItem.value.price,
-    //   sizes: selectedItem.value.sizes,
-    // });
     loading.value = true;
     error.value = null;
-
-    console.log(selectedItem.value.colorVariants, "catt");
 
     const productInfo = {
       id: selectedItem.value.id,
       title: selectedItem.value.title,
       description: selectedItem.value.description,
-      quantity: selectedItem.value.quantity,
-      basePrice: Number(selectedItem.value.basePrice),
+      establishmentId: adminStore.estId,
+      storeId: adminStore.storeId,
+      quantity: selectedItem.value.quantity ?? 0,
+      basePrice: Number(selectedItem.value.basePrice ?? 0),
       categories: selectedItem.value.categories,
       sizes: hasSizes.value ? selectedItem.value?.sizes : [],
       images: [
         "https://res.cloudinary.com/sweetgreen/image/upload/f_webp,q_auto:good/dpr_2/c_crop,h_0.7,w_0.4/w_343/v1702672435/gravy/production/Gravy::MasterProduct/Q423_OLO_MisoSalmonGlazedPlate_3600x2400_2_orq1kg",
       ],
-      // storeInventories: {
-      //   upsert: {
-      //     where: { storeId_productId: { storeId: 'storeId', productId: 'productId' } },
-      //     update: { ...updateFields },
-      //     create: { store: { connect: { id: 'storeId' } }, ...createFields },
-      //   }
-      // },
-      colorVariants: selectedItem.value.colorVariants.map((variant) => ({
-        id: variant.id,
-        color: variant.color,
-      })),
-      // storeInventories are usually not updated this way unless you overwrite or update them separately
+      ...(hasCustomizations && {
+        customizations: [
+          ...(selectedItem.value?.addons ?? []),
+          ...(selectedItem.value?.removals ?? []),
+          ...(selectedItem.value?.choices ?? []),
+        ],
+      }),
+      colorVariants: selectedItem.value.colorVariants,
     };
 
     const payload = {
       product: productInfo,
-      storeId: adminStore.storeId
+      storeId: adminStore.storeId,
     };
 
     try {
@@ -271,7 +302,6 @@ const submitForm = async () => {
         error.value = result.error || "Failed to update product";
         return;
       }
-
       emit("close-modal");
     } catch (err) {
       loading.value = false;
@@ -279,50 +309,28 @@ const submitForm = async () => {
         err.response?.data?.error || err.message || "Failed to update product";
     }
   } else if (props.mode === "create") {
-    // emit("create-item", {
-    //   ...selectedItem.value,
-    //   title: selectedItem.value.title,
-    //   description: selectedItem.value.description,
-    //   quantity: selectedItem.value.quantity,
-    //   price: selectedItem.value.price,
-    //   sizes: selectedItem.value.sizes,
-    // });
-
     loading.value = true;
     error.value = null;
     const payload = {
-      // ...selectedItem.value,
-      sku: "SKU-5923",
       title: selectedItem.value.title,
       description: selectedItem.value.description,
-      quantity: selectedItem.value.quantity ?? 0,
-      basePrice: Number(selectedItem.value.basePrice),
-      establishmentId: "74b14d5e-a941-47bf-b103-61b64aea044b",
+      establishmentId: adminStore.estId,
+      storeId: adminStore.storeId,
       categories: selectedItem.value.categories,
-      // type: '',
-      sizes: selectedItem.value.sizes,
+      sizes: selectedItem.value?.sizes ?? [],
+      // ...(!hasSizes.value && isRestaurant && { basePrice: selectedItem.value?.basePrice }), // only for restaurant without sizes
+      basePrice: Number(selectedItem.value?.basePrice) ?? 0,
+      quantity: !hasSizes.value ? Number(selectedItem.value?.quantity) : 0,
       images: [
         "https://res.cloudinary.com/sweetgreen/image/upload/f_webp,q_auto:good/dpr_2/c_crop,h_0.7,w_0.4/w_343/v1702672435/gravy/production/Gravy::MasterProduct/Q423_OLO_MisoSalmonGlazedPlate_3600x2400_2_orq1kg",
       ],
-      storedId: "1d6c4a98-ff9a-4edb-b459-57819f2a79b7",
-      // storeInventories: {
-      //   create: [
-      //     {
-      //       store: {
-      //         connect: { id: "1d6c4a98-ff9a-4edb-b459-57819f2a79b7" },
-      //       },
-      //       storeInventoryItems: {
-      //         create: [
-      //           {
-      //             sizeId: "sizeId1",
-      //             label: "Large",
-      //             quantity: 10,
-      //           },
-      //         ],
-      //       },
-      //     },
-      //   ],
-      // },
+      ...(hasCustomizations && {
+        customizations: [
+          ...(selectedItem.value?.addons ?? []),
+          ...(selectedItem.value?.removals ?? []),
+          ...(selectedItem.value?.choices ?? []),
+        ],
+      }),
       colorVariants: selectedItem.value.colorVariants,
     };
     try {
@@ -360,12 +368,41 @@ const categoryOptions = computed(() =>
 
 onMounted(() => {
   if (props.mode === "edit") {
-    selectedItem.value = { ...props.item };
+    const baseItem = { ...props.item };
+    if (adminStore.businessType === "restaurant") {
+      const { customizations } = props.item;
+      if (customizations && customizations.length > 0) {
+        const removals = customizations.filter((c) => c.type === "removal");
+        const choices = customizations.filter((c) => c.type === "choice");
+        const addons = customizations.filter((c) => c.type === "addon");
+
+        if (removals.length) baseItem.removals = removals;
+        if (choices.length) baseItem.choices = choices;
+        if (addons.length) baseItem.addons = addons;
+      } else {
+        selectedItem.value.removals = [];
+        selectedItem.value.addons = [];
+        selectedItem.value.choices = [];
+      }
+    }
+    selectedItem.value = baseItem;
   }
 });
 
 const handleColorsUpdate = (newColors) => {
   selectedItem.value.colorVariants = newColors.map((color) => color);
+};
+
+const handleAddonsUpdate = (newValues) => {
+  selectedItem.value.addons = newValues.map((item) => item);
+};
+
+const handleChoicesUpdate = (newValues) => {
+  selectedItem.value.choices = newValues.map((item) => item);
+};
+
+const handleRemovalsUpdate = (newValues) => {
+  selectedItem.value.removals = newValues.map((item) => item);
 };
 </script>
 

@@ -10,7 +10,7 @@
       :ref="(el) => sectionRefs.set(category.id, el)"
       :data-category-id="category.id"
     >
-      <h2 class="header2 category-title">{{ category.category }}</h2>
+      <h2 class="header2 category-title">{{ category.name }}</h2>
 
       <draggable
         v-model="category.items"
@@ -31,19 +31,19 @@
           >
             <div
               class="menu-info"
-              :style="{ opacity: element.snooze ? 0.6 : 1 }"
+              :style="{ opacity: element.snoozed ? 0.6 : 1 }"
             >
               <div>
-                <h4 class="menu-title">{{ element.title }}</h4>
-                <p class="menu-description">{{ element.description }}</p>
+                <h4 class="menu-title">{{ element.product.title }}</h4>
+                <p class="menu-description">{{ element.product.description }}</p>
               </div>
-              <p class="menu-price">${{ element.price }}</p>
+              <p class="menu-price">${{ element.product.basePrice }}</p>
             </div>
             <div
               class="menu-image"
-              :style="{ opacity: element.snooze ? 0.6 : 1 }"
+              :style="{ opacity: element.snoozed ? 0.6 : 1 }"
             >
-              <img :src="element.images[0]" alt="Food image" />
+              <img :src="element.product.images[0]" alt="Food image" />
             </div>
 
             <div
@@ -185,14 +185,15 @@ const handleClickOutside = (e) => {
 };
 
 const handleSelectedProducts = (items) => {
-  menu.addItemsToCategory(items);
+  const plainItems = items.map(item => JSON.parse(JSON.stringify(item)));
+  menu.addItemsToCategory(plainItems);
 };
 
 const openConfirmSnooze = (categoryId, item) => {
   modal.value = {
     type: "snooze-item",
     isOpen: true,
-    isSnoozed: item.snooze,
+    isSnoozed: item.snoozed,
   };
   selectedPopperElement.value = {
     categoryId: categoryId,
@@ -288,6 +289,21 @@ const closeModal = () => {
     isOpen: false,
   };
   menu.onSelectCategory(null);
+};
+
+const onSortEnd = (evt) => {
+  const categoryId = evt.from.closest('[data-category-id]')?.dataset.categoryId;
+  const updatedCategory = items.value.find(cat => cat.id === categoryId);
+
+  if (categoryId && updatedCategory) {
+    updatedCategory.items = updatedCategory.items.map((item, index) => ({
+      ...item,
+      sortOrder: index,
+    }));
+
+    console.log(updatedCategory)
+    menu.sortMenuItems(categoryId, [...updatedCategory.items]);
+  }
 };
 </script>
 

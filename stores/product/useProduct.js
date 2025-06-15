@@ -207,13 +207,14 @@ export const useProduct = defineStore("product", () => {
   const config = useRuntimeConfig();
 
   const typeMap = {
-    food: foodItems,
+    restaurant: foodItems,
     clothing: clothingItems,
   };
 
   const fetchProducts = async () => {
     loading.value = true;
     error.value = null;
+    console.log('load')
     try {
       const response = await axios.get(
         `${config.public.apiBaseUrl}/stores/${admin.storeId}/products`
@@ -237,7 +238,7 @@ export const useProduct = defineStore("product", () => {
         return { success: false, error: "Failed to create product" };
       }
 
-      items.value.push(res.data.data);
+      items.value.unshift(res.data.data);
       return { success: true, data: res.data };
     } catch (err) {
       return {
@@ -254,7 +255,7 @@ export const useProduct = defineStore("product", () => {
         payload
       );
       const { success, data } = res.data;
-      
+
       if (success) {
         const index = items.value.findIndex((p) => p.id === id);
         if (index !== -1) {
