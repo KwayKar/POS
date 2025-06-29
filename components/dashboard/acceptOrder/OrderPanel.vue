@@ -1,15 +1,13 @@
 <template>
   <div class="sidePanel">
     <div class="flex items-center justify-between">
-      <h3 ref="titleRef" class="text-white text-lg font-semibold sidePanel-title">
+      <h3
+        ref="titleRef"
+        class="text-white text-lg font-semibold sidePanel-title"
+      >
         Create Order
       </h3>
-        <button
-          @click="$emit('closeDrawer')"
-          class="close-btn"
-        >
-          &times;
-        </button>
+      <button @click="$emit('closeDrawer')" class="close-btn">&times;</button>
     </div>
 
     <div
@@ -28,17 +26,17 @@
             <!-- Title -->
             <div class="flex mb-2">
               <h4 class="text-lg font-bold">
-                {{ order.item.title }}
+                {{ order.item?.title }}
               </h4>
               <h4 v-if="order.size" class="text-lg font-bold">
-                <span class="mx-2">-</span>{{ order.size }}
+                <span class="mx-2">-</span>{{ order.size?.label }}
               </h4>
             </div>
 
             <!-- Quantity and Price -->
             <div class="flex justify-between items-center mb-2">
               <div class="flex items-center">
-                <p class="text-m">${{ order.item.basePrice }}</p>
+                <p class="text-m">${{ order.unitPrice }}</p>
                 <span
                   class="px-2 py-1 ml-4 text-m rounded text-white"
                   style="background: var(--primary-btn-color)"
@@ -49,7 +47,7 @@
 
               <div>
                 <p class="text-m">
-                  {{ order.quantity * order.item.basePrice }}
+                  {{ (order.total) }}
                 </p>
               </div>
             </div>
@@ -64,11 +62,7 @@
       <p v-else class="text-m text-gray-400">No orders available.</p>
     </div>
 
-    <div
-      class="submit-order w-full"
-      ref="submitOrderRef"
-      @click="openDrawer"
-    >
+    <div class="submit-order w-full" ref="submitOrderRef" @click="openDrawer">
       <SubmitOrder :pricingInfo="pricingInfo" />
     </div>
   </div>
@@ -97,7 +91,6 @@ function openEditModal(item) {
 }
 
 const openDrawer = () => {
-  drawerHeight.value = "100%";
   drawerTransform.value = "translateY(0)";
 };
 
@@ -120,11 +113,12 @@ onMounted(async () => {
     window.removeEventListener("resize", updateOrderItemsHeight);
   });
 });
+
 </script>
 
 <style scoped>
 .sidePanel {
-  height: calc(100vh - 4.1rem);
+  height: calc(100vh);
   position: relative;
   padding: 18px;
   margin: 0;
@@ -145,7 +139,7 @@ onMounted(async () => {
 
 .order-item {
   padding: 1rem;
-  margin-bottom: 0.75rem; 
+  margin-bottom: 0.75rem;
   color: var(--white-1);
   background-color: #4b5563;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -190,11 +184,15 @@ p strong {
   z-index: 9999;
   padding: 0 15px;
 }
-
+@media only screen and (max-width: 600px) {
+  .submit-order {
+    bottom: 5px;
+  }
+}
 
 .close-btn {
   color: var(--white-1);
-  font-size: 2.5rem; 
+  font-size: 2.5rem;
   line-height: 1;
   background: none;
   border: none;

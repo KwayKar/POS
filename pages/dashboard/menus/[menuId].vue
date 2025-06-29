@@ -110,7 +110,6 @@ function scrollToCategory(id) {
 .menu-wrapper {
   display: flex;
   width: 100%;
-  z-index: 1;
 }
 
 .menu-items {
@@ -132,7 +131,8 @@ function scrollToCategory(id) {
     position: sticky;
     top: 64px;
     left: 0px;
-    z-index: 9999;
+    z-index: 1;
+    overflow: hidden;
   }
 }
 

@@ -61,12 +61,14 @@ onMounted(() => {
   }
 });
 
-// watch(
-//   () => props.modelValue,
-//   (newVal) => {
-//     if (newVal) selectSize(newVal);
-//   }
-// );
+watch(
+  () => props.modelValue,
+  (newVal) => {
+    if (newVal) {
+      selectSize(newVal);
+    }
+  }
+);
 </script>
 
 <style scoped>

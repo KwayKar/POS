@@ -16,7 +16,7 @@
         <div class="image" v-if="item.image">
           <img :src="item.image" alt="Add/Removal Image" />
         </div>
-        {{ item.label }}
+        {{ item.title }}
       </div>
     </div>
   </div>
@@ -42,7 +42,7 @@ const selectedRemovals = ref([]);
 
 const toggleRemoval = (removal) => {
   const index = selectedRemovals.value.findIndex(
-    (r) => r.label === removal.label
+    (r) => r.id === removal.id
   );
   if (index === -1) {
     selectedRemovals.value.push(removal);
@@ -59,8 +59,18 @@ onMounted(() => {
 });
 
 const isSelected = (removal) => {
-  return selectedRemovals.value.some((r) => r.label === removal.label);
+  return selectedRemovals.value.some((r) => r.id === removal.id);
 };
+
+watch(
+  () => props.selectdValues,
+  (newVal) => {
+    if (newVal?.length) {
+      selectedRemovals.value = [...newVal];
+    }
+  },
+  { immediate: true, deep: true }
+);
 </script>
 
 <style scoped>

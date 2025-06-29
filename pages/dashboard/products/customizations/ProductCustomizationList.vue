@@ -27,7 +27,7 @@
             <h3>{{ customization.title }}</h3>
             <p>{{ customization.type }}</p>
             <div class="customization-info-details">
-              <div v-if="customization.price !== undefined">
+              <div v-if="customization.price">
                 <span>Price: {{ customization.price }}</span>
               </div>
               <div v-if="customization.maxLimit">

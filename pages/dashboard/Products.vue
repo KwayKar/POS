@@ -62,7 +62,7 @@
           @close="closeModal"
           :minHeight="'400px'"
         >
-          <CreateCategory
+          <CategoryForm
             :categories="categories"
             @update-categories="updateCategories"
           />
@@ -77,14 +77,13 @@ import { ref, toRaw } from "vue";
 import ItemList from "~/components/dashboard/items/ItemList.vue";
 import NavPanel from "~/components/dashboard/panels/NavPanel.vue";
 import ProductInfo from "~/components/dashboard/products/ProductInfo.vue";
-import CreateProduct from "~/components/dashboard/products/CreateProduct.vue";
 import Modal from "~/components/reuse/ui/Modal.vue";
 import DashboardLayout from "~/layouts/DashboardLayout.vue";
-import CreateCategory from "~/components/dashboard/products/categories/CreateCategory.vue";
 import NavPanelButton from "~/components/dashboard/panels/NavPanelButton.vue";
 import { useAdmin } from "~/stores/admin/useAdmin";
 import { useCategory } from "~/stores/product/category/useCategory";
 import { useProduct } from "~/stores/product/useProduct";
+import CategoryForm from "~/components/dashboard/products/categories/CategoryForm.vue";
 
 const admin = useAdmin();
 const categoryStore = useCategory();

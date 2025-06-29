@@ -1,6 +1,6 @@
 <template>
-  <DashboardLayout>
-    <NavPanel class="navPanel dashboard-top-nav-panel"> </NavPanel>
+  <DashboardLayout :disableNavbar="true">
+    <!-- <NavPanel class="navPanel dashboard-top-nav-panel"> </NavPanel> -->
     <div class="flex flex-col lg:flex-row h-full">
       <div
         :style="{ width: panelWidth.itemPanel + 'px' }"
@@ -9,6 +9,7 @@
         <ItemList
           :items="items"
           :categories="categories"
+          :disableNavbar="true"
           @select-item="(item) => openModal(item, 'create')"
         />
       </div>
@@ -56,7 +57,7 @@
       <div
         v-if="isMobile"
         ref="submitOrderRef"
-        class="submit-order fixed bottom-0 left-0 w-full bg-gray-800 shadow-lg transition-transform duration-300 z-40"
+        class="submit-order fixed bottom-0 left-0 w-full bg-gray-800 shadow-lg transition-transform duration-300"
         :style="drawerStyle"
       >
         <OrderPanel
@@ -76,31 +77,23 @@ import AddOrderInfo from "~/components/dashboard/acceptOrder/AddOrderInfo.vue";
 import OrderPanel from "~/components/dashboard/acceptOrder/OrderPanel.vue";
 import Modal from "~/components/reuse/ui/Modal.vue";
 import DashboardLayout from "~/layouts/DashboardLayout.vue";
-import NavPanel from "~/components/dashboard/panels/NavPanel.vue";
 import ItemList from "~/components/dashboard/items/ItemList.vue";
 import { useProduct } from "~/stores/product/useProduct";
 import SubmitButton from "~/components/reuse/ui/SubmitButton.vue";
 import { usePosStore } from "~/stores/pos/usePOS";
 import { useCategory } from "~/stores/product/category/useCategory";
+import { useMenu } from "~/stores/menu/useMenu";
 
 const productStore = useProduct();
 const posStore = usePosStore();
 
-// definePageMeta({
-//   middleware: 'auth',
-//   roles: ['admin'],
-// });
-
 const categoryStore = useCategory();
-const categories = computed(() => categoryStore.getCategoryList);
-const items = computed(() => productStore.items || []); 
+// const categories = computed(() => categoryStore.getCategoryList);
+// const items = computed(() => productStore.items || []); 
 
-// computed(() =>
-//   categoryStore.getCategoryList.map((cat) => ({
-//     name: cat.name,
-//     id: cat.id,
-//   }))
-// );
+const menuStore = useMenu();
+const categories = computed(() => menuStore.categories);
+const items = computed(() => menuStore.products || []); 
 
 const selectedItem = ref(null);
 const order = ref([]);
@@ -136,8 +129,9 @@ const calculateItemListWidth = () => {
 };
 
 onMounted(() => {
-  productStore.fetchProducts();
-  categoryStore.fetchCategories();
+  // productStore.fetchProducts();
+  // categoryStore.fetchCategories();
+  menuStore.fetchItems();
 
   calculateItemListWidth();
   window.addEventListener("resize", calculateItemListWidth);
@@ -186,7 +180,7 @@ const closeModal = () => {
 const drawerStyle = computed(() => ({
   transform: isDrawerOpen.value ? "translateY(0)" : "translateY(100%)",
   height: "100vh",
-  zIndex: 99999,
+  zIndex: 999,
 }));
 
 const openDrawer = () => {

@@ -312,3 +312,12 @@ th:hover .th-sort-arrow {
     margin-bottom: 1rem;
   }
 }
+
+.trash-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  fill: var(--red-1);
+}

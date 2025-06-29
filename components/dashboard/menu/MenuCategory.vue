@@ -18,7 +18,9 @@
           :style="{
             flex: 1,
             height:
-              typeof panelHeight === 'number' ? `${panelHeight}px` : panelHeight,
+              typeof panelHeight === 'number'
+                ? `${panelHeight}px`
+                : panelHeight,
           }"
           class="category-list hide-on-mobile"
         >
@@ -29,7 +31,7 @@
             ghost-class="ghost"
             chosen-class="chosen"
             :drag-class="'dragging'"
-            style="display: flex;"
+            style="display: flex; align-items: center; margin-left: 12px;"
             @end="onSortEnd"
           >
             <template #item="{ element, index }">
@@ -38,30 +40,53 @@
                 :class="['category-item', { 'animate-wiggle': enableSort }]"
                 @click="$emit('select', element.id)"
                 :style="{
+                  background: '#fff',
+                  height: '36px !important',
+                  borderRadius: '20px',
+                  color: 'var(--black-3)',
+                  border: '1px solid var(--gray-2)',
                   marginRight: index === items.length - 1 ? '150px' : '',
+                  position: 'relative',
                 }"
               >
-                {{ element.name }}
+                <span>{{ element.name }}</span>
+                <button
+                  v-if="enableSort"
+                  @click.stop="confirmDelete(element)"
+                  class="cross-btn"
+                  title="Remove"
+                >
+                  ×
+                </button>
               </li>
             </template>
           </draggable>
-        </ul> 
+        </ul>
 
-        <div style="margin: 0 20px; display: flex; align-items: center;">
+        <div class="category-section-action">
+          <Button
+            style="border: 1px solid var(--black-1); height: 38px"
+            variant="primary"
+            @click="openCreateModal"
+            :style="{ fontSize: '1.4rem', marginRight: '1rem' }"
+          >
+            {{ "+" }}
+          </Button>
+
           <Button
             style="border: 1px solid var(--black-1); height: 38px"
             variant="primary"
             @click="enableSortingDesktop"
             :style="{ background: enableSort ? 'var(--green-2)' : '' }"
           >
-            {{ !enableSort ? 'Sort Order' : 'Done' }}
+            {{ !enableSort ? "Sort" : "Done" }}
           </Button>
         </div>
       </div>
     </div>
   </div>
 
-  <Drawer :items="items" :isOpen="isDrawerOpen" @close="toggleDrawer">
+  <Drawer :direction="'bottom'" :title="Categories" :isOpen="isDrawerOpen" @close="toggleDrawer">
     <ul
       :style="{
         height:
@@ -82,6 +107,7 @@
             :key="element.id"
             :style="{
               marginRight: index === items.length - 1 ? '150px' : '',
+              background: '#fff',
             }"
           >
             {{ element.name }}
@@ -90,6 +116,28 @@
       </draggable>
     </ul>
   </Drawer>
+
+  <Modal
+    v-if="modal.isOpen && modal.type === 'create-category'"
+    width="420px"
+    height="auto"
+    @close="closeModal"
+  >
+    <CategoryForm @close="closeModal" />
+  </Modal>
+
+  <Modal
+    v-if="modal.isOpen && modal.type === 'remove-category'"
+    width="420px"
+    height="auto"
+    @close="closeModal"
+  >
+    <ConfirmDelete @remove-item="handleRemove" @close="closeModal">
+      <div>
+        <p style="font-size: 0.95rem">All items inside {{ modal?.selectedItem?.name }} will be deleted.</p>
+      </div>
+    </ConfirmDelete>
+  </Modal>
 </template>
 
 <script setup>
@@ -98,9 +146,14 @@ import { useMenu } from "~/stores/menu/useMenu";
 import draggable from "vuedraggable";
 import Drawer from "~/components/reuse/ui/Drawer.vue";
 import Button from "~/components/reuse/ui/Button.vue";
+import CategoryForm from "../products/categories/CategoryForm.vue";
+import Modal from "~/components/reuse/ui/Modal.vue";
+import ConfirmDelete from "~/components/reuse/ui/ConfirmDelete.vue";
+import { useCategory } from "~/stores/product/category/useCategory";
 
 const menu = useMenu();
-const { items, selectedCategory } = storeToRefs(menu);
+const categoryStore = useCategory();
+const { items } = storeToRefs(menu);
 const { setSortedCategories } = menu;
 
 const menuCategoryRef = ref(null);
@@ -112,6 +165,7 @@ const enableSort = ref(false);
 const modal = ref({
   type: null,
   isOpen: false,
+  selectedItem: null
 });
 
 const updatePanelHeight = () => {
@@ -120,10 +174,10 @@ const updatePanelHeight = () => {
   if (menuCategoryRef.value) {
     if (isDesktop) {
       panelWidth.value = menuCategoryRef.value.offsetWidth;
-      panelHeight.value = '70px';
+      panelHeight.value = "70px";
     } else {
-      panelWidth.value = '100%';
-      panelHeight.value = '100%';
+      panelWidth.value = "100%";
+      panelHeight.value = "100%";
     }
   }
 };
@@ -144,10 +198,38 @@ const toggleDrawer = () => {
 
 const enableSortingDesktop = () => {
   enableSort.value = !enableSort.value;
-}
+};
 
 const onSortEnd = () => {
   setSortedCategories([...items.value]);
+};
+
+const openCreateModal = () => {
+  modal.value = {
+    type: "create-category",
+    isOpen: true,
+  };
+};
+
+const confirmDelete = (item) => {
+  modal.value = {
+    type: "remove-category",
+    isOpen: true,
+    selectedItem: item
+  };
+}
+
+const handleRemove = () => {
+  categoryStore.deleteCategory(modal.value.selectedItem?.id);
+  closeModal();
+}
+
+const closeModal = () => {
+  modal.value = {
+    type: null,
+    isOpen: false,
+    selectedItem: null
+  };
 };
 </script>
 
@@ -171,8 +253,8 @@ const onSortEnd = () => {
 }
 
 .wrap-categories {
-  width: 100%; 
-  display: flex; 
+  width: 100%;
+  display: flex;
   border-bottom: 1px solid var(--gray-2);
 }
 @media screen and (max-width: 1099px) {
@@ -204,12 +286,12 @@ const onSortEnd = () => {
 
 .category-list {
   display: flex;
-  flex-direction: row; 
+  flex-direction: row;
   overflow-x: auto;
   /* overflow-y: hidden; */
   white-space: nowrap;
-  scrollbar-width: none; 
-  -ms-overflow-style: none; 
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .category-list::-webkit-scrollbar {
@@ -238,10 +320,10 @@ const onSortEnd = () => {
   width: 150px;
   margin-right: 12px;
   font-weight: 600;
-  color: var(--black-2);
+  color: var(--black-3);
 
-  min-width: 100px; /* or however wide you want each item */
-  flex-shrink: 0; 
+  min-width: 100px;
+  flex-shrink: 0;
 
   display: flex;
   align-items: center;
@@ -252,6 +334,15 @@ const onSortEnd = () => {
 .category-item {
   justify-content: flex-start;
 }
+
+.category-section-action {
+  margin: 0 20px 0 0;
+  padding-left: 20px;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid var(--gray-2);
+}
+
 @media screen and (max-width: 1000px) {
   .category-list li {
     justify-content: flex-start;
@@ -291,6 +382,22 @@ const onSortEnd = () => {
   overflow: hidden;
 }
 
+.cross-btn {
+  color: var(--red-1);
+  font-size: 18px;
+  position: absolute;
+  right: 10px;
+  top: 7px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--red-2);
+  border-radius: 50%;
+  cursor: pointer;
+}
 
 @keyframes bounce-in {
   0% {
@@ -309,10 +416,20 @@ const onSortEnd = () => {
 }
 
 @keyframes wiggle {
-  0% { transform: rotate(0); }
-  25% { transform: rotate(3deg); }
-  50% { transform: rotate(-3deg); }
-  75% { transform: rotate(3deg); }
-  100% { transform: rotate(0); }
+  0% {
+    transform: rotate(0);
+  }
+  25% {
+    transform: rotate(3deg);
+  }
+  50% {
+    transform: rotate(-3deg);
+  }
+  75% {
+    transform: rotate(3deg);
+  }
+  100% {
+    transform: rotate(0);
+  }
 }
 </style>

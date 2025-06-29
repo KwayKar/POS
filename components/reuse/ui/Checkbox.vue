@@ -7,7 +7,7 @@
         @change="handleChange"
       />
       <label :for="id" @click="toggleCheckbox">
-        <span class="checkbox-box">
+        <span class="checkbox-box" :style="modelValue ? { backgroundColor: checkedColor, borderColor: checkedColor } : {}">
           <svg v-if="modelValue" class="tick-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white">
             <path d="M20.285 2L9 13.313 3.714 8.028 0 11.742 9 20.742 24 5.714z" />
           </svg>
@@ -27,6 +27,10 @@
       id: {
         type: String,
         required: true,
+      },
+      checkedColor: {
+        type: String,
+        default: "var(--dark-gray-1)", 
       },
     },
     methods: {
@@ -77,8 +81,8 @@
   }
   
   .tick-icon {
-    width: 14px;
-    height: 14px;
+    width: 10px;
+    height: 10px;
   }
   
   .custom-checkbox label {

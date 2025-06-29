@@ -3,17 +3,13 @@
     <Tabs :tabs="['Orders', 'Revenue']">
       <template #Orders>
         <LineChart
-          :chart-data="chartData"
           :title="'Orders Comparison'"
-          :chart-options="chartOptions"
         />
       </template>
 
       <template #Revenue>
         <BarChart
-          :chart-data="chartData"
           :title="'Revenue Comparison'"
-          :chart-options="chartOptions"
         />
       </template>
     </Tabs>

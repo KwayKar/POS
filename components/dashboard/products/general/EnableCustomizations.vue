@@ -1,9 +1,28 @@
 <template>
   <div>
-    <div class="section-title">
-      <label class="form-label">{{ title }}?</label>
-      <div class="wrap-toggle">
-        <Toggle v-model="hasItems" />
+    <div class="section-title" style="display: flex; flex-direction: column; flex: 1; width: 100%;">
+      <div class="section-title-row">
+        <label class="form-label">{{ title }}?</label>
+        <div class="wrap-toggle">
+          <Toggle v-model="hasItems" />
+        </div>
+      </div>
+
+      <div v-if="type === 'choice' && hasItems" class="section-max-choice">
+        <label class="">Max Choice Limit</label>
+        <div class="wrap-select">
+          <div style="max-width: 200px;">
+            <Select
+              v-model="props.maxChoice" 
+              @update:modelValue="(val) => emit('update:maxChoice', Number(val))"
+              :options="[
+                { label: '1', value: 1 },
+                { label: '2', value: 2 },
+                { label: '3', value: 3 }
+              ]" 
+            />
+          </div>
+        </div>
       </div>
     </div>
 
@@ -69,11 +88,16 @@ import Toggle from "~/components/reuse/ui/Toggle.vue";
 import Modal from "~/components/reuse/ui/Modal.vue";
 import ConfirmDelete from "~/components/reuse/ui/ConfirmDelete.vue";
 import SelectCustomizations from "../../items/SelectCustomizations.vue";
+import Select from "~/components/reuse/ui/Select.vue";
 
 const props = defineProps({
   modelValue: {
     type: Array,
     default: () => [],
+  },
+  maxChoice: {
+    type: Number,
+    default: () => 1,
   },
   type: {
     type: String,
@@ -84,7 +108,7 @@ const props = defineProps({
     default: "",
   },
 });
-const emit = defineEmits(["update:modelValue"]);
+const emit = defineEmits(["update:modelValue", "update:maxChoice"]);
 const windowWidth = ref(0);
 
 const modal = ref({ type: "", isOpen: false, selectedItem: null });
@@ -181,11 +205,46 @@ watch(
   flex: 1;
 }
 
+.section-max-choice {
+  width: 100%;
+  display: flex;
+  margin: 1.25rem 0; 
+}
+.section-max-choice > label {
+  font-size: 0.9rem;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.section-title-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.section-title-row > label {
+  font-size: 1.05rem;
+  margin-right: 32px;
+  flex: 1;
+}
+
+.wrap-toggle {
+  display: flex;
+  align-items: center;
+}
+
 .variants-list {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
   align-items: center;
+  border-bottom: 1px solid var(--gray-1);
+  padding-bottom: 30px;
+}
+
+.wrap-select {
+  flex: 1;
 }
 
 .wrap-toggle {

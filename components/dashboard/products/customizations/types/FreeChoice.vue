@@ -12,7 +12,7 @@
           textWrap: !item?.image ? 'nowrap' : 'wrap'
         }"
         :class="[
-          selectedChoices.some((c) => c.label === choice.label)
+          selectedChoices.some((c) => c.id === choice.id)
             ? 'selected'
             : '',
         ]"
@@ -21,7 +21,7 @@
           <img :src="choice.image" alt="Choice Image" />
         </div>
 
-        {{ choice.label }}
+        {{ choice.title }}
       </div>
     </div>
   </div>
@@ -37,7 +37,7 @@ const props = defineProps({
   },
   maxChoice: {
     type: Number,
-    default: 2,
+    default: 1,
   },
   selectdValues: {
     type: Array,
@@ -56,21 +56,32 @@ onMounted(() => {
 });
 
 const toggleChoice = (choice) => {
-  const exists = selectedChoices.value.find((c) => c.label === choice.label);
+  const exists = selectedChoices.value.find((c) => c.id === choice.id);
 
   if (exists) {
-    // If already selected, unselect it
     selectedChoices.value = selectedChoices.value.filter(
-      (c) => c.label !== choice.label
+      (c) => c.id !== choice.id
     );
   } else {
-    if (selectedChoices.value.length < props.maxChoice) {
+    if (props.maxChoice === 1) {
+      selectedChoices.value = [choice];
+    } else if (selectedChoices.value.length < props.maxChoice) {
       selectedChoices.value.push(choice);
-    } 
+    }
   }
 
   emit("updateValue", selectedChoices.value);
 };
+
+watch(
+  () => props.selectdValues,
+  (newVal) => {
+    if (newVal?.length) {
+      selectedChoices.value = [...newVal];
+    }
+  },
+  { immediate: true, deep: true }
+);
 </script>
 
 <style scoped>

@@ -18,7 +18,7 @@
             @click="activeSection = 'products'"
             :active="activeSection === 'products'"
           >
-            Products
+            Top Products
           </CategoryBtn>
           <CategoryBtn
             @click="activeSection = 'orders'"
@@ -52,8 +52,9 @@ import Button from "~/components/reuse/ui/Button.vue";
 import CategoryBtn from "~/components/reuse/ui/CategoryBtn.vue";
 import ShopsRevenueReport from "~/components/dashboard/reports/ShopsRevenueReport.vue";
 import OrderReport from "~/components/dashboard/reports/OrderReport.vue";
+import { useAnalyticsStore } from "~/stores/report/useReport";
 
-const activeSection = ref("products");
+const activeSection = ref("");
 defineProps({
   active: {
     type: Boolean,
@@ -61,6 +62,24 @@ defineProps({
   },
 });
 
+const storeId = 'a847ae5e-092d-4e67-951d-75ece890ffaa'
+const orgId = '6542372f-749f-4dc9-95d4-d1078035c50e'
+const start = '2025-06-01'
+const end = '2025-06-22'
+
+const analytics = useAnalyticsStore();
+
+
+// Run once on client mount
+onMounted(async () => {
+  await analytics.fetchRevenueReport(storeId, '2025-06-01', '2025-08-22');
+  await analytics.fetchOrdersReport(storeId, '2025-06-01', '2025-08-22');
+  // const revenueByStore = await analytics.fetchStoreRevenue(storeId, start, end)
+  // const totalSalesByStore = await analytics.fetchTotalSales(storeId, start, end)
+  // await analytics.fetchTopProducts(storeId, start, end, 5)
+  // await analytics.fetchOrganizationRevenue(orgId, start, end)
+  activeSection.value = 'products'
+})
 </script>
 
 <style scoped>

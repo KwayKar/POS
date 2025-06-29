@@ -31,7 +31,10 @@
         <span class="dot w-1 h-1 bg-gray-600 rounded-full"></span>
       </div>
 
-      <button class="submit-order flex-1 text-white h-12 rounded shadow">
+      <button
+        @click="submitOrder"
+        class="submit-order flex-1 text-white h-12 rounded shadow"
+      >
         Charge - {{ pricingInfo.total }}
       </button>
     </div>
@@ -50,7 +53,7 @@
 
           <button
             class="btn-secondary flex flex-col items-center w-20"
-            @click="openModal('hold')"
+            @click="toggleHold()"
           >
             <Icons icon="Pause" />
             <span class="text-sm mt-1">Hold</span>
@@ -70,8 +73,29 @@
     </div>
   </div>
 
-  <Modal v-if="modal.isOpen" :width="modalWidth" @close="closeModal">
+  <Modal
+    v-if="modal.isOpen && modal.type === 'discount'"
+    :width="modalWidth"
+    @close="closeModal"
+  >
     <ApplyDiscount @close="closeModal" />
+  </Modal>
+
+  <Modal
+    v-if="modal.isOpen && modal.type === 'payment'"
+    :width="paymentPadModalWidth"
+    :isFullScreenMobile="true"
+    @close="closeModal"
+  >
+     <PaymentPad :total="pricingInfo.total" @close="closeModal" />
+  </Modal>
+
+  <Modal
+    v-if="modal.isOpen && modal.type === 'unhold'"
+    :width="modalWidth"
+    @close="closeModal"
+  >
+    <HoldOrderList @close="closeModal" />
   </Modal>
 </template>
 
@@ -80,16 +104,35 @@ import { ref, defineProps, defineEmits, watch, onMounted } from "vue";
 import Icons from "~/components/reuse/icons/Icons.vue";
 import Modal from "~/components/reuse/ui/Modal.vue";
 import ApplyDiscount from "./ApplyDiscount.vue";
+import { useAdmin } from "~/stores/admin/useAdmin";
+import { usePosStore } from "~/stores/pos/usePOS";
+import HoldOrderList from "./HoldOrderList.vue";
+import PaymentPad from "./PaymentPad.vue";
 
 const props = defineProps({
   pricingInfo: Object,
 });
+
+const adminStore = useAdmin();
+const posStore = usePosStore();
 
 const emit = defineEmits(["openModal"]);
 
 const modal = ref({ isOpen: false, type: "" });
 const panelOpen = ref(false);
 const windowWidth = ref("0");
+
+const submitOrder = async () => {
+  openModal("payment")
+};
+
+const toggleHold = () => {
+  if (posStore.cart.length > 0) {
+    posStore.holdCurrentCart();
+  } else {
+    openModal("unhold");
+  }
+};
 
 const togglePanel = () => {
   panelOpen.value = !panelOpen.value;
@@ -124,8 +167,15 @@ const modalWidth = computed(() => {
     return `${windowWidth.value - 120}px`;
   }
 });
-</script>
 
+const paymentPadModalWidth = computed(() => {
+  if (windowWidth.value > 900) {
+    return "740px";
+  } else {
+    return `${windowWidth.value}px`;
+  }
+});
+</script>
 
 <style scoped>
 .order-section {

@@ -1,8 +1,5 @@
 <template>
-  <div
-    ref="menuItemsRef"
-    class="menu-container"
-  >
+  <div ref="menuItemsRef" class="menu-container">
     <div
       v-for="category in items"
       :key="category.id"
@@ -10,7 +7,15 @@
       :ref="(el) => sectionRefs.set(category.id, el)"
       :data-category-id="category.id"
     >
-      <h2 class="header2 category-title">{{ category.name }}</h2>
+      <div class="category-title-wrapper">
+        <h2 class="header2 category-title">{{ category.name }}</h2>
+        <div
+          @click="openModal('edit-category', category.id)"
+          style="cursor: pointer"
+        >
+          <EditPencil />
+        </div>
+      </div>
 
       <draggable
         v-model="category.items"
@@ -35,7 +40,9 @@
             >
               <div>
                 <h4 class="menu-title">{{ element.product.title }}</h4>
-                <p class="menu-description">{{ element.product.description }}</p>
+                <p class="menu-description">
+                  {{ element.product.description }}
+                </p>
               </div>
               <p class="menu-price">${{ element.product.basePrice }}</p>
             </div>
@@ -118,6 +125,19 @@
         @toggle-snooze="onSnoozedItem"
       />
     </Modal>
+
+    <Modal
+      v-if="modal.isOpen && modal.type === 'edit-category'"
+      width="420px"
+      height="auto"
+      @close="closeModal"
+    >
+      <CategoryForm
+        mode="edit"
+        :initialData="selectedCategory"
+        @close="closeModal"
+      />
+    </Modal>
   </div>
 </template>
 
@@ -131,9 +151,11 @@ import SelectProducts from "../items/SelectProducts.vue";
 import Modal from "~/components/reuse/ui/Modal.vue";
 import ConfirmDelete from "~/components/reuse/ui/ConfirmDelete.vue";
 import ToggleSnoozeItem from "./ToggleSnoozeItem.vue";
+import EditPencil from "~/assets/icons/editPencil.vue";
+import CategoryForm from "../products/categories/CategoryForm.vue";
+import { useCategory } from "~/stores/product/category/useCategory";
 
 const menu = useMenu();
-
 // don't delete !
 const { items, selectedCategory, selectedItems } = storeToRefs(menu);
 
@@ -148,8 +170,6 @@ const popperDirections = reactive({});
 const popperRefs = new Map();
 const selectedPopperElement = ref();
 const sectionRefs = new Map();
-
-console.log(sectionRefs)
 // const emit = defineEmits(["categoryInView"]);
 
 const togglePopper = (id) => {
@@ -185,7 +205,7 @@ const handleClickOutside = (e) => {
 };
 
 const handleSelectedProducts = (items) => {
-  const plainItems = items.map(item => JSON.parse(JSON.stringify(item)));
+  const plainItems = items.map((item) => JSON.parse(JSON.stringify(item)));
   menu.addItemsToCategory(plainItems);
 };
 
@@ -245,6 +265,7 @@ const updatePanelSize = () => {
 onMounted(async () => {
   // await nextTick();
   updatePanelSize();
+
   window.addEventListener("resize", updatePanelSize);
   document.addEventListener("click", handleClickOutside);
 });
@@ -292,16 +313,14 @@ const closeModal = () => {
 };
 
 const onSortEnd = (evt) => {
-  const categoryId = evt.from.closest('[data-category-id]')?.dataset.categoryId;
-  const updatedCategory = items.value.find(cat => cat.id === categoryId);
+  const categoryId = evt.from.closest("[data-category-id]")?.dataset.categoryId;
+  const updatedCategory = items.value.find((cat) => cat.id === categoryId);
 
   if (categoryId && updatedCategory) {
     updatedCategory.items = updatedCategory.items.map((item, index) => ({
       ...item,
       sortOrder: index,
     }));
-
-    console.log(updatedCategory)
     menu.sortMenuItems(categoryId, [...updatedCategory.items]);
   }
 };
@@ -505,5 +524,11 @@ const onSortEnd = (evt) => {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.category-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 </style>

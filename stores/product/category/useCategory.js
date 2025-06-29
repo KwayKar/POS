@@ -1,6 +1,8 @@
 import { defineStore } from "pinia";
 import axios from "axios";
-import { useRuntimeConfig } from "nuxt/app";
+import { useRoute, useRuntimeConfig } from "nuxt/app";
+import { useAdmin } from "~/stores/admin/useAdmin";
+import { useMenu } from "~/stores/menu/useMenu";
 
 export const useCategory = defineStore("category", {
   state: () => ({
@@ -19,10 +21,12 @@ export const useCategory = defineStore("category", {
     async fetchCategories() {
       try {
         const config = useRuntimeConfig();
-        const response = await axios.get(`${config.public.apiBaseUrl}/categories`);
-        this.categories = response.data; 
+        const response = await axios.get(
+          `${config.public.apiBaseUrl}/categories`
+        );
+        this.categories = response.data;
       } catch (error) {
-        console.error('Failed to fetch categories');
+        // console.error("Failed to fetch categories");
       }
     },
 
@@ -34,19 +38,50 @@ export const useCategory = defineStore("category", {
       return this.categories.find((c) => c.id === id);
     },
 
-    createCategory(category) {
-      this.categories.push(category);
+    async createCategory(category) {
+      const admin = useAdmin();
+      const menuStore = useMenu();
+
+      if (admin.businessType === "restaurant") {
+        const body = {
+          name: category?.name,
+          images: category.image[0],
+        };
+        menuStore.addCategoryToMenu(body);
+      } else {
+        this.categories = [...this.categories, res];
+      }
     },
 
     updateCategory(id, updates) {
+      const admin = useAdmin();
+      const menuStore = useMenu();
+
+      if (admin.businessType === "restaurant") {
+        const body = {
+          name: updates?.name,
+          images: updates?.image?.[0],
+        };
+        menuStore.updateCategoryInMenu(updates?.id, body);
+      }
+
       const index = this.categories.findIndex((c) => c.id === id);
-      if (index !== -1) {
-        this.categories[index] = { ...this.categories[index], ...updates };
+      this.categories[index] = { ...this.categories[index], ...updates };
+
+      if (index !== -1 && admin.businessType !== "restaurant") {
+        this.categories = [...this.categories, res];
       }
     },
 
     deleteCategory(id) {
-      this.categories = this.categories.filter((c) => c.id !== id);
+      const admin = useAdmin();
+      const menuStore = useMenu();
+
+      if (admin.businessType === "restaurant") {
+        menuStore.removeCategoryFromMenu(id);
+      } else {
+        this.categories = this.categories.filter((c) => c.id !== id);
+      }
     },
 
     filterCategories(keyword) {

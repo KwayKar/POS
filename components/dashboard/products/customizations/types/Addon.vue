@@ -7,17 +7,18 @@
         class="addon-box"
         :style="{ justifyContent: !addon?.image ? 'space-between' : undefined }"
       >
+        <div class="addon-image" v-if="addon.image">
+          <img :src="addon.image" alt="Addon Image" />
+        </div>
+
         <div
           class="addon-label"
           :style="{ 
             marginBottom: addon?.image ? '8px' : '20px',
           }"
         >
-          {{ addon.label }}
-        </div>
-
-        <div class="addon-image" v-if="addon.image">
-          <img :src="addon.image" alt="Addon Image" />
+          <p>{{ addon.title }}</p>
+          <p class="addon-price">+{{ getQuantity(addon) > 0 ? addon.price * getQuantity(addon) : addon.price }}</p>
         </div>
 
         <div class="addon-controls">
@@ -64,11 +65,15 @@ const selectedAddons = ref([]);
 const increase = (addon) => {
   const found = selectedAddons.value.find((a) => a.id === addon.id);
   if (found) {
-    if (!addon.maxLimit || found.quantity < addon.maxLimit) {
+    if (found.quantity == null) {
+      found.quantity = 0; 
+    }
+
+    if (!addon.maxLimit || found?.quantity < addon.maxLimit) {
       found.quantity += 1;
     }
   } else {
-    selectedAddons.value.push({ ...addon, quantity: addon.startAt + 1 });
+    selectedAddons.value.push({ ...addon, quantity: 1 }); // addon.startAt +
   }
   emit("updateValue", selectedAddons.value);
 };
@@ -86,15 +91,15 @@ const decrease = (addon) => {
       }
     }
   }
-  emit("update:selectedAddons", selectedAddons.value);
+  emit("updateValue", selectedAddons.value);
 };
 
 const getQuantity = (addon) => {
   const found = selectedAddons.value.find((a) => a.id === addon.id);
   if (found) {
-    return found.quantity;
+    return found?.quantity ? found?.quantity : 0;
   }
-  return addon.startAt || 0;
+  return 0; // addon.startAt
 };
 
 onMounted(() => {
@@ -102,6 +107,17 @@ onMounted(() => {
     selectedAddons.value = [...props.selectdValues];
   }
 });
+
+watch(
+  () => props.selectdValues,
+  (newVal) => {
+    if (newVal) {
+      selectedAddons.value = [...newVal];
+    }
+  },
+  { deep: true, immediate: true }
+);
+
 </script>
 
 <style scoped>
@@ -182,5 +198,10 @@ onMounted(() => {
   text-align: center;
   font-size: 18px;
   font-weight: 600;
+}
+
+.addon-price {
+  color: var(--green-1);
+  margin-top: 8px;
 }
 </style>

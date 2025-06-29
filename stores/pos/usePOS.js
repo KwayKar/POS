@@ -1,8 +1,10 @@
 import { defineStore } from "pinia";
+import { generateId } from "~/utils/generateId";
 
 export const usePosStore = defineStore("pos", {
   state: () => ({
     cart: [],
+    holdCart: [],   // Temporarily held orders
     appliedCouponCode: null,
     promotions: {
       discountedProducts: [],
@@ -27,9 +29,9 @@ export const usePosStore = defineStore("pos", {
     },
 
     subtotal(state) {
-      return state.cart.reduce((sum, cartItem) => {
-        return sum + cartItem.item.price * cartItem.quantity;
-      }, 0);
+      return state.cart.reduce((sum, item) => {
+        return sum + (item.unitPrice || 0) * (item.quantity || 1)
+      }, 0)
     },
 
     appliedCoupon(state) {
@@ -58,7 +60,7 @@ export const usePosStore = defineStore("pos", {
 
     total(state) {
       const subtotal = state.cart.reduce(
-        (sum, cartItem) => sum + cartItem.item.price * cartItem.quantity,
+        (sum, cartItem) => sum + cartItem.total,
         0
       );
       const discount = state.promotions.coupons[state.appliedCouponCode]
@@ -79,18 +81,26 @@ export const usePosStore = defineStore("pos", {
 
   actions: {
     addToCart(product) {
-      const existing = this.cart.find(
+      const index = this.cart.findIndex(
         (item) => item.item.id === product.item.id
       );
-      if (existing) {
-        existing.quantity = product.quantity;
+
+      if (index !== -1) {
+        const updatedItem = {
+          ...this.cart[index],
+          ...product,
+          quantity: product.quantity,
+          unitPrice: product.unitPrice, 
+          total: product.unitPrice * product.quantity, 
+        };
+        this.cart.splice(index, 1, updatedItem);
       } else {
-        this.cart.push({ ...product, quantity: 1 });
+        this.cart.push({ ...product });
       }
     },
 
     removeCartItem(id) {
-      this.cart = this.cart.filter(item => item.item.id !== id);
+      this.cart = this.cart.filter((item) => item.item.id !== id);
     },
 
     applyCoupon(code) {
@@ -108,6 +118,30 @@ export const usePosStore = defineStore("pos", {
     clearCart() {
       this.cart = [];
       this.appliedCouponCode = null;
+    },
+
+    holdCurrentCart() {
+      if (this.cart.length > 0) {
+        this.holdCart.push({
+          id: Date.now(),
+          items: [...this.cart],
+        });
+        this.cart = [];
+      }
+    },
+
+    // Restore held cart by ID
+    restoreHeldCart(id) {
+      const index = this.holdCart.findIndex((c) => c.id === id);
+      if (index !== -1) {
+        this.cart = [...this.holdCart[index].items];
+        this.holdCart.splice(index, 1); 
+      }
+    },
+
+    // Clear hold cart manually
+    clearHoldCart() {
+      this.holdCart = [];
     },
   },
 });

@@ -55,7 +55,7 @@
       width="460px"
       :minHeight="'400px'"
     >
-      <CreateCategory
+      <CategoryForm
         :mode="modal.type === 'create' ? 'create' : 'edit'"
         :initialData="selectedItem"
         @close="closeModal"
@@ -84,7 +84,7 @@ import DashboardLayout from "~/layouts/DashboardLayout.vue";
 import NavPanelButton from "~/components/dashboard/panels/NavPanelButton.vue";
 import { useCategory } from "~/stores/product/category/useCategory";
 import Trash from "~/components/reuse/icons/Trash.vue";
-import CreateCategory from "~/components/dashboard/products/categories/CreateCategory.vue";
+import CategoryForm from "~/components/dashboard/products/categories/CategoryForm.vue";
 
 const categoryStore = useCategory();
 const categoryList = computed(() => categoryStore.getCategoryList || []);

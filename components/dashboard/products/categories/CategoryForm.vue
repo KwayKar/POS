@@ -1,6 +1,6 @@
 <template>
   <h3 class="modal-title">
-    Create Category
+    {{ mode === 'create' ? 'Create' : 'Edit' }} Category
   </h3>
 
   <div class="modal-content category-form">
@@ -43,7 +43,7 @@
 
 <script setup>
 import { ref, watch } from "vue";
-import { defineProps, defineEmits } from "vue";
+import { defineProps, defineEmits, onMounted } from "vue";
 import FileUploads from "~/components/reuse/ui/FileUploads.vue";
 import Input from "~/components/reuse/ui/Input.vue";
 import SubmitButton from "~/components/reuse/ui/SubmitButton.vue";
@@ -61,33 +61,35 @@ const props = defineProps({
   }
 });
 
-const { createCategory, updateCategory, getSelectedCategory } = useCategory();
+const { createCategory, updateCategory } = useCategory();
 
 const categoryName = ref("");
-const uploadedImages = ref([]); 
+const uploadedImages = ref([]);
 const formError = ref("");
 const emit = defineEmits(["close"]);
 
 const handleSubmit = () => {
   if (categoryName.value.trim() === "") {
-    formError.value = 'Category title is empty'
+    formError.value = 'Category title is empty';
     return;
   }
+
   const category = {
-    id: props.mode === "edit" ? getSelectedCategory.id : Date.now(),
+    id: props.mode === "edit" ? props.initialData.id : Date.now(),
     name: categoryName.value,
-    image: uploadedImages.value 
+    image: uploadedImages.value
   };
-  
+
   if (props.mode === "edit") {
-    updateCategory(getSelectedCategory.id, category)
+    updateCategory(props.initialData.id, category);
   } else {
     createCategory(category);
   }
 
   categoryName.value = "";
+  uploadedImages.value = [];
   emit("close");
-}
+};
 
 const handleUploadError = (message) => {
   formError.value = message;
@@ -96,25 +98,16 @@ const handleUploadError = (message) => {
   }, 5000);
 };
 
-onMounted(() => {
-  if (props.mode === 'edit' && getSelectedCategory) {
-    categoryName.value = getSelectedCategory.name || '';
-    if (getSelectedCategory.image) {
-      uploadedImages.value = [getSelectedCategory.image];
-    }
-  }
-});
-
 watch(
   () => props.initialData,
   (val) => {
     if (props.mode === "edit" && val?.name) {
-      categoryName.value = val.name;
+      categoryName.value = val.name || "";
+      uploadedImages.value = val.image ? [val.image] : [];
     }
   },
   { immediate: true }
 );
-
 </script>
 
 <style scoped>

@@ -1,13 +1,13 @@
 <template>
   <div class="upload-wrapper" @dragover.prevent @drop.prevent="handleDrop">
-    <div class="preview-grid">
+    <div :class="['preview-grid', { single: isSingleMode }]">
       <div v-for="(img, i) in previews" :key="i" class="preview-item">
         <button class="remove-btn" @click.stop="removeImage(i)">×</button>
         <img :src="img.url" alt="Preview" />
       </div>
 
       <div
-        v-if="previews.length !== 0"
+        v-if="previews.length !== 0 && previews.length < props.maxImages"
         class="upload-plus"
         @click="triggerFileInput"
       >
@@ -43,9 +43,9 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, watch, computed } from "vue";
 
-const emit = defineEmits(["update:files"]);
+const emit = defineEmits(["update:files", "error"]);
 const props = defineProps({
   files: Array,
   multiple: { type: Boolean, default: true },
@@ -56,6 +56,9 @@ const props = defineProps({
 const fileInput = ref(null);
 const previews = ref([]);
 const files = ref([]);
+
+// Determines if we're in single-image mode
+const isSingleMode = computed(() => props.maxImages === 1);
 
 function triggerFileInput() {
   fileInput.value?.click();
@@ -69,7 +72,7 @@ function processFiles(newFiles) {
   );
 
   if (uniqueFiles.length > props.maxImages) {
-    emit("error", `You can upload up to ${props.maxImages} images only.`);
+    emit("error", `You can upload up to ${props.maxImages} image(s) only.`);
     return;
   }
 
@@ -118,7 +121,6 @@ watch(
           };
         }
 
-        // If it's a URL string
         if (typeof file === "string") {
           return {
             url: file,
@@ -131,8 +133,6 @@ watch(
       .filter(Boolean);
 
     previews.value = mappedPreviews;
-
-    // Only include real File objects for internal file tracking
     files.value = newVal.filter((f) => f instanceof File);
   },
   { immediate: true }
@@ -174,18 +174,36 @@ watch(
   justify-content: flex-start;
 }
 
+.preview-grid.single {
+  flex-direction: column;
+  align-items: stretch;
+}
+
 .preview-item {
   position: relative;
   width: 100px;
   height: 100px;
 }
 
-.preview-item img {
+.preview-grid.single .preview-item,
+.preview-grid.single .upload-plus {
   width: 100%;
+  height: auto;
+}
+
+.preview-grid.single img {
+  max-height: 250px;
+  width: 100%;
+  object-fit: contain;
+  min-height: 75px;
+}
+
+.preview-item img {
+  width: auto;
   height: 100%;
   object-fit: contain;
   border-radius: 10px;
-  border: 1px solid var(--black-1);
+  border: 1px solid var(--black-3);
   overflow: hidden;
 }
 

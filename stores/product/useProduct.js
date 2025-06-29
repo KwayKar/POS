@@ -214,7 +214,6 @@ export const useProduct = defineStore("product", () => {
   const fetchProducts = async () => {
     loading.value = true;
     error.value = null;
-    console.log('load')
     try {
       const response = await axios.get(
         `${config.public.apiBaseUrl}/stores/${admin.storeId}/products`

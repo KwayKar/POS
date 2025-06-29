@@ -24,6 +24,7 @@ import {
   BarController,
 } from "chart.js";
 import Select from "~/components/reuse/ui/Select.vue";
+import { useAnalyticsStore } from "~/stores/report/useReport";
 
 defineProps({
   title: {
@@ -37,7 +38,8 @@ const categories = [
   { label: "Past Month", value: "1-month" },
 ];
 
-const selectedCategory = ref("2-weeks");
+// const selectedCategory = ref("2-weeks");
+const selectedCategory = ref(["2025-06", "2025-07", "2025-08"]);
 
 ChartJS.register(
   Title,
@@ -73,34 +75,36 @@ const barThickness = computed(() => {
 });
 
 const chartData = computed(() => {
-  const dataByCategory = {
-    "2-weeks": [
-      120, 140, 160, 180, 200, 150, 170, 130, 110, 115, 125, 145, 155, 165,
-    ],
-    "1-month": Array.from({ length: 30 }, () =>
-      Math.floor(100 + Math.random() * 300)
-    ),
-  };
+  const analyticsStore = useAnalyticsStore();
+  const months = analyticsStore.revenueReport || [];
+  
+  const selectedMonths = selectedCategory.value;
 
-  const labelsByCategory = {
-    "2-weeks": Array.from({ length: 14 }, (_, i) => `Day ${i + 1}`),
-    "1-month": Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`),
-  };
+  const filtered = months.filter((entry) =>
+    selectedMonths.includes(entry.month.slice(0, 7)) 
+  );
 
-  const selectedData = selectedCategory.value;
+  const labels = filtered.map((entry) =>
+    new Date(entry.month).toLocaleString("default", {
+      month: "short",
+      year: "numeric",
+    })
+  );
+
+  const revenues = filtered.map((entry) => entry.revenue);
 
   return {
-    labels: labelsByCategory[selectedData],
+    labels,
     datasets: [
       {
         label: "Sales (USD)",
         backgroundColor: "#68a182",
-        data: dataByCategory[selectedData],
+        data: revenues,
         barThickness: barThickness.value,
       },
     ],
   };
-});
+})
 
 const chartOptions = {
   responsive: true,

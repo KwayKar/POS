@@ -3,9 +3,11 @@
     <div>
       <h2 class="modal-heading">Confirm Delete?</h2>
     </div>
+    
     <div class="p-4">
       <slot></slot>
     </div>
+
     <div class="btn-section p-4 flex justify-end space-x-2">
       <Button
         @click="$emit('remove-item')"

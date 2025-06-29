@@ -5,7 +5,7 @@
     />
 
     <div class="layout" v-cloak>
-      <div class="custom-container">
+      <div class="custom-container" :class="{ 'with-navbar': !disableNavbar }">
         <slot />
       </div>
     </div>
@@ -18,6 +18,12 @@ import SidePanel from "~/components/dashboard/panels/SidePanel.vue";
 export default {
   components: {
     SidePanel,
+  },
+  props: {
+    disableNavbar: {
+      type: Boolean,
+      default: false,
+    },
   },
 };
 </script>
@@ -38,8 +44,11 @@ export default {
 }
 
 .custom-container {
-  padding-top: 2.9rem; 
   display: flex;
+}
+
+.with-navbar {
+  padding-top: 2.9rem;
   margin-top: 18px;
 }
 </style>

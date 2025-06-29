@@ -89,7 +89,7 @@ export default {
 
 .custom-button:hover {
   opacity: 0.85;
-  background-color: var(--white-2);
+  background-color: var(--white-1);
   color: var(--black-1);
   border: 1px solid var(--black-1);
 }

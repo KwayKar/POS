@@ -73,10 +73,7 @@
         </div>
 
         <div class="flex gap-4">
-          <div
-            :class="['form-group w-1/2']"
-            v-if="(isRestaurant && !hasSizes) || !isRestaurant"
-          >
+          <div :class="['form-group w-1/2']">
             <label for="basePrice" class="form-label">Price</label>
             <Input
               type="number"
@@ -109,7 +106,9 @@
           :secondLabel="
             adminStore.businessType === 'restaurant' ? 'Price' : 'Stock'
           "
-          secondKey="quantity"
+          :secondKey="
+            adminStore.businessType === 'restaurant' ? 'extraPrice' : 'quantity'
+          "
           secondType="number"
         />
 
@@ -133,6 +132,7 @@
           <EnableCustomizations
             type="choice"
             title="Choices"
+            v-model:maxChoice="selectedItem.maxChoice"
             v-model:modelValue="selectedItem.choices"
             @update:modelValue="handleChoicesUpdate"
           />
@@ -187,7 +187,7 @@
     height="auto"
     @close="closeModal"
   >
-    <CreateCategory @close="closeModal" />
+    <CategoryForm @close="closeModal" />
   </Modal>
 </template>
 
@@ -199,7 +199,7 @@ import Input from "~/components/reuse/ui/Input.vue";
 import Modal from "~/components/reuse/ui/Modal.vue";
 import Textarea from "~/components/reuse/ui/Textarea.vue";
 import { useCategory } from "~/stores/product/category/useCategory";
-import CreateCategory from "./categories/CreateCategory.vue";
+import CategoryForm from "./categories/CategoryForm.vue";
 import ProductSizes from "./general/ProductSizes.vue";
 import SelectProductColors from "./general/SelectProductColors.vue";
 import { useProduct } from "~/stores/product/useProduct";
@@ -221,6 +221,7 @@ const props = defineProps({
     default: "create",
   },
 });
+
 const emit = defineEmits([
   "create-item",
   "edit-item",
@@ -248,6 +249,7 @@ const selectedItem = ref({
   addons: [],
   removals: [],
   choices: [],
+  maxChoice: props.item?.maxChoice ?? 1,
 });
 const hasSizes = ref(selectedItem.value.sizes?.length > 0);
 const loading = ref(false);
@@ -283,6 +285,9 @@ const submitForm = async () => {
           ...(selectedItem.value?.removals ?? []),
           ...(selectedItem.value?.choices ?? []),
         ],
+      }),
+      ...(selectedItem.value?.maxChoice && {
+        maxChoice: selectedItem.value?.maxChoice,
       }),
       colorVariants: selectedItem.value.colorVariants,
     };
@@ -330,6 +335,9 @@ const submitForm = async () => {
           ...(selectedItem.value?.removals ?? []),
           ...(selectedItem.value?.choices ?? []),
         ],
+      }),
+      ...(selectedItem.value?.maxChoice && {
+        maxChoice: selectedItem.value?.maxChoice,
       }),
       colorVariants: selectedItem.value.colorVariants,
     };

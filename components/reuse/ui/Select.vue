@@ -5,6 +5,7 @@
       :style="{
         background: 'var(--white-1)',
         fontSize: '0.95rem',
+        ...style
       }"
       @click="toggleDropdown"
       :aria-expanded="isOpen ? 'true' : 'false'"
@@ -37,7 +38,7 @@
       @enter="enter"
       @leave="leave"
     >
-      <teleport to="#select-option">
+      <teleport to="#select-option-1">
         <ul
           v-if="isOpen"
           :id="dropdownId"
@@ -70,6 +71,10 @@ const props = defineProps({
   modelValue: {
     type: [String, Object],
     default: null,
+  },
+  style: {
+    type: Object,
+    default: () => ({}),
   },
 });
 

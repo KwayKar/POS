@@ -33,7 +33,7 @@
             />
           </div>
           <div class="p-4">
-            <h2 class="item-title text-xl">{{ item.title }}</h2>
+            <h2 class="item-title">{{ item.title }}</h2>
             <p class="text-m">{{ item.price }}</p>
           </div>
         </div>
@@ -57,6 +57,10 @@ const props = defineProps({
     required: true,
     default: () => [],
   },
+  disableNavbar: {
+    type: Boolean,
+    default: false
+  }
 });
 
 const emit = defineEmits(["select-item"]);
@@ -67,7 +71,7 @@ const containerRef = ref(null);
 let resizeObserver;
 
 function updatePanelHeight() {
-  panelHeight.value = window.innerHeight - 130;
+  panelHeight.value = window.innerHeight - (props.disableNavbar ? 0 : 130);
 }
 
 const gridClass = computed(() => {
@@ -97,6 +101,7 @@ onMounted(() => {
 
   document.body.style.overflow = "hidden";
   window.addEventListener("resize", updateWidth);
+  window.addEventListener("resize", updatePanelHeight);
 });
 
 onBeforeUnmount(() => {
@@ -113,7 +118,7 @@ const uniqueCategories = computed(() => {
 
 const filteredItems = computed(() => {
   return selectedCategory.value && selectedCategory.value !== "all"
-    ? props.items.filter((item) => item.category === selectedCategory.value)
+    ? props.items.filter((item) => item.categoryId === selectedCategory.value)
     : props.items;
 });
 

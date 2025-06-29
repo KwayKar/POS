@@ -76,6 +76,7 @@
               v-model="selectedItem.maxLimit"
               placeholder="Enter Max Limit"
               class="form-input"
+              :min="1"
             />
           </div>
         </div>
@@ -219,6 +220,12 @@ onMounted(() => {
     selectedItem.value = selectedItem;
   } else {
     selectedItem.value = { ...options.selectedItem };
+  }
+});
+
+watch(() => selectedItem.value.maxLimit, (val) => {
+  if (val === 0) {
+    selectedItem.value.maxLimit = 1;
   }
 });
 </script>

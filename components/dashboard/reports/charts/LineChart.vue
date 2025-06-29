@@ -25,6 +25,7 @@ import {
   LineController,
 } from "chart.js";
 import Select from "~/components/reuse/ui/Select.vue";
+import { useAnalyticsStore } from "~/stores/report/useReport";
 
 defineProps({
   title: {
@@ -38,7 +39,8 @@ const categories = [
   { label: "Past Month", value: "1-month" },
 ];
 
-const selectedCategory = ref("2-weeks");
+const selectedCategory = ref(["2025-06", "2025-07", "2025-08"]);
+// ref("2-weeks");
 
 ChartJS.register(
   Title,
@@ -52,42 +54,39 @@ ChartJS.register(
 );
 
 const chartData = computed(() => {
-  const dataByCategory = {
-    "2-weeks": [
-      120, 140, 160, 180, 200, 150, 170, 130, 110, 115, 125, 145, 155, 165,
-    ],
-    "1-month": Array.from({ length: 30 }, () =>
-      Math.floor(100 + Math.random() * 300)
-    ),
-  };
+  const analyticsStore = useAnalyticsStore();
+const report = analyticsStore.ordersReport || [];
 
-  const labelsByCategory = {
-    "2-weeks": Array.from({ length: 14 }, (_, i) => `Day ${i + 1}`),
-    "1-month": [
-      "Day 1",
-      "Day 5",
-      "Day 10",
-      "Day 15",
-      "Day 20",
-      "Day 25",
-      "Day 30",
-    ],
-  };
+const selectedPeriods = selectedCategory.value; // e.g. ['2025-06-01']
+const isDaily = selectedPeriods.length && selectedPeriods[0].length === 10;
 
-  const selectedData = selectedCategory.value;
+const filtered = report.filter((entry) => {
+  const rawPeriod = entry.period || entry.date || entry.month; // flexible
+  const period = rawPeriod?.slice(0, isDaily ? 10 : 7);
+  return selectedPeriods.includes(period);
+});
+
+const labels = filtered.map((entry) =>
+  new Date(entry.period).toLocaleString("default", {
+    ...(isDaily
+      ? { day: "numeric", month: "short" }
+      : { month: "short", year: "numeric" }),
+  })
+);
+
+const revenues = filtered.map((entry) => entry.revenue);
+
 
   return {
-    labels: labelsByCategory[selectedData],
+    labels,
     datasets: [
       {
         label: "Sales (USD)",
-        data: dataByCategory[selectedData],
+        backgroundColor: "#68a182",
         borderColor: "#68a182",
-        backgroundColor: "rgba(104, 161, 130, 0.2)",
-        fill: true,
-        tension: 0.3,
-        pointRadius: 3,
-        pointBackgroundColor: "#68a182",
+        tension: 0.3, 
+        fill: false,
+        data: revenues,
       },
     ],
   };
