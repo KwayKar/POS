@@ -2,7 +2,7 @@
   <div ref="panelRefHeight" style="height: 100%">
     <div class="header-section">
       <h3 class="header3">Staff List</h3>
-      <Button @click="onSelectStaff()" :style="'height: 40px'"> Create </Button>
+      <Button @click="onSelectStaff()" :applyShadow="true" :style="'height: 40px'"> Create </Button>
     </div>
 
     <div
@@ -157,6 +157,17 @@ const closeModal = () => {
 .staff-list {
   overflow-y: auto;
   padding: 2rem 2rem 0;
+  background: #ffffff;
+  margin: 22px;
+  border-radius: 12px;
+  border: 0.5px solid #dedede;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none; 
+}
+
+.staff-list::-webkit-scrollbar {
+  display: none; 
 }
 
 .staff-container {
@@ -170,7 +181,6 @@ const closeModal = () => {
   align-items: center;
   justify-content: space-between;
   padding: 12px 0;
-  border-radius: 8px;
   border-bottom: 1px solid #dedede;
   cursor: pointer;
 }
@@ -232,6 +242,7 @@ const closeModal = () => {
   flex: 0.5;
   color: var(--black-2);
   font-size: 0.9rem;
+  text-transform: capitalize;
 }
 
 .staff-group {

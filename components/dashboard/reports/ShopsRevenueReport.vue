@@ -53,6 +53,7 @@
 <script setup>
 import { ref, computed } from "vue";
 import Icons from "~/components/reuse/icons/Icons.vue";
+import { formatCurrency } from "~/utils/formatCurrency";
 
 const soldProducts = ref([
   {
@@ -84,11 +85,6 @@ const soldProducts = ref([
     dateSold: "2025-03-18",
   },
 ]);
-
-const formatCurrency = (value) =>
-  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
-    value
-  );
 
 // Sorting Logic
 const sortKey = ref(null);

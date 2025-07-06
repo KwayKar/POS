@@ -32,25 +32,26 @@
             />
 
             <!-- Date Filter -->
-            <vc-date-picker
-              v-model="selectedDate"
-              mode="single"
-              is-required
-              color="green"
-              :popover="{ visibility: 'focus', transition: '' }"
-            >
-              <template #default="{ inputValue, inputEvents }">
-                <input
-                  class="date-picker"
-                  :value="inputValue"
-                  v-on="inputEvents"
-                  placeholder="Select a date"
-                  readonly
-                />
-              </template>
-            </vc-date-picker>
+            <client-only>
+              <VDatePicker
+                v-model.range="selectedDate"
+                mode="range"
+                :popover="{ visibility: 'click' }"
+              >
+                <template #default="{ inputValue, togglePopover }">
+                  <input
+                    :value="formatRange(inputValue)"
+                    @click="togglePopover"
+                    readonly
+                    placeholder="Select date range"
+                    class="date-input"
+                  />
+                </template>
+              </VDatePicker>
+            </client-only>
           </div>
         </div>
+        
         <table class="table min-w-[800px]">
           <thead class="tableHeader bg-gray-100">
             <tr>
@@ -77,7 +78,11 @@
             </tr>
           </thead>
 
-          <tbody>
+          <tbody
+            ref="tbodyRef"
+            class="table-body"
+            :style="{ height: tbodyHeight }"
+          >
             <tr
               v-for="order in filteredOrders"
               :key="order.id"
@@ -90,7 +95,10 @@
               </td>
               <td class="cell">{{ order?.orderType }}</td>
               <td class="cell">
-                <div :class="['status', order.status.toLowerCase()]" style="text-transform: capitalize;">
+                <div
+                  :class="['status', order.status.toLowerCase()]"
+                  style="text-transform: capitalize"
+                >
                   {{ capitalize(order?.status) }}
                 </div>
               </td>
@@ -98,22 +106,13 @@
                 <div>{{ order?.totalAmount }}</div>
                 <span>{{ order?.paymentMethod.method }}</span>
               </td>
-              <!-- <td class="px-6 py-3" style="text-align: right">
-                <button
-                  @click.stop="$emit('edit-order', 'edit', order)"
-                  class="text-blue-500 hover:underline"
-                >
-                  Edit
-                </button>
-                <button
-                  @click.stop="$emit('edit-order', 'delete', order)"
-                  class="ml-4 text-red-500 hover:underline"
-                >
-                  Delete
-                </button>
-              </td> -->
             </tr>
-            <tr v-if="filteredOrders.length === 0">
+            <tr v-if="isLoading" key="loading">
+              <td colspan="6" class="px-6 py-7 text-center text-gray-400">
+                Loading ...
+              </td>
+            </tr>
+            <tr v-else-if="filteredOrders?.length === 0 && !isLoading" key="no-order">
               <td colspan="6" class="px-6 py-7 text-center text-gray-500">
                 No order available
               </td>
@@ -146,15 +145,13 @@ import { useOrder } from "~/stores/order/useOrder";
 import Select from "~/components/reuse/ui/Select.vue";
 import Input from "~/components/reuse/ui/Input.vue";
 import Drawer from "~/components/reuse/ui/Drawer.vue";
+import { useAdmin } from "~/stores/admin/useAdmin";
+import { nextTick } from "vue";
+import { watch } from "vue";
 
 const orderStore = useOrder();
-
-const props = defineProps({
-  orders: {
-    type: Object,
-    required: true,
-  },
-});
+const adminStore = useAdmin();
+const currentSortKey = ref("");
 
 const modal = ref({
   isOpen: false,
@@ -163,13 +160,23 @@ const modal = ref({
 const windowWidth = ref(null);
 const searchQuery = ref("");
 const selectedStatus = ref("");
-const selectedDate = ref(null);
+const selectedDate = ref({
+  start: null,
+  end: null,
+});
+const page = ref(1);
+const hasMore = ref(true);
+const isLoading = ref(false);
+const sortOrder = ref("asc");
+
+const orders = computed(() => orderStore.getOrderList);
+const totalCount = computed(() => orderStore.totalCount);
 
 const filteredOrders = computed(() => {
   const query = searchQuery.value.toLowerCase().trim();
   const status = selectedStatus.value;
 
-  return props.orders.filter((order) => {
+  return orders.value.filter((order) => {
     const matchesQuery =
       !query ||
       order.id?.toString().toLowerCase().includes(query) ||
@@ -181,6 +188,64 @@ const filteredOrders = computed(() => {
     return matchesQuery && matchesStatus;
   });
 });
+
+async function fetchOrders({ pageNumber = 1, append = false } = {}) {
+  isLoading.value = true;
+
+  // const dateFrom = selectedDate.value.start
+  //   ? new Date(selectedDate.value.start).toISOString().slice(0, 19) // '2025-06-25T00:00:00'
+  //   : null;
+
+  // const dateTo = selectedDate.value.end
+  //   ? new Date(selectedDate.value.end).toISOString().slice(0, 19)
+  //   : null;
+
+  function normalizeStartLocal(date) {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+
+  function normalizeEndLocal(date) {
+    const d = new Date(date);
+    d.setHours(23, 59, 59, 999);
+    return d;
+  }
+
+  const rawDate = selectedDate.value;
+
+  const dateFrom = rawDate?.start
+    ? normalizeStartLocal(rawDate.start).toISOString()
+    : null;
+
+  const dateTo = rawDate?.end
+    ? normalizeEndLocal(rawDate.end).toISOString()
+    : null;
+
+  const newOrders = await orderStore.fetchFilteredOrders({
+    storeId: adminStore.storeId,
+    query: searchQuery.value,
+    status: selectedStatus.value,
+    sort: currentSortKey.value,
+    order: sortOrder.value,
+    page: pageNumber,
+    limit: 10,
+    dateFrom,
+    dateTo,
+  });
+
+  if (!append) {
+    page.value = newOrders?.length >= 10 ? 2 : 1;
+  } else {
+    if (orderStore.orders.length >= totalCount.value || newOrders.length < 10) {
+      hasMore.value = false;
+    } else {
+      page.value += 1;
+    }
+  }
+
+  isLoading.value = false;
+}
 
 const handleStatusChange = (value) => {
   selectedStatus.value = value;
@@ -196,38 +261,25 @@ const statusOptions = [
   { label: "Canceled", value: "canceled" },
 ];
 
-const sortOrder = ref("asc");
+watch(
+  [searchQuery, selectedStatus, selectedDate],
+  async () => {
+    hasMore.value = true;
+    fetchOrders({ pageNumber: 1, append: false });
+  },
+  { immediate: true }
+);
+
 function sortBy(key) {
+  currentSortKey.value = key;
   sortOrder.value = sortOrder.value === "asc" ? "desc" : "asc";
-  if (key === "totalAmount") {
-    orderStore.orders.sort((a, b) => {
-      if (sortOrder.value === "asc") {
-        return a.totalAmount - b.totalAmount;
-      } else {
-        return b.totalAmount - a.totalAmount;
-      }
-    });
-  } else if (key === "createdAt") {
-    orderStore.orders.sort((a, b) => {
-      const dateA = new Date(a.createdAt);
-      const dateB = new Date(b.createdAt);
-      if (sortOrder.value === "asc") {
-        return dateA - dateB;
-      } else {
-        return dateB - dateA;
-      }
-    });
-  } else if (key === "status") {
-    orderStore.orders.sort((a, b) => {
-      const statusA = a.status.toLowerCase();
-      const statusB = b.status.toLowerCase();
-      if (sortOrder.value === "asc") {
-        return statusA > statusB ? 1 : statusA < statusB ? -1 : 0; // Ascending order
-      } else {
-        return statusA < statusB ? 1 : statusA > statusB ? -1 : 0; // Descending order
-      }
-    });
-  }
+  hasMore.value = true;
+  fetchOrders({ pageNumber: 1, append: false });
+}
+
+async function loadMoreOrders() {
+  if (!hasMore.value || isLoading.value) return;
+  fetchOrders({ pageNumber: page.value, append: true });
 }
 
 function capitalize(str) {
@@ -264,7 +316,8 @@ function handleResize() {
 
 const showSelect = ref(false);
 const isDrawerReady = ref(false);
-onMounted(() => {
+
+onMounted(async () => {
   if (document.getElementById("modal-root")) {
     isDrawerReady.value = true;
   }
@@ -276,19 +329,68 @@ onMounted(() => {
   setTimeout(() => {
     showSelect.value = true;
   }, 50);
+
+  const container = document.querySelector(".table-body");
+  if (container) {
+    container.addEventListener("scroll", handleScroll);
+  }
+
+  nextTick(() => {
+    updateTbodyHeight();
+    window.addEventListener("resize", updateTbodyHeight);
+  });
 });
 
 onUnmounted(() => {
   window.removeEventListener("resize", handleResize);
+  window.removeEventListener("resize", updateTbodyHeight);
+
+  const container = document.querySelector(".table-body");
+  if (container) {
+    container.removeEventListener("scroll", handleScroll);
+  }
 });
 
+let scrollTimeout = null;
+function handleScroll(e) {
+  if (scrollTimeout) clearTimeout(scrollTimeout);
+
+  scrollTimeout = setTimeout(() => {
+    const el = e.target;
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 100) {
+      loadMoreOrders();
+    }
+  }, 250);
+}
+
+// Scrollable tbody height
+const tbodyRef = ref(null);
+const tbodyHeight = ref("auto");
+function updateTbodyHeight() {
+  if (!tbodyRef.value) return;
+  const offsetTop = tbodyRef.value.getBoundingClientRect().top;
+  const windowHeight = window.innerHeight;
+  const desiredHeight = windowHeight - offsetTop - 20; // 20px for bottom padding/margin
+  tbodyHeight.value = `${desiredHeight}px`;
+}
+
 const drawerWidth = computed(() => {
-  if (windowWidth.value > 1000) {
+  if (windowWidth.value > 1250) {
     return `${windowWidth.value / 2}px`;
+  } else if (windowWidth.value > 900) {
+    return `${windowWidth.value * 0.7}px`;
   } else {
     return `${windowWidth.value}px`;
   }
 });
+
+function formatRange(val) {
+  if (!val?.start || !val?.end) return "";
+  const options = { year: "numeric", month: "short", day: "2-digit" };
+  const start = new Date(val.start).toLocaleDateString(undefined, options);
+  const end = new Date(val.end).toLocaleDateString(undefined, options);
+  return `${start} - ${end}`;
+}
 </script>
 
 <style scoped>
@@ -346,6 +448,8 @@ const drawerWidth = computed(() => {
 }
 
 .date-input {
+  height: 36px;
+  min-width: 190px;
   padding: 5px 10px;
   border: 1px solid var(--gray-2);
   border-radius: 6px;
@@ -356,7 +460,6 @@ const drawerWidth = computed(() => {
   display: flex;
   align-items: center;
   margin-bottom: 1.5rem;
-  overflow: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
   padding: 16px 16px 0;
@@ -376,7 +479,6 @@ const drawerWidth = computed(() => {
 }
 
 .wrap-table {
-  overflow: hidden;
   width: 100%;
   margin-top: 32px;
 }
@@ -398,15 +500,29 @@ const drawerWidth = computed(() => {
 
 .table-container {
   overflow-x: auto;
+  overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  padding: 0 20px;
+  padding: 0 20px 0px;
   box-sizing: border-box;
   background: var(--primary-bg-color-1);
 }
 
 .table {
   border: 1px solid var(--pale-gray-1) !important;
+}
+
+.table tbody {
+  overflow-y: auto;
+  width: 100%;
+  display: block;
+  background: var(--white-1);
+}
+
+.table tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
 }
 
 .table tr:nth-child(even) {

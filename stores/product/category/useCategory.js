@@ -1,8 +1,8 @@
 import { defineStore } from "pinia";
-import axios from "axios";
-import { useRoute, useRuntimeConfig } from "nuxt/app";
+import { useRuntimeConfig } from "nuxt/app";
 import { useAdmin } from "~/stores/admin/useAdmin";
 import { useMenu } from "~/stores/menu/useMenu";
+import { apiFetch } from "~/utils/apiFetch";
 
 export const useCategory = defineStore("category", {
   state: () => ({
@@ -21,10 +21,9 @@ export const useCategory = defineStore("category", {
     async fetchCategories() {
       try {
         const config = useRuntimeConfig();
-        const response = await axios.get(
-          `${config.public.apiBaseUrl}/categories`
-        );
-        this.categories = response.data;
+        const data = await apiFetch(`${config.public.apiBaseUrl}/categories`);
+
+        this.categories = data;
       } catch (error) {
         // console.error("Failed to fetch categories");
       }

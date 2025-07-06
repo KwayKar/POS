@@ -95,17 +95,20 @@ const submitItem = async () => {
   } else if (paidAmount.value !== 0 && paidAmount.value >= props.total) {
     const payload = {
       storeId: adminStore.storeId,
+      orderType: "EATIN",
       total:
         posStore.cart &&
         posStore.cart.reduce((sum, item) => sum + item.total, 0),
+      notes: "No ketchup",
       orderItems: posStore.cart.map((item) => {
         const rawItem = toRaw(item);
-
+      
         return {
           productId: rawItem.item.id,
           quantity: rawItem.quantity,
           price: rawItem.unitPrice,
           status: 'CONFIRMED',
+          notes: rawItem.preferences,
           ...(rawItem.size && { size: rawItem.size.label }), // or sizeId if you store it
           customizations: [
             ...(rawItem.addons?.map((a) => ({

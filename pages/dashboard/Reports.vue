@@ -53,6 +53,7 @@ import CategoryBtn from "~/components/reuse/ui/CategoryBtn.vue";
 import ShopsRevenueReport from "~/components/dashboard/reports/ShopsRevenueReport.vue";
 import OrderReport from "~/components/dashboard/reports/OrderReport.vue";
 import { useAnalyticsStore } from "~/stores/report/useReport";
+import { useAdmin } from "~/stores/admin/useAdmin";
 
 const activeSection = ref("");
 defineProps({
@@ -62,10 +63,11 @@ defineProps({
   },
 });
 
-const storeId = 'a847ae5e-092d-4e67-951d-75ece890ffaa'
+const adminStore = useAdmin();
+const storeId = adminStore.storeId;
 const orgId = '6542372f-749f-4dc9-95d4-d1078035c50e'
 const start = '2025-06-01'
-const end = '2025-06-22'
+const end = '2025-06-30'
 
 const analytics = useAnalyticsStore();
 
@@ -74,10 +76,10 @@ const analytics = useAnalyticsStore();
 onMounted(async () => {
   await analytics.fetchRevenueReport(storeId, '2025-06-01', '2025-08-22');
   await analytics.fetchOrdersReport(storeId, '2025-06-01', '2025-08-22');
-  // const revenueByStore = await analytics.fetchStoreRevenue(storeId, start, end)
-  // const totalSalesByStore = await analytics.fetchTotalSales(storeId, start, end)
-  // await analytics.fetchTopProducts(storeId, start, end, 5)
-  // await analytics.fetchOrganizationRevenue(orgId, start, end)
+  const revenueByStore = await analytics.fetchStoreRevenue(storeId, start, end)
+  const totalSalesByStore = await analytics.fetchTotalSales(storeId, start, end)
+  await analytics.fetchTopProducts(storeId, start, end, 5)
+  await analytics.fetchOrganizationRevenue(orgId, start, end)
   activeSection.value = 'products'
 })
 </script>

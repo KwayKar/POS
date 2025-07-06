@@ -15,16 +15,11 @@
     <div class="flex-shrink-0 overflow-y-auto" :style="{ width: 'calc(100%)' }">
       <div class="w-full">
         <OrderList
-          :orders="filteredOrders"
           @select-order="selectOrder"
           @edit-order="openModal"
           @filter-order="filterByOrderStatus"
         />
       </div>
-
-      <!-- <div class="orderDetailsPanel fixed top-16 right-0 w-full lg:w-[400px] h-[calc(100vh-16px)] p-4 overflow-y-auto">
-        <OrderDetails :order="selectedOrder" />
-      </div> -->
     </div>
 
     <Modal
@@ -57,8 +52,6 @@
 <script setup>
 import { ref, computed } from "vue";
 import { useRoute } from "vue-router";
-import { useOrder } from "~/stores/order/useOrder";
-
 import EditOrderInfo from "~/components/dashboard/orders/EditOrderInfo.vue";
 import OrderList from "~/components/dashboard/orders/OrderList.vue";
 import NavPanel from "~/components/dashboard/panels/NavPanel.vue";
@@ -67,17 +60,10 @@ import Modal from "~/components/reuse/ui/Modal.vue";
 import DashboardLayout from "~/layouts/DashboardLayout.vue";
 import NavPanelButton from "~/components/dashboard/panels/NavPanelButton.vue";
 
-const orderStore = useOrder();
-const orderList = computed(() => orderStore.getOrderList);
-
 const selectedOrder = ref(null);
 const filterStatus = ref("");
 const modal = ref({ type: "", isOpen: false });
 
-const filteredOrders = computed(() => {
-  if (!filterStatus.value) return orderList.value;
-  return orderList.value.filter((order) => order.status === filterStatus.value);
-});
 
 function selectOrder(order) {
   selectedOrder.value = order;

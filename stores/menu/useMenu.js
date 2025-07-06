@@ -1,7 +1,7 @@
-import axios from "axios";
 import { useRoute, useRuntimeConfig } from "nuxt/app";
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
+import { apiFetch } from "~/utils/apiFetch";
 
 export const useMenu = defineStore("menu", () => {
   const items = ref([]);
@@ -15,10 +15,8 @@ export const useMenu = defineStore("menu", () => {
     // loading.value = true;
     // error.value = null;
     try {
-      const response = await axios.get(
-        `${config.public.apiBaseUrl}/menus/${menuId}`
-      );
-      items.value = response.data.categories;
+      const data = await apiFetch(`${config.public.apiBaseUrl}/menus/${menuId}`);
+      items.value = data.categories;
     } catch (err) {
       // error.value = "Failed to load products";
     } finally {
@@ -156,14 +154,14 @@ export const useMenu = defineStore("menu", () => {
     if (!item) return;
     item.snoozed = !item.snoozed;
 
-    await axios.patch(
-      `${config.public.apiBaseUrl}/menus/${menuId}/items/${item.id}`,
-      {
+    await apiFetch(`${config.public.apiBaseUrl}/menus/${menuId}/items/${item.id}`, {
+      method: 'PATCH',
+      body: {
         snoozed: item.snoozed,
         overridePrice: item.overridePrice,
         sortOrder: item.sortOrder,
-      }
-    );
+      },
+    });
   };
 
   const categories = computed(() => {

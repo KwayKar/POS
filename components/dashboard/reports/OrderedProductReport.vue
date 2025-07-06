@@ -106,12 +106,12 @@ import Icons from "~/components/reuse/icons/Icons.vue";
 import SearchIcon from "~/components/reuse/icons/SearchIcon.vue";
 import Button from "~/components/reuse/ui/Button.vue";
 import Input from "~/components/reuse/ui/Input.vue";
+import { useAdmin } from "~/stores/admin/useAdmin";
 import { useAnalyticsStore } from "~/stores/report/useReport";
+import { formatCurrency } from "~/utils/formatCurrency";
 
-const formatCurrency = (value) =>
-  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
-    value
-  );
+const adminStore = useAdmin();
+const storeId = adminStore.storeId;
 
 // Sorting Logic
 const sortKey = ref(null);
@@ -183,10 +183,8 @@ const exportCSV = () => {
 };
 
 onMounted(async () => {
-  const storeId = "a847ae5e-092d-4e67-951d-75ece890ffaa";
-  const orgId = "6542372f-749f-4dc9-95d4-d1078035c50e";
   const start = "2025-06-01";
-  const end = "2025-06-22";
+  const end = "2025-08-22";
   
 try {
     await analytics.fetchTopProducts(storeId, start, end, 5);

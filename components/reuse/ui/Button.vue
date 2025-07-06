@@ -73,9 +73,11 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+  height: 42px;
   background-color: var(--black-1);
   color: var(--white-1);
   font-size: var(--font-size-x-small);
+  font-weight: 600;
   border: 1px solid var(--white-1);
   padding: 6px 32px;
   border-radius: 24px;
@@ -88,10 +90,8 @@ export default {
 }
 
 .custom-button:hover {
-  opacity: 0.85;
   background-color: var(--white-1);
   color: var(--black-1);
-  border: 1px solid var(--black-1);
 }
 
 .custom-btn-primary {
@@ -99,12 +99,17 @@ export default {
   color: var(--white-1);
 }
 
+.custom-btn-primary:hover {
+  border: 1px solid var(--black-2);
+  background-color: var(--white-2);
+  color: var(--black-1) !important;
+}
+
 .custom-btn-secondary {
   background-color: var(--white-1);
   color: var(--primary-text-color-1);
 }
 .custom-btn-secondary:hover {
-  opacity: 0.85;
   background-color: var(--black-1);
   color: var(--white-1);
   border: 1px solid var(--black-1);

@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia';
 import { ref, computed, toRaw } from 'vue';
-import axios from 'axios';
 import { useRuntimeConfig } from 'nuxt/app';
 import { useAdmin } from '../admin/useAdmin';
+import { apiFetch } from '~/utils/apiFetch';
 
 export const useProductCustomization = defineStore('productCustomization', () => {
 
@@ -50,8 +50,8 @@ export const useProductCustomization = defineStore('productCustomization', () =>
 
   const fetchCustomizations = async () => {
     try {
-      const response = await axios.get(`${config.public.apiBaseUrl}/org/${admin.estId}/customizations`);
-      customizations.value = response.data;  
+      const res = await apiFetch(`${config.public.apiBaseUrl}/org/${admin.estId}/customizations`);
+      customizations.value = res;
     } catch (error) {
       console.error('Failed to fetch customizations:', error);
     }
@@ -59,9 +59,12 @@ export const useProductCustomization = defineStore('productCustomization', () =>
 
   const updateCustomization = async (id, updatedData) => {
     try {
-      const response = await axios.put(`${config.public.apiBaseUrl}/customizations/${id}`, updatedData);
+      const res = await apiFetch(`${config.public.apiBaseUrl}/customizations/${id}`, {
+        method: 'PUT',
+        body: updatedData,
+      });
       // update locally after successful update
-      updateCustomizationLocal(id, response.data);
+      updateCustomizationLocal(id, res.data);
     } catch (error) {
       console.error('Failed to update customization:', error);
     }
@@ -69,10 +72,14 @@ export const useProductCustomization = defineStore('productCustomization', () =>
 
   const addCustomization = async (newCustomization) => {
     try {
-      const res = await axios.post(`${config.public.apiBaseUrl}/customizations`, newCustomization);
+      const res = await apiFetch(`${config.public.apiBaseUrl}/customizations`, {
+        method: 'POST',
+        body: newCustomization,
+      });
+
       addCustomizationLocal(newCustomization);
 
-      if (!res.data.success) {
+      if (!res.success) {
         return { success: false, error: "Failed to create product" };
       }
 
@@ -85,7 +92,9 @@ export const useProductCustomization = defineStore('productCustomization', () =>
 
   const deleteCustomization = async (id) => {
     try {
-      await axios.delete(`${config.public.apiBaseUrl}/customizations/${id}`);
+      await apiFetch(`${config.public.apiBaseUrl}/customizations/${id}`, {
+        method: 'DELETE',
+      });
       deleteCustomizationLocal(id);
     } catch (error) {
       console.error('Failed to delete customization:', error);

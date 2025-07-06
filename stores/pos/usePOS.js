@@ -1,5 +1,4 @@
 import { defineStore } from "pinia";
-import { generateId } from "~/utils/generateId";
 
 export const usePosStore = defineStore("pos", {
   state: () => ({

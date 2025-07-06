@@ -37,11 +37,9 @@
 }
 
 .modal-submit-section {
-  padding: 0px 22px 10px;
-  /* margin: 0 0 16px 0; */
+  padding: 14px 22px 18px;
   display: flex;
   justify-content: flex-end;
-  border-top: 1px solid red;
 }
 
 .modal-bottom {

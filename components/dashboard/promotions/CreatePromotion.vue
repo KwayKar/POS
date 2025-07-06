@@ -74,23 +74,25 @@
         <div class="form-group flex gap-4">
           <div class="w-1/2">
             <label class="form-label">Expiry Date</label>
-            <vc-date-picker
-              v-model="form.expiresAt"
-              mode="single"
-              is-required
-              color="green"
-              :popover="{ visibility: 'focus', transition: '' }"
-            >
-              <template #default="{ inputValue, inputEvents }">
-                <input
-                  class="date-picker"
-                  :value="inputValue"
-                  v-on="inputEvents"
-                  placeholder="Select a date"
-                  readonly
-                />
-              </template>
-            </vc-date-picker>
+            <client-only>
+              <vc-date-picker
+                v-model="form.expiresAt"
+                mode="single"
+                is-required
+                color="green"
+                :popover="{ visibility: 'focus', transition: '' }"
+              >
+                <template #default="{ inputValue, inputEvents }">
+                  <input
+                    class="date-picker"
+                    :value="inputValue"
+                    v-on="inputEvents"
+                    placeholder="Select a date"
+                    readonly
+                  />
+                </template>
+              </vc-date-picker>
+            </client-only>
           </div>
 
           <div class="w-1/2" v-if="isEditMode">

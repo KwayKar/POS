@@ -47,7 +47,7 @@ export default {
   outline: none;
   border: 1px solid var(--gray-1); 
   border-radius: 7px;
-
+  color: var(--black-1);
 }
 
 .custom-textarea:focus {

@@ -1,8 +1,8 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { useAdmin } from "@/stores/admin/useAdmin";
-import axios from "axios";
 import { useRuntimeConfig } from "nuxt/app";
+import { apiFetch } from "~/utils/apiFetch";
 
 const foodItems = ref([
   {
@@ -215,10 +215,8 @@ export const useProduct = defineStore("product", () => {
     loading.value = true;
     error.value = null;
     try {
-      const response = await axios.get(
-        `${config.public.apiBaseUrl}/stores/${admin.storeId}/products`
-      );
-      items.value = response.data;
+      const data = await apiFetch(`${config.public.apiBaseUrl}/stores/${admin.storeId}/products`);
+      items.value = data;
     } catch (err) {
       error.value = "Failed to load products";
     } finally {
@@ -228,17 +226,17 @@ export const useProduct = defineStore("product", () => {
 
   const createProduct = async (payload) => {
     try {
-      const res = await axios.post(
-        `${config.public.apiBaseUrl}/products`,
-        payload
-      );
+      const res = await apiFetch(`${config.public.apiBaseUrl}/products`, {
+        method: "POST",
+        body: payload,
+      });
 
-      if (!res.data.success) {
+      if (!res.success) {
         return { success: false, error: "Failed to create product" };
       }
 
-      items.value.unshift(res.data.data);
-      return { success: true, data: res.data };
+      items.value.unshift(res.data);
+      return { success: true, data: res };
     } catch (err) {
       return {
         success: false,
@@ -249,11 +247,12 @@ export const useProduct = defineStore("product", () => {
 
   const updateProduct = async (id, payload) => {
     try {
-      const res = await axios.put(
-        `${config.public.apiBaseUrl}/products/${id}`,
-        payload
-      );
-      const { success, data } = res.data;
+      const res = await apiFetch(`${config.public.apiBaseUrl}/products/${id}`, {
+        method: "PUT",
+        body: payload,
+      });
+
+      const { success, data } = res;
 
       if (success) {
         const index = items.value.findIndex((p) => p.id === id);

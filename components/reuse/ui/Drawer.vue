@@ -101,7 +101,7 @@ const emit = defineEmits(["close"]);
 }
 
 .drawer-body {
-  padding: 1rem;
+  padding: 0 1rem;
 }
 
 .close-btn {
