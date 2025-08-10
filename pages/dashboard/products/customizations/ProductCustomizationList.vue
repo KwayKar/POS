@@ -8,6 +8,7 @@
     </div>
 
     <div
+      ref="scrollEl"
       class="wrap-items wrap-product-items"
       :style="{ overflowY: 'auto', height: panelHeight + 'px' }"
     >
@@ -53,7 +54,6 @@
 
 <script setup>
 import CategoryList from "~/components/dashboard/items/CategoryList.vue";
-import SelectProducts from "~/components/dashboard/items/SelectProducts.vue";
 import CustomizationForm from "~/components/dashboard/products/customizations/CustomizationForm.vue";
 import Modal from "~/components/reuse/ui/Modal.vue";
 import { useProductCustomization } from "~/stores/product/useProductCustomization";
@@ -63,7 +63,14 @@ const containerRef = ref(null);
 const panelHeight = ref(0);
 const containerWidth = ref(0);
 const selectedCategory = ref("All");
+const scrollEl = ref(null);
 const modal = ref({ type: null, isOpen: false });
+
+const hasMore = ref(true);
+const loading = ref(false);
+const page = ref(1);
+const limit = ref(4);
+
 let resizeObserver;
 
 const customizations = computed(() => store.customizations);
@@ -119,7 +126,34 @@ const gridClass = computed(() => {
   return "grid grid-cols-5";
 });
 
+const loadItems = async () => {
+  if (!hasMore.value || loading.value) return;
+
+  try {
+    loading.value = true;
+    
+    const data = await store.fetchCustomizations({
+      page: page.value,
+      limit: limit.value,
+    });
+    const loadedCount = page.value * limit.value;
+    hasMore.value = loadedCount < (data?.total || 0);
+    
+    if (hasMore.value) {
+      page.value += 1;
+    }
+
+    loading.value = false;
+  } catch (err) {
+    console.error("Failed to load products:", err);
+  }
+};
+
 onMounted(async() => {
+  if (!hasMore.value || loading.value) return;
+  page.value = 1;
+  hasMore.value = true;
+
   updatePanelHeight();
   updateWidth();
 
@@ -132,7 +166,27 @@ onMounted(async() => {
 
   document.body.style.overflow = "hidden";
   window.addEventListener("resize", updateWidth);
+  await loadItems();
+
+  if (scrollEl.value) {
+    scrollEl.value.addEventListener("scroll", handleScroll, { passive: true });
+  }
 });
+
+let scrollTimeout = null;
+const handleScroll = () => {
+  if (scrollTimeout) clearTimeout(scrollTimeout);
+
+  scrollTimeout = setTimeout(() => {
+     const el = scrollEl.value;
+    if (!el) return;
+
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 100) {
+      loadItems();
+    }
+  }, 200);
+
+};
 
 onBeforeUnmount(() => {
   window.removeEventListener("resize", updateWidth);

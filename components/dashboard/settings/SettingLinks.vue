@@ -31,13 +31,16 @@ import { useSetting } from '~/stores/setting/useSetting';
 
 const navigations = {
   Account: ["Preferences", "Shop Info", "Staff"],
+  Stores: ["Locations", "Staff", "Roles"],
   Brands: ["Themes"],
   Upgrade: ["Upgrade Plan", "Billing"],
 };
 const iconMap = {
   Preferences: Brand,
   "Shop Info": Info,
+  "Locations": Robot,
   "Staff": Robot,
+  "Roles": Robot,
   Themes: Brand,
   "Upgrade Plan": Robot,
   Billing: Chain

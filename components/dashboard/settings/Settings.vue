@@ -14,6 +14,8 @@ import SettingLinks from "./SettingLinks.vue";
 import ShopInfo from "./shopInfo/ShopInfo.vue";
 import BrandTheme from "./shopInfo/BrandTheme.vue";
 import StaffList from "./staff/StaffList.vue";
+import RoleList from "./roles/RoleList.vue";
+import LocationList from "./locations/LocationList.vue";
 
 const setting = useSetting();
 
@@ -25,8 +27,12 @@ const currentComponent = computed(() => {
       return ShopInfo
     case 'Themes':
       return BrandTheme
+    case 'Locations':
+      return LocationList
     case 'Staff':
       return StaffList
+    case 'Roles':
+      return RoleList
     default:
       return null
   }

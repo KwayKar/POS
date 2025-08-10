@@ -65,6 +65,16 @@
             class="btn-secondary flex flex-col items-center w-20"
             @click="togglePanel"
           >
+            <Icons icon="Table" scale="'1.2'" />
+            <span class="text-sm mt-1">Table</span>
+          </button>
+        </div>
+
+        <div class="flex">
+          <button
+            class="btn-secondary flex flex-col items-center w-20"
+            @click="togglePanel"
+          >
             <Icons icon="Close" />
             <span class="text-sm mt-1">Close</span>
           </button>
@@ -104,7 +114,6 @@ import { ref, defineProps, defineEmits, watch, onMounted } from "vue";
 import Icons from "~/components/reuse/icons/Icons.vue";
 import Modal from "~/components/reuse/ui/Modal.vue";
 import ApplyDiscount from "./ApplyDiscount.vue";
-import { useAdmin } from "~/stores/admin/useAdmin";
 import { usePosStore } from "~/stores/pos/usePOS";
 import HoldOrderList from "./HoldOrderList.vue";
 import PaymentPad from "./PaymentPad.vue";
@@ -113,7 +122,6 @@ const props = defineProps({
   pricingInfo: Object,
 });
 
-const adminStore = useAdmin();
 const posStore = usePosStore();
 
 const emit = defineEmits(["openModal"]);
@@ -216,6 +224,7 @@ const paymentPadModalWidth = computed(() => {
   justify-content: center;
   align-items: center;
   font-size: 1.2rem;
+  font-weight: 600;
   background: var(--primary-btn-color);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   transition: box-shadow 0.2s;

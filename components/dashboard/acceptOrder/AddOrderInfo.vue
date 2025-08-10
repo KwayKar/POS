@@ -6,7 +6,7 @@
 
         <h3 class="text-lg font-bold text-center lg:text-left item-title">
           <span class="text-lg text-center lg:text-left">
-            ${{ calculatedPrice }}
+            Unit Price - {{ calculatedPrice }} /
           </span>
         </h3>
       </div>
@@ -15,7 +15,7 @@
     <div class="item-content flex layout">
       <!-- Left Panel -->
       <div class="left-panel">
-        <img :src="selectedItem?.images[0]" alt="" class="rounded item-image" />
+        <img :src="selectedItem?.images?.[0]" alt="" class="rounded item-image" />
       </div>
 
       <!-- Right Panel -->
@@ -30,6 +30,8 @@
             />
           </div>
         </div>
+
+        <p v-if="offerPrompt" class="discountMessage" style="margin-bottom: 18px">{{ offerPrompt }}</p>
 
         <!-- Sizes -->
         <div v-if="selectedItem?.sizes?.length" class="mb-8">
@@ -84,26 +86,36 @@
 
     <!-- Submit Button -->
     <div class="modal-submit-section">
-      <div class="modal-submit-section-btn flex">
-        <Button
-          v-if="modalType === 'edit'"
-          @click="emit('delete-item', selectedItem.id)"
-          variant="danger"
-          :style="'height: 42px'"
-        >
-          Remove
-        </Button>
+      <div>
+        <div class="modal-submit-section-btn flex">
+          <Button
+            v-if="modalType === 'edit'"
+            @click="emit('delete-item', selectedItem.id)"
+            variant="danger"
+            :style="{ height: '42px', marginRight: '14px' }"
+          >
+            Remove
+          </Button>
+
+          <div v-if="promotionMessage" class="discountMessage">
+            {{ promotionMessage }}
+          </div>
+        </div>
       </div>
-     
-      <div class="modal-submit-section-btn flex justify-end">
+
+      <div
+        class="modal-submit-section-btn flex justify-end"
+        style="width: auto"
+      >
+        <div>{{ subtotal }}</div>
         <div class="total-price-per-unit">{{ totalPrice }}</div>
         <SubmitButton
           type="submit"
           @click="updateOrder"
           :applyShadow="true"
-          :style="'padding: 0 62px'"
+          :style="{ padding: '0 62px' }"
         >
-          Add
+          {{ modalType === 'edit' ? 'Update' : 'Add' }}
         </SubmitButton>
       </div>
     </div>
@@ -146,6 +158,9 @@ const props = defineProps({
 const emit = defineEmits(["update-item", "delete-item"]);
 const selectedItem = ref(__props.item);
 const extraPrice = ref(0);
+const eligiblePromo = ref(null);
+const offerPrompt = ref("");
+
 const formData = reactive({
   quantity: 1,
 });
@@ -189,7 +204,9 @@ const updateOrder = () => {
   }
 
   order.unitPrice = unitPrice.value;
+  order.subtotal = subtotalPrice.value;
   order.total = totalPrice.value;
+  order.promoValue = eligiblePromo.value;
 
   emit("update-item", order);
 };
@@ -222,7 +239,7 @@ const categorizedOptions = computed(() => {
 onMounted(async () => {
   if (props.modalType === "edit") {
     const match = pos.cartItems.find(
-      (item) => item.item.id === selectedItem.value.id
+      (item) => item.cartId === pos.selectedCartId
     );
 
     if (match) {
@@ -250,10 +267,10 @@ onMounted(async () => {
 
       selectedItem.value.customizations = finalCustomizations;
 
-      formData.selectedAddons = addons.map(c => c);
-      formData.selectedChoices = choices.map(c => c);
-      formData.selectedRemovals = removals.map(c => c);
-      
+      formData.selectedAddons = addons.map((c) => c);
+      formData.selectedChoices = choices.map((c) => c);
+      formData.selectedRemovals = removals.map((c) => c);
+
       if (formData.selectedSize) {
         handleSelectedSize(formData.selectedSize);
       }
@@ -261,12 +278,8 @@ onMounted(async () => {
       formData.selectedSize = match.size;
       formData.quantity = match.quantity || 1;
       formData.preferences = match.preferences || "";
-
     }
   } else {
-    const customizations = selectedItem.value?.customizations || [];
-    const selectedAddons = customizations.filter((c) => c.type === "addon");
-
     if (selectedItem.value?.selectedSize) {
       formData.selectedSize = selectedItem.value.selectedSize;
     }
@@ -279,6 +292,60 @@ onMounted(async () => {
       formData.preferences = selectedItem.value.preferences;
     }
   }
+
+
+  const product = selectedItem.value;
+  const cartItems = pos.cartItems;
+
+  if (!product?.eligibleFor?.length) return;
+
+  product.eligibleFor.forEach((promo) => {
+    const eligibleGetItems = promo.eligibleGetItems;
+
+    if (!eligibleGetItems?.length) return;
+
+    eligibleGetItems.forEach((getItem) => {
+      const { subtype, valueType, buyQuantity, getQuantity } = promo;
+
+      const isB1G1 = subtype === "buy_1_get_1";
+      const isBuyXGetY = subtype === "buy_x_get_y";
+
+      if (!isB1G1 && !isBuyXGetY) return;
+
+      // Total cart qty that qualifies for this promo
+      const totalQty = cartItems.reduce((sum, item) => {
+        const itemPromos = item.item?.eligibleFor || [];
+        const isMatch = itemPromos.some(p => 
+          p.eligibleGetItems?.some(g => g.id === getItem.id)
+        );
+        return isMatch ? sum + item.quantity : sum;
+      }, 0);
+
+      if (isB1G1) {
+        const needed = totalQty % 2 === 0 ? 1 : 0;
+        if (needed > 0) {
+          offerPrompt.value = `Add ${needed} more to get 1 free (Buy 1 Get 1)!`;
+        }
+      }
+
+      if (isBuyXGetY) {
+        const groupSize = buyQuantity + getQuantity;
+        const remainder = totalQty % groupSize;
+
+        if (remainder < buyQuantity) {
+          const needed = buyQuantity - remainder;
+
+          if (valueType === "fixed") {
+            offerPrompt.value = `Add ${needed} more to unlock amount ${promo.value} off!`;
+          } else if (valueType === "percentage") {
+            offerPrompt.value = `Add ${needed} more to get ${promo.value}% off!`;
+          } else if (valueType === "quantity") {
+            offerPrompt.value = `Add ${needed} more to get ${getQuantity} free!`;
+          }
+        }
+      }
+    });
+  });
 });
 
 const handleSelectedSize = (size) => {
@@ -317,9 +384,133 @@ const unitPrice = computed(() => {
   return basePrice + extraSizePrice + addonTotal;
 });
 
+// Calculate discounted price
 const totalPrice = computed(() => {
+  const product = selectedItem.value;
+  const quantity = formData.quantity;
+  const selectedSize = selectedItem.value?.sizes?.find(
+    (s) => s.sizeId === formData?.selectedSize?.sizeId
+  );
+  const addonTotal = (formData?.selectedAddons || [])
+    .filter((c) => c.type === "addon")
+    .reduce((sum, c) => {
+      const price = Number(c.price || 0);
+      const addonQty = Number(c.quantity ?? 0);
+      return sum + price * addonQty;
+    }, 0);
+
+  const basePrice =
+    selectedSize?.extraPrice + addonTotal + product?.basePrice ??
+    product?.basePrice ??
+    0;
+
+  if (!product?.eligibleFor?.length || quantity <= 0) {
+    return basePrice * quantity;
+  }
+
+  const promo = product.eligibleFor[0];
+  const { value, valueType, subtype, buyQuantity = 1, getQuantity = 0 } = promo;
+  eligiblePromo.value = {
+    id: promo.id,
+    type: promo.type,
+    subtype: subtype,
+    label: promotionMessage.value,
+    value, 
+    valueType,
+  }
+
+  // Percentage Discount
+  if (subtype === "percentage") {
+    const discountedUnit = basePrice - (basePrice * value) / 100;
+    return discountedUnit * quantity;
+  }
+
+  // Fixed Discount
+  if (subtype === "fixed") {
+    const discountedUnit = Math.max(0, basePrice - value);
+    return discountedUnit * quantity;
+  }
+
+  // Buy One Get One (same as Buy 1 Get 1)
+  if (subtype === "buy_one_get_one") {
+    const chargeableQty = Math.ceil(quantity / 2); // buy 1 get 1 free
+    return chargeableQty * basePrice;
+  }
+
+  // Buy X Get Y
+  if (subtype === "buy_x_get_y") {
+    if (valueType === "quantity") {
+      if (quantity < buyQuantity) {
+        return basePrice * quantity;
+      }
+
+      const groupSize = buyQuantity + getQuantity;
+      const fullGroups = Math.floor(quantity / groupSize);
+      const remainingItems = quantity % groupSize;
+
+      const chargeableQty =
+        fullGroups * buyQuantity + Math.min(remainingItems, buyQuantity);
+
+      return chargeableQty * basePrice;
+    } else {
+      // percentage or fixed
+      const total = basePrice * quantity;
+
+      if (quantity < buyQuantity) {
+        return total; // No discount
+      }
+
+      let discount = 0;
+      const discountGroups = Math.floor(quantity / buyQuantity);
+      const discountedQty = discountGroups * buyQuantity;
+      const discountBase = basePrice * discountedQty;
+
+      if (valueType === "percentage") {
+        discount = discountBase * (value / 100);
+      } else if (valueType === "fixed") {
+        discount = discountGroups * value; // fixed value per group
+      }
+
+      return total - discount;
+    }
+  }
+
+  return basePrice * quantity;
+});
+
+const subtotalPrice = computed(() => {
   const quantity = Number(formData.quantity || 0);
   return unitPrice.value * quantity;
+});
+
+const promotionMessage = computed(() => {
+  const promo = selectedItem.value?.eligibleFor?.find(
+    (p) => p.type === "product" && p.id
+  );
+  if (!promo) return null;
+
+  if (promo.subtype === "percentage") {
+    return `Get ${promo.value}% off!`;
+  }
+  if (promo.subtype === "fixed") {
+    return `Save ฿${promo.value} on this item!`;
+  }
+  if (promo.subtype === "buy_one_get_one") {
+    return "Buy 1 Get 1 Free!";
+  }
+  if (promo.subtype === "buy_x_get_y") {
+    if (promo.valueType === "quantity") {
+      return `Buy ${promo.buyQuantity}, Get ${promo.getQuantity} Free`;
+    } else {
+      if (promo.valueType === "percentage") {
+        return `Buy ${promo.buyQuantity}, Get ${promo.value}% off`;
+      } else if (promo.valueType === "fixed") {
+        return `Buy ${promo.buyQuantity}, Get ${promo.value} amount`;
+      }
+    }
+  }
+
+  return "Promotion available!";
 });
 </script>
 
@@ -385,5 +576,15 @@ const totalPrice = computed(() => {
   padding-right: 25px;
   font-size: 1.25rem;
   font-weight: 600;
+}
+
+.discountMessage {
+  background: #f2f2ff;
+  border: 1px solid #478aff;
+  border-radius: 8px;
+  padding: 8px 26px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #5c67ac;
 }
 </style>

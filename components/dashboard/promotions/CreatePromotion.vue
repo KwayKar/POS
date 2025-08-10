@@ -17,7 +17,7 @@
       </div>
 
       <div>
-        <div class="form-group">
+        <div v-if="form.type === 'coupon'" class="form-group">
           <label class="form-label">Code</label>
           <Input v-model="form.code" type="text" placeholder="Enter code" />
         </div>
@@ -28,9 +28,60 @@
             <Select v-model="form.subtype" :options="promotionTypes" />
           </div>
 
-          <div class="w-1/2">
+          <div v-if="!['buy_x_get_y', 'buy_one_get_one'].includes(form.subtype)" class="w-1/2">
             <label class="form-label">Value</label>
             <Input v-model.number="form.value" type="number" placeholder="10" />
+          </div>
+
+          <div v-if="form.subtype === 'buy_x_get_y'" class="w-1/2">
+            <label class="form-label">Get Type</label>
+            <Select
+              v-model="form.valueType"
+              :options="[
+                { label: 'Percentage Discount', value: 'percentage' },
+                { label: 'Fixed Discount', value: 'fixed' },
+                { label: 'Free Quantity', value: 'quantity' },
+              ]"
+            />
+          </div>
+        </div>
+
+        <div
+          v-if="form.subtype === 'buy_x_get_y'"
+          class="form-group flex gap-4"
+        >
+          <div
+            v-if="
+              form.subtype === 'buy_x_get_y' 
+            "
+            class="w-1/2"
+          >
+            <label class="form-label">Buy Quantity</label>
+            <Input v-model.number="form.buyQuantity" type="number" placeholder="10" />
+          </div>
+
+          <div
+            v-if="
+              form.subtype === 'buy_x_get_y' && form.valueType !== 'quantity'
+            "
+            class="w-1/2"
+          >
+            <label class="form-label">Value</label>
+            <Input v-model.number="form.value" type="number" placeholder="10" />
+          </div>
+
+          <div
+            v-if="
+              form.subtype === 'buy_x_get_y' && form.valueType === 'quantity'
+            "
+            class="w-1/2"
+          >
+            <label class="form-label">Get Quantity</label>
+            <Input
+              v-model.number="form.getQuantity"
+              type="number"
+              placeholder="10"
+            />
           </div>
         </div>
 
@@ -39,11 +90,11 @@
           <div class="select-product-header">
             <Button
               type="button"
-              class="icon-button"
-              style="background: var(--black-2); color: var(--white-1)"
+              class="custom-btn-primary"
               @click="openModal('select-products')"
             >
-              + Select
+              <strong style="font-size: 20px; margin-right: 7px">+</strong>
+              Select
             </Button>
             <p class="form-description">
               Please select the products you want this discount to apply to.
@@ -52,12 +103,23 @@
 
           <div class="product-scroll-container">
             <div
-              v-for="(product, index) in form.products"
+              v-for="(product, index) in form.eligibleGetItems"
               :key="index"
               class="product-chip"
             >
-              <img :src="product.image" :alt="product.title" class="product-image" />
+              <img
+                :src="product.images[0]"
+                :alt="product.title"
+                class="product-image"
+              />
               <span class="product-name">{{ product.title }}</span>
+              <button
+                type="button"
+                class="remove-btn text-red-500 font-bold"
+                @click="confirmDeleteModal('delete', product.id)"
+              >
+                ✕
+              </button>
             </div>
           </div>
         </div>
@@ -74,29 +136,27 @@
         <div class="form-group flex gap-4">
           <div class="w-1/2">
             <label class="form-label">Expiry Date</label>
+            <!-- Date Filter -->
             <client-only>
-              <vc-date-picker
-                v-model="form.expiresAt"
-                mode="single"
-                is-required
-                color="green"
-                :popover="{ visibility: 'focus', transition: '' }"
+              <VDatePicker
+                v-model="form.endsAt"
+                :popover="{ visibility: 'click' }"
               >
-                <template #default="{ inputValue, inputEvents }">
+                <template #default="{ inputValue, togglePopover }">
                   <input
-                    class="date-picker"
                     :value="inputValue"
-                    v-on="inputEvents"
-                    placeholder="Select a date"
+                    @click="togglePopover"
                     readonly
+                    placeholder="Select date range"
+                    class="date-input"
                   />
                 </template>
-              </vc-date-picker>
+              </VDatePicker>
             </client-only>
           </div>
 
           <div class="w-1/2" v-if="isEditMode">
-            <label class="form-label">Status</label>
+            <label class="form-label">isActive</label>
             <Toggle v-model="form.isActive" />
           </div>
         </div>
@@ -136,6 +196,17 @@
       @close="emit('close')"
     />
   </Modal>
+
+  <Modal
+    v-if="modal.isOpen && modal.type === 'delete'"
+    width="420px"
+    height="auto"
+    @close="closeModal"
+  >
+    <ConfirmDelete @remove-item="removeFromEligibleProduct" @close="closeModal">
+      Are you sure you want to delete?
+    </ConfirmDelete>
+  </Modal>
 </template>
 
 <script setup>
@@ -150,19 +221,17 @@ import Textarea from "~/components/reuse/ui/Textarea.vue";
 import SelectProducts from "../items/SelectProducts.vue";
 import { usePromotion } from "~/stores/promotion/usePromotion";
 import Toggle from "~/components/reuse/ui/Toggle.vue";
+import { productBasedOptions } from "./promotionTypes";
+import ConfirmDelete from "~/components/reuse/ui/ConfirmDelete.vue";
 
 const emit = defineEmits(["close"]);
 const promotionStore = usePromotion();
-const { createPromotion, updatePromotion, setSelectedPromotionID } =
+const { createPromotion, updatePromotion, removeEligibleProduct } =
   usePromotion();
 const selectedPromotion = computed(() => promotionStore.getSelectedPromotion);
 const isEditMode = computed(() => !!selectedPromotion.value?.id);
 
 const props = defineProps({
-  initialData: {
-    type: Object,
-    default: () => ({}),
-  },
   height: {
     type: String,
     required: true,
@@ -174,51 +243,22 @@ const form = ref({
   type: "coupon",
   subtype: "",
   code: "",
-  promotionValue: null,
+  value: null,
   description: "",
-  isActive: true,
-  expiresAt: "",
-  products: [
-    {
-      id: 1,
-      title: "Spaghetti Carbonara",
-      image:
-        "https://res.cloudinary.com/sweetgreen/image/upload/f_webp,q_auto:good/dpr_2/c_crop,h_0.7,w_0.4/w_343/v1702673576/gravy/production/Gravy::MasterProduct/Q423_OLO_RoastedSweetPotatoesGreenGoddess_3600x2400_l2lxcx",
-    },
-    {
-      id: 2,
-      title: "Margherita Pizza",
-      image:
-        "https://res.cloudinary.com/sweetgreen/image/upload/f_webp,q_auto:good/dpr_2/c_crop,h_0.7,w_0.4/w_343/v1702673576/gravy/production/Gravy::MasterProduct/Q423_OLO_RoastedSweetPotatoesGreenGoddess_3600x2400_l2lxcx",
-    },
-    {
-      id: 3,
-      title: "Tiramisu",
-      image:
-        "https://res.cloudinary.com/sweetgreen/image/upload/f_webp,q_auto:good/dpr_2/c_crop,h_0.7,w_0.4/w_343/v1702673576/gravy/production/Gravy::MasterProduct/Q423_OLO_RoastedSweetPotatoesGreenGoddess_3600x2400_l2lxcx",
-    },
-    {
-      id: 4,
-      title: "Tiramisu joelpou",
-      image:
-        "https://res.cloudinary.com/sweetgreen/image/upload/f_webp,q_auto:good/dpr_2/c_crop,h_0.7,w_0.4/w_343/v1702673576/gravy/production/Gravy::MasterProduct/Q423_OLO_RoastedSweetPotatoesGreenGoddess_3600x2400_l2lxcx",
-    },
-  ],
+  isActive: false,
+  endsAt: "",
+  buyQuantity: 2, // for buy_x_get_x -> free qty
+  getQuantity: 1, // for buy_x_get_x -> free qty
+  eligibleGetItems: [],
 });
 const formError = ref("");
-const modal = ref({ type: "", isOpen: false });
+const modal = ref({ type: "", isOpen: false, selectedProductId: null });
 const windowWidth = ref(0);
 
 const promotionOptions = [
   { label: "Coupon", value: "coupon" },
   { label: "Product", value: "product" },
   { label: "Free Delivery", value: "free-delivery" },
-];
-
-const productBasedOptions = [
-  { label: "Percentage Discount", value: "percentage" },
-  { label: "Fixed Discount", value: "fixed" },
-  { label: "Buy One Get One", value: "bogo" },
 ];
 
 const couponBasedOptions = [
@@ -250,21 +290,63 @@ const updateWindowWidth = () => {
 };
 
 const openModal = (type) => {
-  modal.value = { type, isOpen: true };
+  modal.value = { type, isOpen: true, selectedProductId: null };
 };
 
-const handleSubmit = () => {
-  if (!form.value.type || !form.value.code || !form.value.subtype) {
+const confirmDeleteModal = (type, productId) => {
+  modal.value = {
+    type,
+    isOpen: true,
+    selectedProductId: productId,
+  };
+};
+
+const handleSubmit = async () => {
+  if (form.value.type === 'coupon' && !form.value.code) {
+    formError.value = "Please fill in all required fields.";
+    return;
+  } 
+
+  if (!form.value.type || !form.value.subtype) {
     formError.value = "Please fill in all required fields.";
     return;
   }
-  if (!isEditMode.value) {
-    form.value.id = `PROMO${Date.now()}`;
-    createPromotion({ ...form.value });
-  } else {
-    updatePromotion(form.value.id, { ...form.value });
+
+  const isCoupon = form.value.type === "coupon";
+  const isProduct = form.value.type === "product";
+  const isFreeDelivery = form.value.type === "free-delivery";
+
+  const payload = {
+    type: form.value.type,
+    subtype: form.value.subtype,
+    value: form.value.value,
+    code: form.value.code,
+    description: form.value.description,
+    isActive: form.value.isActive ?? false,
+    ...(form.value.valueType && { valueType: form.value.valueType }),
+    ...(form.value.buyQuantity && { buyQuantity: form.value.buyQuantity }),
+    ...(form.value.getQuantity && { getQuantity: form.value.getQuantity }),
+    ...(form.value.appliesTo?.length > 0 && {
+      appliesTo: form.value.appliesTo,
+    }),
+    ...(form.value.eligibleGetItems?.length > 0 && {
+      eligibleGetItems: form.value.eligibleGetItems,
+    }),
+    ...(form.value.startsAt && { startsAt: form.value.startsAt }),
+    ...(form.value.endsAt && { endsAt: form.value.endsAt }),
+  };
+
+  try {
+    if (!isEditMode.value) {
+      form.value.id = `PROMO${Date.now()}`;
+      await createPromotion({ ...payload, id: form.value.id });
+    } else {
+      await updatePromotion(form.value.id, payload);
+    }
+    emit("close");
+  } catch (err) {
+    formError.value = "Failed to save promotion.";
   }
-  emit("close");
 };
 
 const modalWidth = computed(() => {
@@ -284,14 +366,15 @@ const modalHeight = computed(() => {
 });
 
 const handleSelectedProducts = (selectedProducts) => {
-  form.value.products = [];
+  form.value.eligibleGetItems = [];
   const mappedProducts = selectedProducts.map((product) => {
     return {
       ...product,
       image: product?.images?.[0] || product?.image,
     };
   });
-  form.value.products.push(...mappedProducts);
+  form.value.eligibleGetItems.push(...mappedProducts);
+  closeModal();
 };
 
 onMounted(() => {
@@ -305,6 +388,27 @@ onMounted(() => {
 onBeforeUnmount(() => {
   window.removeEventListener("resize", updateWindowWidth);
 });
+
+const removeFromEligibleProduct = () => {
+  removeEligibleProduct(form.value.id, modal.value.selectedProductId);
+  closeModal();
+};
+
+const closeModal = () => {
+  modal.value.status = "";
+  modal.value.isOpen = false;
+};
+
+watch(
+  () => {
+    const promo = promotionStore.promotions.find((p) => p.id === form.value.id);
+    return promo ? promo.eligibleGetItems : [];
+  },
+  (newEligibleItems) => {
+    form.value.eligibleGetItems = newEligibleItems;
+  },
+  { deep: true, immediate: true }
+);
 </script>
 
 <style scoped>
@@ -314,7 +418,7 @@ onBeforeUnmount(() => {
 
 .wrap-form-group {
   overflow-y: auto;
-  padding: 0 3px 50px;
+  padding: 20px 20px 50px;
 }
 
 .form-group {
@@ -340,7 +444,7 @@ onBeforeUnmount(() => {
   padding: 0.5rem 0.9rem;
   background-color: #f5f5f5;
   border: 2px solid transparent;
-  border-radius: 8px;
+  border-radius: 20px;
   font-weight: 500;
   font-size: 1rem;
   cursor: pointer;
@@ -474,5 +578,24 @@ input:focus {
 .radio-label {
   font-size: 14px;
   color: #333;
+}
+
+input {
+  background: var(--white-1);
+  color: var(--black-1);
+  border: 1px solid var(--gray-1);
+  border-radius: 7px;
+  outline: none;
+  height: 46px;
+  padding-left: 16px;
+}
+
+input:focus {
+  border-color: rgb(107, 179, 107);
+}
+
+input:disabled {
+  background-color: #f3f4f6;
+  cursor: not-allowed;
 }
 </style>

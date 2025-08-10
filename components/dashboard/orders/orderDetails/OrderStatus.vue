@@ -52,13 +52,6 @@
       </div>
     </div>
   </div>
-
-  <Modal
-    v-if="modal.isOpen && modal.type === 'discount'"
-    :width="modalWidth"
-    @close="closeModal"
-  >
-  </Modal>
 </template>
 
 <script setup>
@@ -72,7 +65,6 @@ import {
 } from "vue";
 import EditPencil from "~/assets/icons/editPencil.vue";
 import Printer from "~/assets/icons/printer.vue";
-import Modal from "~/components/reuse/ui/Modal.vue";
 import { useWindowSize } from "~/composables/useWindowSize";
 import { useOrder } from "~/stores/order/useOrder";
 import { usePosStore } from "~/stores/pos/usePOS";

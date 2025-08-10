@@ -25,7 +25,7 @@
               @click="editItem(coupon)"
             >
               <div class="coupon-info">
-                <p @click.stop="copyCode(coupon.code)" class="copy-code">
+                <p class="copy-code">
                   {{ coupon.code }}
                 </p>
                 <h3>{{ coupon.value }} {{ coupon.subtype }}</h3>
@@ -51,8 +51,9 @@
         :width="modalWidth"
         :height="modalHeight + 'px'"
         :minHeight="'400px'"
+        :isFullScreenMobile="true"
       >
-        <CreatePromotion :height="modalHeight - 160" @close="closeModal" />
+        <CreatePromotion :height="modalHeight - 135" @close="closeModal" />
       </Modal>
 
       <Modal
@@ -145,7 +146,7 @@ const modalWidth = computed(() => {
 });
 const modalHeight = computed(() => {
   if (window.innerWidth > 850 && window.innerHeight > 700) {
-    return 700;
+    return "650";
   } else {
     return `${window.innerHeight - 110}`;
   }
@@ -159,6 +160,7 @@ onBeforeMount(() => {
 
 onMounted(() => {
   updateWindowWidth();
+  promotionStore.fetchPromotions();
   window.addEventListener("resize", updateWindowWidth);
 });
 

@@ -30,7 +30,7 @@
           v-if="!isMobile"
           :order="order"
           :pricingInfo="pricingInfo"
-          @edit-order="(item) => openModal(item, 'edit')"
+          @edit-order="(item, cartId) => openEditModal(item)"
           @closeDrawer="closeDrawer"
         />
 
@@ -83,15 +83,20 @@ import SubmitButton from "~/components/reuse/ui/SubmitButton.vue";
 import { usePosStore } from "~/stores/pos/usePOS";
 import { useCategory } from "~/stores/product/category/useCategory";
 import { useMenu } from "~/stores/menu/useMenu";
+import { calculateOrderTotal } from "~/utils/calculateOrderTotal";
+import { useAdmin } from "~/stores/admin/useAdmin";
 
 const productStore = useProduct();
 const posStore = usePosStore();
-
 const categoryStore = useCategory();
 // const categories = computed(() => categoryStore.getCategoryList);
 // const items = computed(() => productStore.items || []); 
 
+const localOrder = computed(() => posStore.cartItems);
+
 const menuStore = useMenu();
+const adminStore = useAdmin();
+
 const categories = computed(() => menuStore.categories);
 const items = computed(() => menuStore.products || []); 
 
@@ -131,7 +136,7 @@ const calculateItemListWidth = () => {
 onMounted(() => {
   // productStore.fetchProducts();
   // categoryStore.fetchCategories();
-  menuStore.fetchItems();
+  menuStore.fetchItems(adminStore.menuId);
 
   calculateItemListWidth();
   window.addEventListener("resize", calculateItemListWidth);
@@ -148,10 +153,6 @@ const handleUpdateOrderItem = (updatedOrder) => {
 };
 
 const handleDeleteOrderItem = (itemId) => {
-  // const index = order.value.findIndex((o) => o.item.id === itemId);
-  // if (index !== -1) {
-  //   order.value.splice(index, 1);
-  // }
   posStore.removeCartItem(itemId);
   modal.isOpen = false;
   modal.type = null;
@@ -159,14 +160,15 @@ const handleDeleteOrderItem = (itemId) => {
 };
 
 const openModal = (item, type) => {
-  const existingOrder = order.value.find((o) => o.item.id === item.id);
+  const existingOrder =  localOrder.value.find((o) => o.item.id === item.id);
   if (existingOrder) {
     Object.assign(orderForm, existingOrder);
+    selectedItem.value = item;
   } else {
     orderForm.quantity = 1;
     orderForm.preferences = null;
+    selectedItem.value = item;
   }
-  selectedItem.value = item;
   modal.isOpen = true;
   modal.type = type;
 };
@@ -176,6 +178,11 @@ const closeModal = () => {
   modal.type = null;
   selectedItem.value = null;
 };
+
+const openEditModal = (item) => {
+  posStore.onSelectCartId(item.cartId);
+  openModal(item.item, 'edit')
+}
 
 const drawerStyle = computed(() => ({
   transform: isDrawerOpen.value ? "translateY(0)" : "translateY(100%)",
@@ -192,10 +199,7 @@ const closeDrawer = () => {
 };
 
 const pricingInfo = computed(() => {
-  const subtotal = order.value.reduce(
-    (sum, item) => sum + item.item.price * item.quantity,
-    0
-  );
+  const subtotal = calculateOrderTotal(order.value)
   const discount = order.value.reduce(
     (sum, item) => sum + (item.discount || 0),
     0

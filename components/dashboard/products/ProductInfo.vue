@@ -124,6 +124,7 @@
             type="addon"
             title="Addons"
             v-model:modelValue="selectedItem.addons"
+            v-model:enabled="isAddonsEnabled"
             @update:modelValue="handleAddonsUpdate"
           />
         </div>
@@ -134,6 +135,7 @@
             title="Choices"
             v-model:maxChoice="selectedItem.maxChoice"
             v-model:modelValue="selectedItem.choices"
+            v-model:enabled="isChoicesEnabled"
             @update:modelValue="handleChoicesUpdate"
           />
         </div>
@@ -143,6 +145,7 @@
             type="removal"
             title="Removals"
             v-model:modelValue="selectedItem.removals"
+            v-model:enabled="isRemovalsEnabled"
             @update:modelValue="handleRemovalsUpdate"
           />
         </div>
@@ -233,6 +236,9 @@ const modal = reactive({
   isOpen: false,
   type: null,
 });
+const isRemovalsEnabled = ref(false); 
+const isAddonsEnabled = ref(false);
+const isChoicesEnabled = ref(false);
 const selectedItem = ref({
   title: "",
   categories: [],
@@ -281,9 +287,9 @@ const submitForm = async () => {
       ],
       ...(hasCustomizations && {
         customizations: [
-          ...(selectedItem.value?.addons ?? []),
-          ...(selectedItem.value?.removals ?? []),
-          ...(selectedItem.value?.choices ?? []),
+          ...(isAddonsEnabled.value ? selectedItem.value?.addons ?? [] : []),
+          ...(isRemovalsEnabled.value ? selectedItem.value?.removals ?? [] : []),
+          ...(isChoicesEnabled.value ? selectedItem.value?.choices ?? [] : []),
         ],
       }),
       ...(selectedItem.value?.maxChoice && {
@@ -331,9 +337,9 @@ const submitForm = async () => {
       ],
       ...(hasCustomizations && {
         customizations: [
-          ...(selectedItem.value?.addons ?? []),
-          ...(selectedItem.value?.removals ?? []),
-          ...(selectedItem.value?.choices ?? []),
+          ...(isAddonsEnabled.value ? selectedItem.value?.addons ?? [] : []),
+          ...(isRemovalsEnabled.value ? selectedItem.value?.removals ?? [] : []),
+          ...(isChoicesEnabled.value ? selectedItem.value?.choices ?? [] : []),
         ],
       }),
       ...(selectedItem.value?.maxChoice && {
@@ -394,6 +400,7 @@ onMounted(() => {
       }
     }
     selectedItem.value = baseItem;
+    console.log(categoryOptions)
   }
 });
 
@@ -412,6 +419,10 @@ const handleChoicesUpdate = (newValues) => {
 const handleRemovalsUpdate = (newValues) => {
   selectedItem.value.removals = newValues.map((item) => item);
 };
+
+watch(isAddonsEnabled, (val) => {
+  console.log('Parent isAddonsEnabled changed:', val);
+});
 </script>
 
 <style scoped>

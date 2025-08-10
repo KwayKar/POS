@@ -30,6 +30,18 @@
 
       <!-- Right Panel  Item Info -->
       <div class="right-panel">
+        <div class="form-group flex-[2]">
+          <div class="flex items-center justify-between mb-1">
+            <label for="type" class="form-label">Type</label>
+          </div>
+          <Select
+            v-model="selectedItem.type"
+            :options="typeOptions"
+            :disabled="mode === 'edit'"
+            :class="{ 'opacity-50 pointer-events-none': mode === 'edit' }"
+          />
+        </div>
+
         <div class="form-group">
           <label for="title" class="form-label">Title</label>
           <Input
@@ -48,13 +60,6 @@
             placeholder="Enter Description"
             :rows="3"
           />
-        </div>
-
-        <div class="form-group flex-[2]">
-          <div class="flex items-center justify-between mb-1">
-            <label for="type" class="form-label">Type</label>
-          </div>
-          <Select v-model="selectedItem.type" :options="typeOptions" />
         </div>
 
         <div v-if="selectedItem.type === 'addon'" class="flex gap-4">
@@ -168,7 +173,7 @@ import { generateId } from "~/utils/generateId";
 const options = useProductCustomization();
 const typeOptions = [
   { label: "Addon", value: "addon" },
-  { label: "Free Choices", value: "choices" },
+  { label: "Free Choices", value: "choice" },
   { label: "Removal", value: "removal" },
 ];
 const selectedItem = ref({
@@ -191,8 +196,10 @@ const emit = defineEmits(["close"]);
 const errors = reactive({});
 
 const submitItem = async () => {
+  const id = selectedItem.value.id ?? generateId();
+
   const payload = {
-    id: generateId(),
+    id,
     image: selectedItem.value.image,
     title: selectedItem.value.title,
     description: selectedItem.value.description,
@@ -204,7 +211,6 @@ const submitItem = async () => {
   if (props.mode === "create") {
     await options.addCustomization(payload);
   } else {
-    const id = selectedItem.value.id;
     await options.updateCustomization(id, payload);
   }
   emit("close");
@@ -223,11 +229,14 @@ onMounted(() => {
   }
 });
 
-watch(() => selectedItem.value.maxLimit, (val) => {
-  if (val === 0) {
-    selectedItem.value.maxLimit = 1;
+watch(
+  () => selectedItem.value.maxLimit,
+  (val) => {
+    if (val === 0) {
+      selectedItem.value.maxLimit = 1;
+    }
   }
-});
+);
 </script>
 
 <style scoped>

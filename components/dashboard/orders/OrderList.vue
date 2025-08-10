@@ -1,8 +1,8 @@
 <template>
   <div>
     <div class="wrap-table bg-white w-full">
-      <div class="table-container overflow-x-auto min-w-[800px]">
-        <div class="table-filters min-w-[800px]">
+      <div class="table-container overflow-x-auto">
+        <div class="table-filters">
           <div class="filter-left">
             <div class="search-input">
               <span class="icon">🔍</span>
@@ -10,7 +10,7 @@
                 type="text"
                 v-model="searchQuery"
                 placeholder="Search orders..."
-                style="height: 34px; border: 0.5px solid ghostwhite"
+                style="height: 34px; border: 0.5px solid #232323"
               />
             </div>
           </div>
@@ -40,7 +40,7 @@
               >
                 <template #default="{ inputValue, togglePopover }">
                   <input
-                    :value="formatRange(inputValue)"
+                    :value="formatDateRange(inputValue)"
                     @click="togglePopover"
                     readonly
                     placeholder="Select date range"
@@ -52,7 +52,7 @@
           </div>
         </div>
         
-        <table class="table min-w-[800px]">
+        <table class="table">
           <thead class="tableHeader bg-gray-100">
             <tr>
               <th class="tableHeaderCol" @click="sortBy('id')">ID</th>
@@ -83,40 +83,41 @@
             class="table-body"
             :style="{ height: tbodyHeight }"
           >
-            <tr
-              v-for="order in filteredOrders"
-              :key="order.id"
-              class="border-t"
-              @click="openDrawer(order)"
-            >
-              <td class="cell">
-                <div>{{ order?.id }}</div>
-                <span>{{ formatDate(order?.createdAt) }}</span>
-              </td>
-              <td class="cell">{{ order?.orderType }}</td>
-              <td class="cell">
-                <div
-                  :class="['status', order.status.toLowerCase()]"
-                  style="text-transform: capitalize"
-                >
-                  {{ capitalize(order?.status) }}
-                </div>
-              </td>
-              <td class="cell">
-                <div>{{ order?.totalAmount }}</div>
-                <span>{{ order?.paymentMethod.method }}</span>
-              </td>
-            </tr>
-            <tr v-if="isLoading" key="loading">
-              <td colspan="6" class="px-6 py-7 text-center text-gray-400">
-                Loading ...
-              </td>
-            </tr>
-            <tr v-else-if="filteredOrders?.length === 0 && !isLoading" key="no-order">
-              <td colspan="6" class="px-6 py-7 text-center text-gray-500">
-                No order available
-              </td>
-            </tr>
+            <template v-if="!isLoading">
+              <tr
+                v-for="order in filteredOrders"
+                :key="order.id"
+                @click="openDrawer(order)"
+              >
+                <td class="row-cell">
+                  <div>{{ order?.id }}</div>
+                  <span>{{ formatDate(order?.createdAt) }}</span>
+                </td>
+                <td class="row-cell">{{ order?.orderType }}</td>
+                <td class="row-cell">
+                  <div
+                    :class="['status', order.status.toLowerCase()]"
+                    style="text-transform: capitalize"
+                  >
+                    {{ capitalize(order?.status) }}
+                  </div>
+                </td>
+                <td class="row-cell">
+                  <div>{{ order?.totalAmount }}</div>
+                  <span>{{ order?.paymentMethod.method }}</span>
+                </td>
+              </tr>
+              <tr v-if="isLoading" key="loading">
+                <td colspan="4" class="px-6 py-7 text-center text-gray-400">
+                  Loading ...
+                </td>
+              </tr>
+              <tr v-else-if="filteredOrders?.length === 0 && !isLoading" key="no-order">
+                <td colspan="4" class="px-6 py-7 text-center text-gray-500">
+                  No order available
+                </td>
+              </tr>
+            </template>
           </tbody>
         </table>
       </div>
@@ -148,6 +149,7 @@ import Drawer from "~/components/reuse/ui/Drawer.vue";
 import { useAdmin } from "~/stores/admin/useAdmin";
 import { nextTick } from "vue";
 import { watch } from "vue";
+import { formatDateRange } from "~/utils/formatDateRange";
 
 const orderStore = useOrder();
 const adminStore = useAdmin();
@@ -191,14 +193,6 @@ const filteredOrders = computed(() => {
 
 async function fetchOrders({ pageNumber = 1, append = false } = {}) {
   isLoading.value = true;
-
-  // const dateFrom = selectedDate.value.start
-  //   ? new Date(selectedDate.value.start).toISOString().slice(0, 19) // '2025-06-25T00:00:00'
-  //   : null;
-
-  // const dateTo = selectedDate.value.end
-  //   ? new Date(selectedDate.value.end).toISOString().slice(0, 19)
-  //   : null;
 
   function normalizeStartLocal(date) {
     const d = new Date(date);
@@ -370,7 +364,7 @@ function updateTbodyHeight() {
   if (!tbodyRef.value) return;
   const offsetTop = tbodyRef.value.getBoundingClientRect().top;
   const windowHeight = window.innerHeight;
-  const desiredHeight = windowHeight - offsetTop - 20; // 20px for bottom padding/margin
+  const desiredHeight = windowHeight - offsetTop; // 20px for bottom padding/margin
   tbodyHeight.value = `${desiredHeight}px`;
 }
 
@@ -384,94 +378,10 @@ const drawerWidth = computed(() => {
   }
 });
 
-function formatRange(val) {
-  if (!val?.start || !val?.end) return "";
-  const options = { year: "numeric", month: "short", day: "2-digit" };
-  const start = new Date(val.start).toLocaleDateString(undefined, options);
-  const end = new Date(val.end).toLocaleDateString(undefined, options);
-  return `${start} - ${end}`;
-}
+
 </script>
 
 <style scoped>
-.table-filters {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 16px;
-  flex-wrap: wrap;
-  border: 1px solid var(--gray-1);
-  border-bottom: 0px solid var(--gray-1);
-  border-top-right-radius: 10px;
-  border-top-left-radius: 10px;
-  background: var(--white-1);
-}
-
-.filter-left {
-  flex: 1;
-  min-width: 200px;
-}
-
-.search-input {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.search-input .icon {
-  position: absolute;
-  left: 10px;
-  color: #999;
-  font-size: 16px;
-}
-
-.search-input input {
-  padding: 5px 5px 5px 32px;
-  width: 100%;
-  border: 1px solid var(--gray-1);
-  outline: 1px solid var(--gray-1);
-  border-radius: 6px;
-  font-size: 14px;
-  max-width: 300px;
-}
-
-.search-input input:focus {
-  border: 1px solid var(--green-1);
-  outline: 1px solid var(--green-1) !important;
-  outline-offset: 1px;
-}
-
-.filter-right {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-
-.date-input {
-  height: 36px;
-  min-width: 190px;
-  padding: 5px 10px;
-  border: 1px solid var(--gray-2);
-  border-radius: 6px;
-  font-size: 14px;
-}
-
-.filter-section {
-  display: flex;
-  align-items: center;
-  margin-bottom: 1.5rem;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  padding: 16px 16px 0;
-  gap: 12px;
-}
-
-.filter-section button {
-  border-radius: 0.25rem;
-  font-size: var(--font-size-x-small);
-  color: var(--black-2);
-  border-radius: 30px;
-}
 
 .order-details {
   display: flex;
@@ -503,9 +413,14 @@ function formatRange(val) {
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  padding: 0 20px 0px;
+  padding: 0 20px;
   box-sizing: border-box;
   background: var(--primary-bg-color-1);
+}
+@media only screen and (max-width: 850px) {
+  .table-container {
+    min-width: 850px;
+  }
 }
 
 .table {
@@ -529,11 +444,11 @@ function formatRange(val) {
   background-color: var(--table-stripe);
 }
 
-.cell {
+.row-cell {
   padding: 12px 24px;
 }
 
-.cell span {
+.row-cell span {
   color: #888888;
   font-size: 13px;
 }

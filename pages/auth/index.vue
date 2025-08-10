@@ -6,26 +6,6 @@
       </h2>
 
       <form class="form" @submit.prevent="handleSubmit">
-        <!-- Name Field (Only for Sign-Up) -->
-        <div v-if="isSignUp" class="mb-4">
-          <label for="name" class="block text-sm font-medium text-gray-600 mb-2"
-            >Name</label
-          >
-          <Input
-            type="text"
-            id="name"
-            v-model="form.name"
-            placeholder="Enter your name"
-            :class="{
-              'border-red-500': errors.name,
-              'border-gray-300': !errors.name,
-            }"
-          />
-          <p v-if="errors.name" class="text-red-500 text-xs mt-1">
-            {{ errors.name }}
-          </p>
-        </div>
-
         <!-- Email Field -->
         <div class="mb-4">
           <label
@@ -40,7 +20,6 @@
             placeholder="Enter your email"
             :class="{
               'border-red-500': errors.email,
-              'border-gray-300': !errors.name,
             }"
           />
           <p v-if="errors.email" class="text-red-500 text-xs mt-1">
@@ -62,7 +41,6 @@
             placeholder="Enter your password"
             :class="{
               'border-red-500': errors.password,
-              'border-gray-300': !errors.name,
             }"
           />
           <p v-if="errors.password" class="text-red-500 text-xs mt-1">
@@ -73,7 +51,7 @@
         <div class="submit-btn">
           <SubmitButton @click="handleSubmit" :applyShadow="true">
             <span v-if="loading" class="spinner">Processing</span>
-            <span v-else>{{ isSignUp ? "Sign Up" : "Login" }}</span>
+            <span v-else>{{ "Login" }}</span>
           </SubmitButton>
         </div>
       </form>
@@ -81,12 +59,6 @@
       <!-- Toggle between Login and Sign-Up -->
       <p class="mt-4 text-sm text-gray-600 text-center">
         {{ isSignUp ? "Already have an account?" : "Don't have an account?" }}
-        <button
-          class="text-blue-500 hover:underline font-medium"
-          @click="isSignUp = !isSignUp"
-        >
-          {{ isSignUp ? "Login here" : "Sign up here" }}
-        </button>
       </p>
     </div>
   </div>
@@ -96,34 +68,29 @@
 import { ref, reactive } from "vue";
 import Input from "~/components/reuse/ui/Input.vue";
 import SubmitButton from "~/components/reuse/ui/SubmitButton.vue";
-import { login, signUp } from "~/services/authService";
+import { signInWithEmailAndPassword } from "firebase/auth";
+const { $firebaseAuth } = useNuxtApp();
 
 const isSignUp = ref(false);
 
 const form = reactive({
-  name: "",
   email: "",
   password: "",
 });
 
 const errors = reactive({
-  name: "",
   email: "",
   password: "",
 });
 
 const loading = ref(false);
+const config = useRuntimeConfig();
 
 const validateForm = () => {
-  errors.name = "";
   errors.email = "";
   errors.password = "";
 
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-  if (isSignUp.value && !form.name) {
-    errors.name = "Name is required.";
-  }
 
   if (!form.email) {
     errors.email = "Email is required.";
@@ -137,30 +104,33 @@ const validateForm = () => {
     errors.password = "Password must be at least 6 characters long.";
   }
 
-  return !errors.name && !errors.email && !errors.password;
+  return !errors.email && !errors.password;
 };
 
 const handleSubmit = async () => {
+
   if (!validateForm()) return;
 
   loading.value = true;
+  const { email, password } = form;
+
   try {
-    if (isSignUp.value) {
-      const response = await signUp(form);
-      console.log("Sign-up successful:", response.data);
-    } else {
-      const response = await login(form);
-      console.log("Login successful:", response.data);
-    }
+    const userCredential = await signInWithEmailAndPassword($firebaseAuth, email, password);
+    const user = userCredential.user;
+    const firebaseUid = user.uid;
+    const idToken = await user.getIdToken();
+
+    await apiFetch(`${config.public.apiBaseUrl}/auth/staff/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${idToken}`,
+      },
+      body: { firebaseUid },
+    });
+
   } catch (error) {
-    if (error.response?.data?.errors) {
-      const apiErrors = error.response.data.errors;
-      Object.keys(apiErrors).forEach((key) => {
-        if (errors[key] !== undefined) {
-          errors[key] = apiErrors[key];
-        }
-      });
-    }
+    console.error("Login error:", error.message);
   } finally {
     loading.value = false;
   }

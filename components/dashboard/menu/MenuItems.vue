@@ -207,6 +207,7 @@ const handleClickOutside = (e) => {
 const handleSelectedProducts = (items) => {
   const plainItems = items.map((item) => JSON.parse(JSON.stringify(item)));
   menu.addItemsToCategory(plainItems);
+  closeModal();
 };
 
 const openConfirmSnooze = (categoryId, item) => {

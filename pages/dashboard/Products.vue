@@ -8,17 +8,18 @@
         <NavPanelButton
           @click="openToCreateProduct"
           style="border: 1px solid var(--black-1)"
-        > 
+        >
           Create Product
         </NavPanelButton>
       </NavPanel>
 
       <div class="flex flex-col lg:flex-row h-full" :style="{ width: '100%' }">
-        <div class="h-full" :style="{ width: '100%' }">
+        <div class="h-full" :style="{ width: '100%', }">
           <ItemList
             :items="items"
             :categories="categories"
             @select-item="openModal"
+            @scrollBottom="loadProducts"
           />
         </div>
 
@@ -45,10 +46,6 @@
           :minHeight="'740px'"
           :isFullScreenMobile="true"
         >
-          <!-- <CreateProduct
-            @create-item="createItem"
-            @open-category-modal="openCategoryModal"
-          /> -->
           <ProductInfo
             :item="selectedItem"
             :mode="'create'"
@@ -73,19 +70,17 @@
 </template>
 
 <script setup>
-import { ref, toRaw } from "vue";
+import { ref } from "vue";
 import ItemList from "~/components/dashboard/items/ItemList.vue";
 import NavPanel from "~/components/dashboard/panels/NavPanel.vue";
 import ProductInfo from "~/components/dashboard/products/ProductInfo.vue";
 import Modal from "~/components/reuse/ui/Modal.vue";
 import DashboardLayout from "~/layouts/DashboardLayout.vue";
 import NavPanelButton from "~/components/dashboard/panels/NavPanelButton.vue";
-import { useAdmin } from "~/stores/admin/useAdmin";
 import { useCategory } from "~/stores/product/category/useCategory";
 import { useProduct } from "~/stores/product/useProduct";
 import CategoryForm from "~/components/dashboard/products/categories/CategoryForm.vue";
 
-const admin = useAdmin();
 const categoryStore = useCategory();
 const productStore = useProduct();
 
@@ -95,9 +90,13 @@ const modal = ref({
 });
 const selectedItem = ref(null);
 const windowWidth = ref(0);
+const hasMore = ref(true);
+const loading = ref(false);
+const page = ref(1);
+const limit = ref(25);
 
 const categories = computed(() => categoryStore.getCategoryList);
-const items = computed(() => productStore.items); 
+const items = computed(() => productStore.items);
 
 const openModal = (item, type) => {
   selectedItem.value = { ...item };
@@ -121,9 +120,9 @@ const createItem = (item) => {
 };
 
 const updateItem = (updatedItem) => {
-  const index = items.value.findIndex(item => {
-    return item.id === updatedItem.id
-});
+  const index = items.value.findIndex((item) => {
+    return item.id === updatedItem.id;
+  });
   if (index !== -1) {
     items.value[index] = { ...updatedItem };
   }
@@ -142,13 +141,6 @@ const openToCreateProduct = () => {
   };
 };
 
-const openCategoryModal = () => {
-  modal.value = {
-    type: "category",
-    isOpen: true,
-  };
-};
-
 const updateCategories = (newCategories) => {
   categories.value = newCategories;
 };
@@ -157,8 +149,34 @@ const updateWindowWidth = () => {
   windowWidth.value = window.innerWidth;
 };
 
+const loadProducts = async () => {
+  if (!hasMore.value || loading.value) return;
+
+  try {
+    loading.value = true;
+    
+    const data = await productStore.fetchProducts({
+      page: page.value,
+      limit: limit.value,
+    });
+    const loadedCount = page.value * limit.value;
+    hasMore.value = loadedCount < data.total;
+    
+    if (hasMore.value) {
+      page.value += 1;
+    }
+
+    loading.value = false;
+  } catch (err) {
+    console.error("Failed to load products:", err);
+  }
+};
+
 onMounted(() => {
-  productStore.fetchProducts();
+  page.value = 1;
+  hasMore.value = true;
+
+  loadProducts();
   categoryStore.fetchCategories();
 
   updateWindowWidth();
@@ -166,7 +184,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  window.removeEventListener('resize', updateWindowWidth);
+  window.removeEventListener("resize", updateWindowWidth);
 });
 
 const modalWidth = computed(() => {

@@ -1,56 +1,42 @@
 <template>
   <div ref="panelRefHeight" style="height: 100%">
     <div class="header-section">
-      <h3 class="header3">Staff List</h3>
+      <h3 class="header3">Store List</h3>
       <Button
-        @click="onSelectStaff()"
+        @click="onSelectStore()"
         :applyShadow="true"
         :style="{ height: '40px' }"
         variant="primary"
-        >Create</Button
       >
+        Create
+      </Button>
     </div>
 
     <div
-      class="staff-list"
+      class="store-list"
       :style="{
         height:
           typeof panelHeight === 'number' ? `${panelHeight}px` : panelHeight,
       }"
     >
       <div
-        v-for="member in staffStore.staffList"
-        :key="member.name"
-        class="staff-row"
-        @click="onSelectStaff(member.id)"
+        v-for="store in storeStore.storeList"
+        :key="store.id"
+        class="store-row"
+        @click="onSelectStore(store.id)"
       >
-        <div class="staff-left">
+        <div class="store-left">
           <div class="avatar">
-            {{ member.name?.charAt(0).toUpperCase() }}
+            {{ store.name?.charAt(0).toUpperCase() }}
           </div>
-          <div class="staff-info">
-            <p class="staff-name">
-              {{ member.name }}
-            </p>
-            <p class="staff-email">
-              {{ member?.email }}
-            </p>
+          <div class="store-info">
+            <p class="store-name">{{ store.name }}</p>
+            <p class="store-address">{{ store.address || "No address" }}</p>
           </div>
         </div>
 
-        <div class="staff-role desktop-only">
-          {{ member.roleName }}
-        </div>
-
-        <div class="staff-group desktop-only">
-          <span v-for="(store, index) in member.staffStores" :key="store.id">
-            <template v-if="index === 0">
-              {{ store.store?.name || "N/A" }}
-            </template>
-            <template v-else>
-              &nbsp;/&nbsp;{{ store.store?.name || "N/A" }}
-            </template>
-          </span>
+        <div class="store-extra desktop-only">
+          {{ store.establishment?.name || "N/A" }}
         </div>
 
         <div class="edit-icon desktop-only">
@@ -61,56 +47,61 @@
   </div>
 
   <Modal
-    v-if="modal.isOpen && modal.type === 'staff-info'"
+    v-if="modal.isOpen && modal.type === 'store-info'"
     :width="modalWidth"
     height="auto"
     @close="closeModal"
   >
-    <StaffInfo
-      v-if="selectedStaff"
-      :item="selectedStaff"
+    <StoreInfoForm 
       :mode="modal.mode"
-      @close="closeModal"
+      :item="selectedStore" 
+      @close="closeModal" 
     />
   </Modal>
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted, onUnmounted, watch, computed, nextTick } from "vue";
 import EditPencil from "~/components/reuse/icons/EditPencil.vue";
 import Modal from "~/components/reuse/ui/Modal.vue";
-import { useStaff } from "~/stores/setting/staff/useStaff";
-import StaffInfo from "./StaffInfo.vue";
 import Button from "~/components/reuse/ui/Button.vue";
-import { useStoreLocation } from "../../../../stores/storeLocation/useStoreLocation";
+import { useStoreLocation } from "~/stores/storeLocation/useStoreLocation";
+import StoreInfoForm from "./StoreInfoForm.vue";
 
-const staffStore = useStaff();
-const locationStore = useStoreLocation();
+const storeStore = useStoreLocation();
 
 const panelRefHeight = ref(null);
 const windowWidth = ref(0);
 const panelHeight = ref("auto");
-const editing = ref(null);
-const selectedStaff = ref({ name: "", role: "", group: "", email: "" });
+const selectedStore = ref({});
 const modal = ref({
   isOpen: false,
   type: "",
+  mode: "",
 });
 
-const onSelectStaff = (id) => {
-  if (id) {
-    selectedStaff.value = staffStore.staffList.find((staff) => staff.id === id);
+const onSelectStore = (id) => {
+  const emptyStore = {
+    name: "",
+    street: "",
+    city: "",
+    state: "",
+    postalCode: "",
+    latitude: null,
+    longitude: null,
+    phoneNumber: "",
+    email: "",
+    type: "",
+  };
+
+  if (id && id.trim() !== "") {
+    selectedStore.value = storeStore.storeList.find(store => store.id === id) || { ...emptyStore };
   } else {
-    selectedStaff.value = {
-      name: "",
-      role: "",
-      group: "",
-      email: "",
-    };
+    selectedStore.value = { ...emptyStore };
   }
   modal.value = {
     isOpen: true,
-    type: "staff-info",
+    type: "store-info",
     mode: id ? "edit" : "create",
   };
 };
@@ -125,9 +116,7 @@ onMounted(async () => {
   await nextTick();
   updatePanelSize();
 
-  await staffStore.fetchStaffList();
-  await roleStore.fetchRoles();
-  await locationStore.fetchStoreList();
+  await storeStore.fetchStoreList();
 
   window.addEventListener("resize", updatePanelSize);
 });
@@ -160,7 +149,6 @@ const modalWidth = computed(() => {
 
 const closeModal = () => {
   modal.value.isOpen = false;
-  editing.value = null;
 };
 </script>
 
@@ -172,29 +160,21 @@ const closeModal = () => {
   padding: 2rem 2rem 0;
 }
 
-.staff-list {
+.store-list {
   overflow-y: auto;
   padding: 2rem 2rem 5rem;
   background: #ffffff;
   margin: 22px;
   border-radius: 12px;
   border: 0.5px solid #dedede;
-  overflow-y: auto;
   scrollbar-width: none;
-  -ms-overflow-style: none;
 }
 
-.staff-list::-webkit-scrollbar {
+.store-list::-webkit-scrollbar {
   display: none;
 }
 
-.staff-container {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.staff-row {
+.store-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -202,23 +182,12 @@ const closeModal = () => {
   border-bottom: 1px solid #dedede;
   cursor: pointer;
 }
-@media screen and (max-width: 900px) {
-  .staff-row {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-}
 
-.staff-left {
+.store-left {
   display: flex;
   align-items: center;
   gap: 12px;
   flex: 1;
-}
-@media screen and (max-width: 900px) {
-  .staff-left {
-    align-items: flex-start;
-  }
 }
 
 .avatar {
@@ -230,81 +199,41 @@ const closeModal = () => {
   align-items: center;
   justify-content: center;
   font-weight: bold;
-  color: var(--black-2);
-}
-@media screen and (max-width: 900px) {
-  .avatar {
-    margin-right: 12px;
-  }
 }
 
-.staff-info {
+.store-info {
   display: flex;
   flex-direction: column;
 }
 
-.staff-name {
+.store-name {
   font-size: 0.95rem;
   font-weight: 500;
-  color: var(--black-1);
-  margin: 0;
 }
 
-.staff-email {
+.store-address {
   font-size: 0.875rem;
   color: #838383;
-  margin: 0;
 }
 
-.staff-role {
+.store-extra {
   flex: 0.5;
-  color: var(--black-2);
   font-size: 0.9rem;
-  text-transform: capitalize;
-}
-
-.staff-group {
-  flex: 0.5;
-  display: flex;
-  font-size: 0.9rem;
-  color: var(--black-2);
-}
-
-.staff-group p {
-  margin-right: 12px;
+  color: var(--black-1);
 }
 
 .edit-icon {
-  display: block;
   opacity: 0;
   cursor: pointer;
 }
 
-.staff-row:hover .edit-icon {
+.store-row:hover .edit-icon {
   opacity: 1;
-}
-
-.staff-extra-mobile {
-  display: none;
-  flex-direction: column;
-  font-size: 0.85rem;
-  margin-top: 4px;
-}
-
-.staff-role,
-.staff-group {
-  flex: 0.5;
-  font-size: 0.9rem;
-  color: var(--black-1);
 }
 
 @media (max-width: 900px) {
   .desktop-only {
     display: none;
-  }
-
-  .staff-extra-mobile {
-    display: flex;
   }
 }
 </style>

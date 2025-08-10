@@ -59,7 +59,9 @@
               <th>Item Name</th>
               <th>Quantity</th>
               <th>Processed</th>
-              <th style="width: 55px"></th>
+              <th @click="onAddNewItem" style="width: 55px">
+                <div class="plus-sign"></div>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -71,24 +73,42 @@
                 }"
               >
                 <td :class="['item-name', { crossed: item.processed }]">
-                  {{ item.name }}
+                  {{ item?.title || item?.name }}
                 </td>
-                <td style="padding-left: 40px">{{ item.quantity }}</td>
+                <td
+                  @click="() => updateItemQty(item.quantity)"
+                  style="padding-left: 15px; "
+                >
+                  <div
+                    :style="{
+                      width: '40%',
+                      height: '50%',
+                      border: isEditMode ? '1px solid #dedede' : '1px solid transparent',
+                      padding: '8px',
+                      textAlign: 'center',
+                      borderRadius: '8px'
+                    }"
+                  >
+                    {{ item.quantity }}
+                  </div>
+                </td>
                 <td>
                   <Checkbox v-model="item.processed" :id="item.id"
                     >Done</Checkbox
                   >
                 </td>
                 <td style="padding: 0">
-                  <div
-                    v-if="isEditMode"
-                    class="remove-btn"
-                    @click="onConfirmRemoveItem(item, 'product')"
-                  >
-                    <div />
-                  </div>
-                  <div v-else style="width: 50px; padding: 0">
-                    <div />
+                  <div class="wrap-remove-btn">
+                    <div
+                      v-if="isEditMode"
+                      class="remove-btn"
+                      @click="onConfirmRemoveItem(item, 'product')"
+                    >
+                      <div />
+                    </div>
+                    <div v-else style="width: 50px; padding: 0">
+                      <div />
+                    </div>
                   </div>
                 </td>
               </tr>
@@ -201,6 +221,26 @@
       </div>
     </ConfirmDelete>
   </Modal>
+
+  <Modal
+    v-if="modal.isOpen && modal.type === 'add-new-items'"
+    @close="closeModal"
+    :width="modalWidth"
+    :height="modalHeight + 'px'"
+    :minHeight="'400px'"
+    :isFullScreenMobile="true"
+  >
+    <ProductListForNewOrder @close="closeModal" />
+  </Modal>
+
+  <Modal
+    v-if="modal.isOpen && modal.type === 'update-item-qty'"
+    width="360px"
+    height="auto"
+    @close="closeModal"
+  >
+    <UpdateItemQty :qty="existingQty" />
+  </Modal>
 </template>
 
 <script setup>
@@ -216,17 +256,21 @@ import { useUser } from "~/stores/user/useUser";
 import ConfirmDelete from "~/components/reuse/ui/ConfirmDelete.vue";
 import EditPencil from "~/assets/icons/editPencil.vue";
 import { useOrder } from "~/stores/order/useOrder";
+import ProductListForNewOrder from "./orderDetails/ProductListForNewOrder.vue";
+import { useWindowSize } from "~/composables/useWindowSize";
+import UpdateItemQty from "./orderDetails/UpdateItemQty.vue";
 
 const props = defineProps({
   order: Object,
 });
 const userStore = useUser();
 const orderStore = useOrder();
-
+const { width, height } = useWindowSize();
 const modal = ref({
   isOpen: false,
   type: "",
 });
+const selectedNewProduct = ref([]);
 // layouts ref
 const containerRef = ref(null);
 const headerRef = ref(null);
@@ -241,6 +285,7 @@ const confirmDelete = ref({
   type: null,
   name: null,
 });
+const existingQty = ref();
 
 const isKitchenStaff = computed(() => userStore.role === "kitchen");
 
@@ -335,7 +380,7 @@ function handleRemove() {
 
 function removeProduct(itemId) {
   orderStore.removeProductOrder(itemId);
-  
+
   // const index = props.order.items.findIndex((item) => item.id === itemId);
   // if (index !== -1) {
   //   props.order.items.splice(index, 1);
@@ -344,12 +389,14 @@ function removeProduct(itemId) {
 
 function removeAddonFromItem(customizationId) {
   const item = props.order.items.find((item) =>
-    item.customizations?.some((c) => c.id === customizationId && c.type === "addon")
+    item.customizations?.some(
+      (c) => c.id === customizationId && c.type === "addon"
+    )
   );
   if (!item) return;
   const itemId = item.id;
 
-  orderStore.removeProductCustomization(itemId, customizationId)
+  orderStore.removeProductCustomization(itemId, customizationId);
   // props.order.items.forEach((item) => {
   //   if (Array.isArray(item.customizations)) {
   //     item.customizations = item.customizations.filter(
@@ -363,6 +410,17 @@ function handleEditToggle(value) {
   isEditMode.value = value;
 }
 
+function onAddNewItem() {
+  if (isEditMode) {
+    openModal("add-new-items");
+  }
+}
+
+function updateItemQty(value) {
+  openModal("update-item-qty");
+  existingQty.value = value;
+}
+
 onMounted(async () => {
   await nextTick();
   calculateItemsWrapperHeight();
@@ -373,6 +431,24 @@ onUnmounted(() => {
   window.removeEventListener("resize", onResize);
   if (resizeTimeout) clearTimeout(resizeTimeout);
   isEditMode.value = false;
+});
+
+const modalWidth = computed(() => {
+  if (width.value > 1200) {
+    return "1000px";
+  } else if (width.value > 1100) {
+    return `${width.value - 100}px`;
+  } else {
+    return `${width.value - 120}px`;
+  }
+});
+
+const modalHeight = computed(() => {
+  if (width.value > 850 && height.value > 770) {
+    return 720;
+  } else {
+    return height.value - 80;
+  }
 });
 </script>
 
@@ -616,6 +692,12 @@ tr.has-customizations td {
   justify-content: flex-end;
 }
 
+.wrap-remove-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .remove-btn {
   background-color: var(--red-1);
   width: 30px;
@@ -653,5 +735,38 @@ tr.has-customizations td {
   height: 30px;
   fill: var(--olive-gray);
   margin-right: 0px;
+}
+
+.plus-sign {
+  display: inline-block;
+  position: relative;
+  width: 25px;
+  height: 25px;
+  background: var(--white-1);
+  border: 1px solid var(--black-2);
+  box-sizing: border-box;
+  box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.14);
+  border-radius: 50%;
+  padding: 10px;
+}
+
+.plus-sign::before,
+.plus-sign::after {
+  content: "";
+  position: absolute;
+  background-color: var(--black-2);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.plus-sign::before {
+  width: 2.5px;
+  height: 50%;
+}
+
+.plus-sign::after {
+  width: 50%;
+  height: 2.5px;
 }
 </style>

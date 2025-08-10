@@ -8,6 +8,7 @@ export const useOrder = defineStore("order", {
     filteredOrders: [],
     orders: [],
     totalCount: 0,
+    orderType: 'eat-in',
   }),
   getters: {
     getOrderList: (state) => state.orders,
@@ -26,22 +27,29 @@ export const useOrder = defineStore("order", {
     }) {
       try {
         const config = useRuntimeConfig();
-        const params = new URLSearchParams({
-          query,
-          status,
-          sort,
-          order,
-          page,
-          limit,
-          dateFrom,
-          dateTo,
-        });
+        const params = new URLSearchParams();
+
+        params.append("query", query);
+        params.append("status", status);
+        params.append("sort", sort);
+        params.append("order", order);
+        params.append("page", String(page));
+        params.append("limit", String(limit));
+
+        if (dateFrom) {
+          params.append("dateFrom", dateFrom);
+        }
+        if (dateTo) {
+          params.append("dateTo", dateTo);
+        }
 
         const res = await apiFetch(
           `${
             config.public.apiBaseUrl
           }/stores/${storeId}/orders?${params.toString()}`
         );
+        if (!res.orders) return;
+
         const { orders, totalCount } = res;
 
         this.totalCount = totalCount;
@@ -52,7 +60,7 @@ export const useOrder = defineStore("order", {
             customerName: "",
             items: order.orderItems.map((item) => ({
               id: item.id,
-              name: item.product?.title || "Unknown Item",
+              title: item.product?.title || "Unknown Item",
               quantity: item.quantity,
               price: item.price,
               customizations: item.customizations,
@@ -89,6 +97,44 @@ export const useOrder = defineStore("order", {
     },
     createOrder(order) {
       this.orders.push(order);
+    },
+    setOrderType(type) {
+      this.orderType = type
+    },
+    async addNewItemsToOrder(rawItem) {
+      const order = this.orders.find((o) => o.id === this.selectedOrderID);
+
+
+      if (order) {
+        order.items = [...order.items, {
+          productId: rawItem.item.id,
+          title: rawItem.item.title,
+          quantity: rawItem.quantity,
+          price: rawItem.unitPrice,
+          status: 'CONFIRMED',
+          notes: rawItem.preferences,
+          ...(rawItem.size && { size: rawItem.size.label }), // or sizeId if you store it
+          customizations: [
+            ...(rawItem.addons?.map((a) => ({
+              type: "addon",
+              id: a.id,
+              title: a.title,
+              price: a.price,
+              quantity: a.quantity ?? 1,
+            })) || []),
+            ...(rawItem.choices?.map((c) => ({
+              type: "choice",
+              id: c.id,
+              title: c.title,
+            })) || []),
+            ...(rawItem.removals?.map((r) => ({
+              type: "removal",
+              id: r.id,
+              title: r.title,
+            })) || []),
+          ],
+        }]; 
+      }
     },
     updateOrder(id, updates) {
       const idx = this.orders.findIndex((o) => o.id === id);
@@ -162,7 +208,7 @@ export const useOrder = defineStore("order", {
         this.orders = this.orders.map((order) => {
           if (order.id === this.selectedOrderID) {
             order.items = order.items.filter((item) => item.id !== itemId);
-            order.total = res.newTotal;
+            order.totalAmount = 0;
           }
           return order;
         });
@@ -181,7 +227,7 @@ export const useOrder = defineStore("order", {
       if (res) {
         this.orders = this.orders.map((order) => {
           if (order.id === this.selectedOrderID) {
-            order.total = res.newTotal;
+            order.totalAmount = res.newTotal;
             order.items = order.items.map((item) => {
               if (item.id === itemId) {
                 item.customizations = item.customizations.filter(

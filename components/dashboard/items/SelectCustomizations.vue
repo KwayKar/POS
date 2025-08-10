@@ -35,22 +35,22 @@
       </div>
     </div>
 
-    <div class="modal-submit-section">
-      <div class="modal-submit-section-btn">
-        <div class="flex-1">
-          <p style="margin-right: 22px">
-            {{ selectedItems.length }} Items Selected
-          </p>
-        </div>
+      <div class="modal-submit-section">
+        <div class="modal-submit-section-btn">
+          <div class="flex-1">
+            <p style="margin-right: 22px">
+              {{ selectedItems.length }} Items Selected
+            </p>
+          </div>
 
-        <SubmitButton
-          @click="submitSelected"
-          :applyShadow="true"
-          style="height: 40px"
-          >Add</SubmitButton
-        >
+          <SubmitButton
+            @click="submitSelected"
+            :applyShadow="true"
+            style="height: 40px"
+            >Add</SubmitButton
+          >
+        </div>
       </div>
-    </div>
   </div>
 </template>
 
@@ -212,4 +212,5 @@ function submitSelected() {
   color: var(--forest-green);
   margin-bottom: 0.4rem;
 }
+
 </style>

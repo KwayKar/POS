@@ -45,11 +45,13 @@
 </template>
 
 <script setup>
+import { onMounted, onBeforeUnmount } from 'vue';
 import { useRuntimeConfig } from "nuxt/app";
 import { ref, computed, toRaw, defineEmits } from "vue";
 import Button from "~/components/reuse/ui/Button.vue";
 import { useAdmin } from "~/stores/admin/useAdmin";
 import { usePosStore } from "~/stores/pos/usePOS";
+import { apiFetch } from "~/utils/apiFetch";
 
 const props = defineProps({
   total: {
@@ -89,7 +91,6 @@ const change = computed(() => {
 
 const submitItem = async () => {
   const config = useRuntimeConfig();
-
   if (paidAmount.value === 0) {
     error.value = { status: true, message: "Please insert paid amount"}
   } else if (paidAmount.value !== 0 && paidAmount.value >= props.total) {
@@ -133,12 +134,12 @@ const submitItem = async () => {
       }),
     };
 
-    await fetch(`${config.public.apiBaseUrl}/stores/${adminStore.storeId}/orders`, {
+    await apiFetch(`${config.public.apiBaseUrl}/stores/${adminStore.storeId}/orders`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(payload),
+      body: payload,
     });
     
     posStore.clearCart();
@@ -151,6 +152,30 @@ const submitItem = async () => {
     // console.log("Error");
   }
 };
+
+const handleKeyDown = (e) => {
+  const key = e.key;
+
+  // Allow 0–9
+  if (/^[0-9]$/.test(key)) {
+    appendNumber(key);
+    return;
+  }
+
+  if (key === "Backspace" || key === "Delete") {
+    e.preventDefault();
+    backspace();
+  }
+};
+
+onMounted(() => {
+  window.addEventListener("keydown", handleKeyDown);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("keydown", handleKeyDown);
+});
+
 </script>
 
 <style scoped>

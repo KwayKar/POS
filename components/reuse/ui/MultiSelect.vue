@@ -137,7 +137,7 @@ const updateDropdownPosition = () => {
   if (selectWrapper.value) {
     const rect = selectWrapper.value.getBoundingClientRect();
     dropdownStyles.value = {
-      top: `${(rect.bottom + window.scrollY) - 32}px`,
+      top: `${(rect.bottom + window.scrollY) - (props.modelValue.length > 0 ? 32 : 0)}px`,
       left: `${rect.left + window.scrollX}px`,
       width: `${rect.width}px`,
     };

@@ -13,6 +13,7 @@
     </div>
 
     <div
+      ref="scrollEl"
       class="wrap-items wrap-product-items"
       :style="{ overflowY: 'auto', height: panelHeight + 'px' }"
     >
@@ -59,15 +60,17 @@ const props = defineProps({
   },
   disableNavbar: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 });
 
-const emit = defineEmits(["select-item"]);
+const emit = defineEmits(["select-item", "scrollBottom"]);
 const panelHeight = ref(0);
 const selectedCategory = ref("all");
 const containerWidth = ref(0);
 const containerRef = ref(null);
+const scrollEl = ref(null);
+
 let resizeObserver;
 
 function updatePanelHeight() {
@@ -76,10 +79,10 @@ function updatePanelHeight() {
 
 const gridClass = computed(() => {
   const width = containerWidth.value;
-  if (width < 640) return 'grid grid-cols-2';
-  if (width < 950) return 'grid grid-cols-3';
-  if (width < 1300) return 'grid grid-cols-4';
-  return 'grid grid-cols-4';
+  if (width < 640) return "grid grid-cols-2";
+  if (width < 950) return "grid grid-cols-3";
+  if (width < 1300) return "grid grid-cols-4";
+  return "grid grid-cols-4";
 });
 
 const updateWidth = () => {
@@ -90,8 +93,8 @@ const updateWidth = () => {
 
 onMounted(() => {
   updatePanelHeight();
-  updateWidth(); 
-  
+  updateWidth();
+
   if (containerRef.value) {
     resizeObserver = new ResizeObserver(([entry]) => {
       containerWidth.value = entry.contentRect.width;
@@ -102,12 +105,36 @@ onMounted(() => {
   document.body.style.overflow = "hidden";
   window.addEventListener("resize", updateWidth);
   window.addEventListener("resize", updatePanelHeight);
+
+  if (scrollEl.value) {
+    scrollEl.value.addEventListener("scroll", handleScroll, { passive: true });
+  }
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("resize", updateWidth);
   if (resizeObserver && containerRef.value) {
     resizeObserver.unobserve(containerRef.value);
+  }
+});
+
+let scrollTimeout = null;
+const handleScroll = () => {
+  if (scrollTimeout) clearTimeout(scrollTimeout);
+
+  scrollTimeout = setTimeout(() => {
+     const el = scrollEl.value;
+    if (!el) return;
+
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 100) {
+      emit("scrollBottom");
+    }
+  }, 200);
+};
+
+onUnmounted(() => {
+  if (scrollEl.value) {
+    scrollEl.value.removeEventListener("scroll", handleScroll);
   }
 });
 

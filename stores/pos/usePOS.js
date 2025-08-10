@@ -1,10 +1,13 @@
 import { defineStore } from "pinia";
+import { arraysMatch } from "~/utils/arraysMatch";
+import { generateId } from "~/utils/generateId";
 
 export const usePosStore = defineStore("pos", {
   state: () => ({
     cart: [],
     holdCart: [],   // Temporarily held orders
     appliedCouponCode: null,
+    selectedCartId: null,
     promotions: {
       discountedProducts: [],
       coupons: {
@@ -79,10 +82,24 @@ export const usePosStore = defineStore("pos", {
   },
 
   actions: {
+    onSelectCartId(id) {
+      this.selectedCartId = id;
+    },
+
     addToCart(product) {
-      const index = this.cart.findIndex(
-        (item) => item.item.id === product.item.id
-      );
+      const newId = generateId();
+      const index = this.cart.findIndex((item) => {
+        const sameItem = item.item.id === product.item.id;
+
+        const hasSize = item.size.sizeId && product.size.sizeId;
+        const sameSize = hasSize ? item.size.sizeId === product.size.sizeId : true;
+        
+        const sameAddons = arraysMatch(item.addons ?? [], product.addons ?? []);
+        const sameRemovals = arraysMatch(item.removals ?? [], product.removals ?? []);
+        const sameChoices = arraysMatch(item.choices ?? [], product.choices ?? []);
+
+        return sameItem && sameSize && sameAddons && sameRemovals && sameChoices;
+      });
 
       if (index !== -1) {
         const updatedItem = {
@@ -94,7 +111,7 @@ export const usePosStore = defineStore("pos", {
         };
         this.cart.splice(index, 1, updatedItem);
       } else {
-        this.cart.push({ ...product });
+        this.cart.push({ ...product, cartId: newId });
       }
     },
 

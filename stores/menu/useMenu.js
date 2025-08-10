@@ -8,14 +8,15 @@ export const useMenu = defineStore("menu", () => {
 
   const selectedCategory = ref(null);
   const route = useRoute();
-  const menuId = '0ac68852-f978-42c4-94bf-10aa4cba716b'; // route.params.menuId;
+  const menuId = route.params.menuId;
   const config = useRuntimeConfig();
 
-  const fetchItems = async () => {
+  const fetchItems = async (menuIdValue) => {
     // loading.value = true;
     // error.value = null;
+    const menu = menuId ? menuId : menuIdValue;
     try {
-      const data = await apiFetch(`${config.public.apiBaseUrl}/menus/${menuId}`);
+      const data = await apiFetch(`${config.public.apiBaseUrl}/menus/${menu}`);
       items.value = data.categories;
     } catch (err) {
       // error.value = "Failed to load products";
@@ -107,7 +108,7 @@ export const useMenu = defineStore("menu", () => {
           ...(res?.newItems || []),
         ];
       } else {
-        console.warn("Category not found");
+        // console.warn("Category not found");
       }
     }
   };

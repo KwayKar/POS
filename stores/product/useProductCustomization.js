@@ -48,25 +48,26 @@ export const useProductCustomization = defineStore('productCustomization', () =>
 
   // --- Async actions for API calls ---
 
-  const fetchCustomizations = async () => {
+  const fetchCustomizations = async ({ page = 1, limit = 2 }) => {
     try {
-      const res = await apiFetch(`${config.public.apiBaseUrl}/org/${admin.estId}/customizations`);
-      customizations.value = res;
+      const data = await apiFetch(`${config.public.apiBaseUrl}/org/${admin.estId}/customizations?page=${page}&limit=${limit}`);
+      customizations.value = [...customizations.value, ...data.items]; 
+      return data;
     } catch (error) {
-      console.error('Failed to fetch customizations:', error);
+      // console.error(error);
     }
   };
 
   const updateCustomization = async (id, updatedData) => {
     try {
-      const res = await apiFetch(`${config.public.apiBaseUrl}/customizations/${id}`, {
+      const data = await apiFetch(`${config.public.apiBaseUrl}/customizations/${id}`, {
         method: 'PUT',
         body: updatedData,
       });
       // update locally after successful update
-      updateCustomizationLocal(id, res.data);
+      updateCustomizationLocal(data.id, data);
     } catch (error) {
-      console.error('Failed to update customization:', error);
+      // console.error(error);
     }
   };
 
@@ -86,7 +87,7 @@ export const useProductCustomization = defineStore('productCustomization', () =>
       // customizations.value.push(newCustomization);
       return { success: true, data: res.data };
     } catch (error) {
-      console.error('Failed to add customization:', error);
+      // console.error(error);
     }
   };
 
@@ -97,7 +98,7 @@ export const useProductCustomization = defineStore('productCustomization', () =>
       });
       deleteCustomizationLocal(id);
     } catch (error) {
-      console.error('Failed to delete customization:', error);
+      // console.error(error);
     }
   };
 

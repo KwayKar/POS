@@ -37,12 +37,12 @@
         @close="closeModal"
       />
 
-      <ConfirmDeleteModal
+      <!-- <ConfirmDeleteModal
         v-if="modal.type === 'confirm-delete'"
         :itemName="selectedStore?.name"
         @confirm="removeStore"
         @cancel="closeModal"
-      />
+      /> -->
     </Modal>
   </div>
 </template>
@@ -53,7 +53,7 @@ import StoreItem from "./StoreItem.vue";
 import StoreForm from "./StoreForm.vue";
 import Modal from "~/components/reuse/ui/Modal.vue";
 import { useStore} from '~/stores/shop/useRestaurant';
-import ConfirmDeleteModal from "~/components/reuse/general/confirmDelete/ConfirmDelete"
+// import ConfirmDeleteModal from "~/components/reuse/general/confirmDelete/ConfirmDelete"
 
 const stores = useStore();
 // const manageStore = useStore();

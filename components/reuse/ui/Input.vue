@@ -62,12 +62,15 @@ input {
   color: var(--black-1);
   border: 1px solid var(--gray-1);
   border-radius: 7px;
+  box-shadow: none;
   outline: none;
   height: 46px;
 }
 
 input:focus {
-  border-color: rgb(107, 179, 107);
+  border: 1px solid rgb(107, 179, 107);
+  outline: none;
+  box-shadow: none;
 }
 
 input:disabled {
@@ -81,12 +84,16 @@ input[type="number"]::-webkit-outer-spin-button {
   margin: 0;
 }
 
+input[type="number"]:focus {
+  outline: none;
+  box-shadow: none;
+  border-color: rgb(107, 179, 107); 
+}
+
 input[type="number"] {
   -moz-appearance: textfield;
 }
 input:-webkit-autofill {
   background-color: transparent;
-  transition: background-color 5000s ease-in-out 0s;
-  -webkit-text-fill-color: #000 !important;
-}
+ }
 </style>

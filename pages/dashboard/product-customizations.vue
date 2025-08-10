@@ -38,15 +38,11 @@ import DashboardLayout from "~/layouts/DashboardLayout.vue";
 import NavPanelButton from "~/components/dashboard/panels/NavPanelButton.vue";
 import Modal from "~/components/reuse/ui/Modal.vue";
 import CustomizationForm from "~/components/dashboard/products/customizations/CustomizationForm.vue";
-import { useProductCustomization } from "~/stores/product/useProductCustomization";
 
 const modal = ref({
   type: null, isOpen: false,
 });
-const selectedItem = ref(null);
 const windowWidth = ref(0);
-
-const customizationStore = useProductCustomization();
 
 const openToCreateOption = () => {
   modal.value = {
@@ -68,7 +64,6 @@ const updateWindowWidth = () => {
 
 onMounted(async() => {
   updateWindowWidth();
-  await customizationStore.fetchCustomizations();
   window.addEventListener("resize", updateWindowWidth);
 });
 

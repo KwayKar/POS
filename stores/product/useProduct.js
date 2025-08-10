@@ -211,12 +211,17 @@ export const useProduct = defineStore("product", () => {
     clothing: clothingItems,
   };
 
-  const fetchProducts = async () => {
+  const fetchProducts = async ({ page = 1, limit = 25 }) => {
     loading.value = true;
     error.value = null;
+
     try {
-      const data = await apiFetch(`${config.public.apiBaseUrl}/stores/${admin.storeId}/products`);
-      items.value = data;
+      const data = await apiFetch(
+        `${config.public.apiBaseUrl}/stores/${admin.storeId}/products?page=${page}&limit=${limit}`
+      );
+
+      items.value = [...items.value, ...data.products]; 
+      return data;
     } catch (err) {
       error.value = "Failed to load products";
     } finally {

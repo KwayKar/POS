@@ -107,6 +107,7 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  enabled: Boolean,
 });
 const emit = defineEmits(["update:modelValue", "update:maxChoice"]);
 const windowWidth = ref(0);
@@ -191,6 +192,10 @@ watch(
   },
   { immediate: true }
 );
+
+watch(hasItems, (val) => {
+  emit('update:enabled', val);
+});
 </script>
 
 <style scoped>

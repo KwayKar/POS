@@ -7,7 +7,11 @@
       sizeClass, 
       applyShadow ? 'custom-btn-shadow' : '',
     ]"
-    :style="{ backgroundColor: background, color: color }"
+    :style="{
+      ...(background && { backgroundColor: background }),
+      ...(color && { color }),
+      ...style
+    }"
     v-bind="$attrs"
   >
     <slot />
@@ -41,6 +45,9 @@ export default {
     applyShadow: {
       type: Boolean,
       default: false, 
+    },
+    style: {
+      type: Object,
     },
   },
   computed: {
@@ -110,7 +117,7 @@ export default {
   color: var(--primary-text-color-1);
 }
 .custom-btn-secondary:hover {
-  background-color: var(--black-1);
+  background-color: var(--black-2);
   color: var(--white-1);
   border: 1px solid var(--black-1);
 }

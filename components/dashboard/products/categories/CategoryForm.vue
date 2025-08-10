@@ -1,42 +1,44 @@
 <template>
-  <h3 class="modal-title">
-    {{ mode === 'create' ? 'Create' : 'Edit' }} Category
-  </h3>
+  <div class="category-container">
+    <h3 class="modal-title">
+      {{ mode === 'create' ? 'Create' : 'Edit' }} Category
+    </h3>
 
-  <div class="modal-content category-form">
-    <div class="form-group flex-1">
-      <label for="title" class="form-label">Title</label>
-      <Input
-        v-model="categoryName"
-        type="text"
-        placeholder="Add a new category"
-        class="w-full p-2 border rounded"
-      />
-    </div>
+    <div class="modal-content category-form">
+      <div class="form-group flex-1">
+        <label for="title" class="form-label">Title</label>
+        <Input
+          v-model="categoryName"
+          type="text"
+          placeholder="Add a new category"
+          class="w-full p-2 border rounded"
+        />
+      </div>
 
-    <div class="form-group flex-1">
-      <label for="title" class="form-label"
-        >Upload Image
-        <span>(Optional)</span>
-      </label>
-      <FileUploads
-        v-model:files="uploadedImages"
-        :multiple="true"
-        :min-images="1"
-        :max-images="1"
-        @error="handleUploadError"
-      />
-    </div>
+      <div class="form-group flex-1">
+        <label for="title" class="form-label"
+          >Upload Image
+          <span>(Optional)</span>
+        </label>
+        <FileUploads
+          v-model:files="uploadedImages"
+          :multiple="true"
+          :min-images="1"
+          :max-images="1"
+          @error="handleUploadError"
+        />
+      </div>
 
-    <p v-if="formError" class="text-red-500 mt-2">{{ formError }}</p>
+      <p v-if="formError" class="text-red-500 mt-2">{{ formError }}</p>
 
-    <div class="flex justify-end my-2">
-      <SubmitButton
-        @click="handleSubmit"
-        :apply-shadow="true"
-      >
-        {{ mode === "edit" ? "Update" : "Create" }}
-      </SubmitButton>
+      <div class="footer">
+        <SubmitButton
+          @click="handleSubmit"
+          :apply-shadow="true"
+        >
+          {{ mode === "edit" ? "Update" : "Create" }}
+        </SubmitButton>
+      </div>
     </div>
   </div>
 </template>
@@ -111,9 +113,18 @@ watch(
 </script>
 
 <style scoped>
+.category-container {
+  margin: 0 auto;
+  box-sizing: border-box;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  overflow: hidden;
+}
+
 .category-form {
   width: 100%;
   margin-bottom: 20px;
+  padding: 12px 20px 0;
 }
 .upload-section {
   width: 100%;
@@ -137,5 +148,12 @@ watch(
   margin-right: auto;
   height: 80px;
   object-fit: contain;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.75rem;
+  margin-bottom: 0.5rem;
 }
 </style>

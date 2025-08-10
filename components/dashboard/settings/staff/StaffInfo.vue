@@ -9,34 +9,49 @@
           <Input
             v-model="staff.name"
             type="text"
-            placeholder="Enter staff name"
+            placeholder="Staff Name"
             class="w-full p-2 border rounded"
           />
         </div>
       </div>
 
-      <div v-if="mode === 'edit'" class="form-group">
-        <label class="form-label">ID</label>
-        <div style="opacity: 0.7; pointer-events: none;">
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <div>
           <Input
-            v-model="staff.id"
+            v-model="staff.email"
             type="text"
-            placeholder="Enter staff name"
+            placeholder="Email"
             class="w-full p-2 border rounded"
           />
         </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Phone</label>
+        <div>
+          <Input
+            v-model="staff.phoneNumber"
+            type="number"
+            placeholder="Phone Number"
+            class="w-full p-2 border rounded"
+          />
+        </div>
+      </div>
+
+      <!-- Store Select -->
+      <div class="form-group">
+        <label class="form-label">Locations</label>
+         <MultiSelect
+            v-model="staff.storeIds"
+            :options="storeList"
+          />
       </div>
 
       <!-- Role Select -->
       <div class="form-group">
         <label class="form-label">Role</label>
-        <Select v-model="staff.role" :options="roles" />
-      </div>
-
-      <!-- Group Select -->
-      <div class="form-group">
-        <label class="form-label">Group</label>
-        <Select v-model="staff.group" :options="groups" />
+        <Select v-model="staff.roleId" :options="roleList" />
       </div>
     </div>
   </div>
@@ -61,6 +76,9 @@ import Input from "~/components/reuse/ui/Input.vue";
 import Select from "~/components/reuse/ui/Select.vue";
 import SubmitButton from "~/components/reuse/ui/SubmitButton.vue";
 import { useStaff } from "~/stores/setting/staff/useStaff";
+import { useRole } from "../../../../stores/setting/staff/useRole";
+import { useStoreLocation } from "../../../../stores/storeLocation/useStoreLocation";
+import MultiSelect from "~/components/reuse/ui/MultiSelect.vue";
 
 const props = defineProps({
   mode: {
@@ -75,36 +93,59 @@ const props = defineProps({
 
 const emit = defineEmits(["close"]);
 const formError = ref("");
+const loading = ref(false);
+
 const staffStore = useStaff();
-const roles = staffStore.roles;
-const groups = staffStore.groups;
+const roleStore = useRole();
+const storeLocationStore = useStoreLocation();
 
 const staff = ref({
   id: "",
   name: "",
-  role: "",
-  group: "",
+  email: "", 
+  phoneNumber: "",
+  roleId: "",
+  storeIds: [],
 });
+const storeList = computed(() =>
+  storeLocationStore.storeList.map((r) => ({
+    name: r.name, 
+    id: r.id,  
+  }))
+);
+const roleList = computed(() =>
+  roleStore.roleList.map((r) => ({
+    label: r.name, 
+    value: r.id,  
+  }))
+);
 
-const handleSubmit = () => {
-  if (!staff.value.name || !staff.value.role || !staff.value.group) {
-    formError.value = "Please fill all fields.";
-    return;
-  } 
-  formError.value = '';
+const handleSubmit = async () => {
+  try {
+    if (!staff.value.name || !staff.value.roleId || !staff.value.storeIds) {
+      formError.value = "Please fill the required fields.";
+      return;
+    } 
+    formError.value = '';
+    loading.value = true;
 
-  if (props.mode === "edit") {
-    staffStore.editStaff(staff.value);
-  } else {
-    staffStore.addStaff(staff.value);
+    if (props.mode === "edit") {
+      await staffStore.editStaff(staff.value);
+    } else {
+      await staffStore.addStaff(staff.value);
+    }
+
+    loading.value = false;
+    emit("close");
+  } catch (e) {
+    formError.value = e.message || "Failed to submit";
   }
-
-  emit("close");
 };
 
 onMounted(() => {
   if (props.mode === "edit" && props.item) {
     staff.value = { ...props.item };
+    staff.value.storeIds = (staff.value.staffStores || []).map((s) => s.storeId);
   }
 });
 </script>
@@ -112,12 +153,12 @@ onMounted(() => {
 <style scoped>
 .staff-form {
   width: 100%;
-  margin-bottom: 20px;
+  padding: 20px;
 }
 
 .form-grid {
   display: grid;
-  gap: 1rem;
+  column-gap: 1rem; 
   grid-template-columns: 1fr; /* mobile */
 }
 

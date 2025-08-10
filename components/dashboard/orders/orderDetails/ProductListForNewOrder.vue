@@ -20,9 +20,8 @@
         <div
           v-for="item in filteredItems"
           :key="item.id"
-          @click="toggleSelectItem(item)"
+          @click="onSelectItem(item)"
           class="product-item"
-          :class="{ 'selected-item': isItemSelected(item) }"
         >
           <div class="relative aspect-w-1 aspect-h-1">
             <img
@@ -40,49 +39,54 @@
         </div>
       </div>
     </div>
-
-    <div class="modal-submit-section">
-      <div class="modal-submit-section-btn">
-        <div class="flex-1">
-          <p style="margin-right: 22px">
-            {{ selectedItems.length }} Items Selected
-          </p>
-        </div>
-
-        <SubmitButton
-          @click="submitSelected"
-          :applyShadow="true"
-          style="height: 40px"
-          >Add</SubmitButton
-        >
-      </div>
-    </div>
   </div>
+
+  <Modal
+    v-if="openModal"
+    @close="closeModal"
+    :width="modalWidth"
+    :minHeight="'400px'"
+    :isFullScreenMobile="true"
+  >
+    <AddOrderInfo
+      :item="selectedItem"
+      v-model="orderForm"
+      :modalType="'create'"
+      @update-item="handleUpdateOrderItem"
+      @delete-item="handleDeleteOrderItem"
+    />
+  </Modal>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
-import CategoryList from "./CategoryList.vue";
 import { useProduct } from "~/stores/product/useProduct";
 import { useCategory } from "~/stores/product/category/useCategory";
-import SubmitButton from "~/components/reuse/ui/SubmitButton.vue";
+import CategoryList from "../../items/CategoryList.vue";
+import Modal from "~/components/reuse/ui/Modal.vue";
+import { useWindowSize } from "~/composables/useWindowSize";
+import AddOrderInfo from "../../acceptOrder/AddOrderInfo.vue";
+import { useOrder } from "~/stores/order/useOrder";
 
 const categoryStore = useCategory();
 const productStore = useProduct();
+const orderStore = useOrder();
 
-const emit = defineEmits(["add-selected-items", "close"]);
+const emit = defineEmits(["add-selected-item", "close"]);
 
 const panelHeight = ref();
 const selectedCategory = ref("all");
 const gridClass = ref("grid grid-cols-4");
-const selectedItems = ref([]);
+const selectedItem = ref([]);
 const isMobile = ref(false);
+const openModal = ref(false);
+const { width } = useWindowSize();
+const orderForm = reactive({
+  quantity: 1,
+  preferences: null,
+});
 
 const props = defineProps({
-  initialSelected: {
-    type: Array,
-    default: () => [],
-  },
   height: {
     type: Number,
     default: 700,
@@ -94,10 +98,9 @@ const props = defineProps({
 });
 
 function getGridClass() {
-  const width = window.innerWidth;
-  if (width < 600) return "grid grid-cols-2";
-  if (width < 900) return "grid grid-cols-3";
-  if (width < 1300) return "grid grid-cols-4";
+  if (width.value < 600) return "grid grid-cols-2";
+  if (width.value < 900) return "grid grid-cols-3";
+  if (width.value < 1300) return "grid grid-cols-4";
   return "grid grid-cols-5";
 }
 
@@ -114,7 +117,7 @@ function updatePanelHeight() {
 onMounted(() => {
   productStore.fetchProducts();
 
-  selectedItems.value = [...props.initialSelected];
+  selectedItem.value = props.selectedItem;
   updateGridClass();
   updatePanelHeight();
   window.addEventListener("resize", updateGridClass);
@@ -145,6 +148,7 @@ const uniqueCategories = computed(() => {
 });
 
 const filteredItems = computed(() => {
+  console.log(items);
   return items.value;
   //  selectedCategory.value && selectedCategory.value !== "all"
   //   ? items.value.filter((item) => item.category === selectedCategory.value)
@@ -155,22 +159,33 @@ function filterItems(category) {
   selectedCategory.value = category.id;
 }
 
-function toggleSelectItem(item) {
-  const index = selectedItems.value.findIndex((i) => i.id === item.id);
-  if (index >= 0) {
-    selectedItems.value.splice(index, 1);
+function onSelectItem(item) {
+  selectedItem.value = item;
+  openModal.value = true;
+}
+
+function closeModal() {
+  openModal.value = false;
+};
+
+const handleUpdateOrderItem = (item) => {
+  orderStore.addNewItemsToOrder(item);
+  closeModal();
+};
+
+const handleDeleteOrderItem = (itemId) => {
+
+}
+
+const modalWidth = computed(() => {
+  if (width.value > 1200) {
+    return "850px";
+  } else if (width.value > 1100) {
+    return `${width.value - 100}px`;
   } else {
-    selectedItems.value.push(item);
+    return `${width.value - 120}px`;
   }
-}
-
-function isItemSelected(item) {
-  return selectedItems.value.some((i) => i.id === item.id);
-}
-
-function submitSelected() {
-  emit("add-selected-items", selectedItems.value);
-}
+});
 </script>
 
 <style scoped>

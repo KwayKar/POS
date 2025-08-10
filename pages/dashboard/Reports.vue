@@ -10,10 +10,9 @@
 
     <DashboardLayout>
       <div
-        class="flex flex-col w-full"
-        :style="{ width: '100%', margin: '0 32px' }"
+        class="custom-container"
       >
-        <div class="filter-section">
+        <div class="report-filter-section">
           <CategoryBtn
             @click="activeSection = 'products'"
             :active="activeSection === 'products'"
@@ -85,19 +84,40 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.filter-section {
+.custom-container {
+  width: 100%;
+  margin: 0 32px;
+  flex: 1;
+  flex-direction: column; 
+  width: 100%;
+}
+@media screen and (max-width: 600px) {
+  .custom-container {
+    margin: 0 16px;
+  }
+}
+
+.report-filter-section {
   display: flex;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin: 1rem 0;
 }
+
 .dashboard {
   display: flex;
   width: 100%;
   flex-wrap: wrap;
   gap: 20px;
-  margin-top: 22px;
+  margin-top: 6px;
   justify-content: center;
 }
+@media screen and (max-width: 850px) {
+  .dashboard {
+    min-width: 900px;
+    overflow-x: auto;
+  }
+}
+
 .chart-container {
   width: 100%;
   gap: 32px;

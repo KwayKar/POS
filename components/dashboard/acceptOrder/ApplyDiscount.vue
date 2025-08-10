@@ -4,7 +4,7 @@
       <h3 class="header3">Apply Discount</h3>
     </div>
 
-    <div class="modal-content">
+    <div class="modal-content modal-body">
       <div class="">
         <label for="code" class="form-label">Code</label>
         <Input
@@ -15,7 +15,7 @@
       </div>
     </div>
 
-    <div>
+    <div class="footer">
       <div class="modal-submit-section-btn flex justify-end">
         <div class="flex-1">
         <p v-if="formError" class="text-red-500 mt-2">
@@ -56,6 +56,15 @@ function applyDiscount() {
 
 
 <style>
+.modal-body {
+  padding: 6px 16px 0px;
+  margin-bottom: 20px;
+}
+
+.footer {
+  margin: 12px 0 18px;
+}
+
 .apply-discount-container {
   margin: 0 auto;
   box-sizing: border-box;
