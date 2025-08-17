@@ -1,63 +1,65 @@
 <template>
-  <div ref="panelRefHeight" style="height: 100%">
-    <div class="header-section">
-      <h3 class="header3">Store List</h3>
-      <Button
-        @click="onSelectStore()"
-        :applyShadow="true"
-        :style="{ height: '40px' }"
-        variant="primary"
-      >
-        Create
-      </Button>
-    </div>
+  <div>
+    <div ref="panelRefHeight" style="height: 100%">
+      <div class="header-section">
+        <h3 class="header3">Store List</h3>
+        <Button
+          @click="onSelectStore()"
+          :applyShadow="true"
+          :style="{ height: '40px' }"
+          variant="primary"
+        >
+          Create
+        </Button>
+      </div>
 
-    <div
-      class="store-list"
-      :style="{
-        height:
-          typeof panelHeight === 'number' ? `${panelHeight}px` : panelHeight,
-      }"
-    >
       <div
-        v-for="store in storeStore.storeList"
-        :key="store.id"
-        class="store-row"
-        @click="onSelectStore(store.id)"
+        class="store-list"
+        :style="{
+          height:
+            typeof panelHeight === 'number' ? `${panelHeight}px` : panelHeight,
+        }"
       >
-        <div class="store-left">
-          <div class="avatar">
-            {{ store.name?.charAt(0).toUpperCase() }}
+        <div
+          v-for="store in storeStore.storeList"
+          :key="store.id"
+          class="store-row"
+          @click="onSelectStore(store.id)"
+        >
+          <div class="store-left">
+            <div class="avatar">
+              {{ store.name?.charAt(0).toUpperCase() }}
+            </div>
+            <div class="store-info">
+              <p class="store-name">{{ store.name }}</p>
+              <p class="store-address">{{ store.address?.street || "No address" }}{{ store.address?.city ? ", " + store.address.city : "" }}</p>
+            </div>
           </div>
-          <div class="store-info">
-            <p class="store-name">{{ store.name }}</p>
-            <p class="store-address">{{ store.address || "No address" }}</p>
+
+          <div class="store-extra desktop-only">
+            {{ store.establishment?.name || "N/A" }}
           </div>
-        </div>
 
-        <div class="store-extra desktop-only">
-          {{ store.establishment?.name || "N/A" }}
-        </div>
-
-        <div class="edit-icon desktop-only">
-          <EditPencil />
+          <div class="edit-icon desktop-only">
+            <EditPencil />
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <Modal
-    v-if="modal.isOpen && modal.type === 'store-info'"
-    :width="modalWidth"
-    height="auto"
-    @close="closeModal"
-  >
-    <StoreInfoForm 
-      :mode="modal.mode"
-      :item="selectedStore" 
-      @close="closeModal" 
-    />
-  </Modal>
+    <Modal
+      v-if="modal.isOpen && modal.type === 'store-info'"
+      :width="modalWidth"
+      :height="modalHeight"
+      @close="closeModal"
+    >
+      <LocationTabs
+        :panelHeight="modalHeight"
+        :selectedStoreId="selectedStore.id"
+        @close="closeModal"
+      />
+    </Modal>
+  </div>
 </template>
 
 <script setup>
@@ -66,9 +68,11 @@ import EditPencil from "~/components/reuse/icons/EditPencil.vue";
 import Modal from "~/components/reuse/ui/Modal.vue";
 import Button from "~/components/reuse/ui/Button.vue";
 import { useStoreLocation } from "~/stores/storeLocation/useStoreLocation";
-import StoreInfoForm from "./StoreInfoForm.vue";
+import LocationTabs from "./LocationTabs.vue";
+import { useAdmin } from "~/stores/admin/useAdmin";
 
 const storeStore = useStoreLocation();
+const adminStore = useAdmin();
 
 const panelRefHeight = ref(null);
 const windowWidth = ref(0);
@@ -80,8 +84,9 @@ const modal = ref({
   mode: "",
 });
 
-const onSelectStore = (id) => {
+const onSelectStore = async (id) => {
   const emptyStore = {
+    id: id,
     name: "",
     street: "",
     city: "",
@@ -95,7 +100,9 @@ const onSelectStore = (id) => {
   };
 
   if (id && id.trim() !== "") {
-    selectedStore.value = storeStore.storeList.find(store => store.id === id) || { ...emptyStore };
+    selectedStore.value = await storeStore.storeList.find(
+      (store) => store.id === id
+    ) || { ...emptyStore };
   } else {
     selectedStore.value = { ...emptyStore };
   }
@@ -113,11 +120,9 @@ const updatePanelSize = () => {
 };
 
 onMounted(async () => {
+  await storeStore.fetchStoreList(adminStore.estId, adminStore.storeId);
   await nextTick();
   updatePanelSize();
-
-  await storeStore.fetchStoreList();
-
   window.addEventListener("resize", updatePanelSize);
 });
 
@@ -139,9 +144,17 @@ watch(
   }
 );
 
+const modalHeight = computed(() => {
+  if (windowWidth.value > 900) {
+    return "620px";
+  } else {
+    return `100vh`;
+  }
+});
+
 const modalWidth = computed(() => {
   if (windowWidth.value > 1200) {
-    return "720px";
+    return "870px";
   } else if (windowWidth.value < 900) {
     return `${windowWidth.value - 50}px`;
   }

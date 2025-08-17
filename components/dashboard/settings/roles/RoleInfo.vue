@@ -242,11 +242,4 @@ const handleSubmit = async () => {
   text-overflow: ellipsis;
 }
 
-.modal-footer {
-  display: flex;
-  justify-content: space-between;
-  border-radius: 0 0 8px 8px;
-  background: var(--primary-bg-color-1);
-  margin: 0 24px 20px;
-}
 </style>

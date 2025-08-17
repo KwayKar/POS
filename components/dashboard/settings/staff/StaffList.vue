@@ -83,8 +83,10 @@ import { useStaff } from "~/stores/setting/staff/useStaff";
 import StaffInfo from "./StaffInfo.vue";
 import Button from "~/components/reuse/ui/Button.vue";
 import { useStoreLocation } from "../../../../stores/storeLocation/useStoreLocation";
+import { useRole } from "~/stores/setting/staff/useRole";
 
 const staffStore = useStaff();
+const roleStore = useRole();
 const locationStore = useStoreLocation();
 
 const panelRefHeight = ref(null);

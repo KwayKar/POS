@@ -1,143 +1,145 @@
 <template>
-  <div class="category-layout">
-    <div
-      class="category-sidebar"
-      ref="menuCategoryRef"
-      :style="{
-        width: '100%',
-      }"
-    >
-      <div class="wrap-header hide-on-desktop">
-        <Button class="mobile-menu-btn hide-on-desktop" @click="toggleDrawer">
-          Sort Order
-        </Button>
-      </div>
+  <div>
+    <div class="category-layout">
+      <div
+        class="category-sidebar"
+        ref="menuCategoryRef"
+        :style="{
+          width: '100%',
+        }"
+      >
+        <div class="wrap-header hide-on-desktop">
+          <Button class="mobile-menu-btn hide-on-desktop" @click="toggleDrawer">
+            Sort Order
+          </Button>
+        </div>
 
-      <div class="wrap-categories">
-        <ul
-          :style="{
-            flex: 1,
-            height:
-              typeof panelHeight === 'number'
-                ? `${panelHeight}px`
-                : panelHeight,
-          }"
-          class="category-list hide-on-mobile"
-        >
-          <draggable
-            v-model="items"
-            item-key="id"
-            :animation="300"
-            ghost-class="ghost"
-            chosen-class="chosen"
-            :drag-class="'dragging'"
-            style="display: flex; align-items: center; margin-left: 12px;"
-            @end="onSortEnd"
+        <div class="wrap-categories">
+          <ul
+            :style="{
+              flex: 1,
+              height:
+                typeof panelHeight === 'number'
+                  ? `${panelHeight}px`
+                  : panelHeight,
+            }"
+            class="category-list hide-on-mobile"
           >
-            <template #item="{ element, index }">
-              <li
-                :key="element.id"
-                :class="['category-item', { 'animate-wiggle': enableSort }]"
-                @click="$emit('select', element.id)"
-                :style="{
-                  background: '#fff',
-                  height: '36px !important',
-                  borderRadius: '20px',
-                  color: 'var(--black-3)',
-                  border: '1px solid var(--gray-2)',
-                  marginRight: index === items.length - 1 ? '150px' : '',
-                  position: 'relative',
-                }"
-              >
-                <span>{{ element.name }}</span>
-                <button
-                  v-if="enableSort"
-                  @click.stop="confirmDelete(element)"
-                  class="cross-btn"
-                  title="Remove"
+            <draggable
+              v-model="items"
+              item-key="id"
+              :animation="300"
+              ghost-class="ghost"
+              chosen-class="chosen"
+              :drag-class="'dragging'"
+              style="display: flex; align-items: center; margin-left: 12px;"
+              @end="onSortEnd"
+            >
+              <template #item="{ element, index }">
+                <li
+                  :key="element.id"
+                  :class="['category-item', { 'animate-wiggle': enableSort }]"
+                  @click="$emit('select', element.id)"
+                  :style="{
+                    background: '#fff',
+                    height: '36px !important',
+                    borderRadius: '20px',
+                    color: 'var(--black-3)',
+                    border: '1px solid var(--gray-2)',
+                    marginRight: index === items.length - 1 ? '150px' : '',
+                    position: 'relative',
+                  }"
                 >
-                  ×
-                </button>
-              </li>
-            </template>
-          </draggable>
-        </ul>
+                  <span>{{ element.name }}</span>
+                  <button
+                    v-if="enableSort"
+                    @click.stop="confirmDelete(element)"
+                    class="cross-btn"
+                    title="Remove"
+                  >
+                    ×
+                  </button>
+                </li>
+              </template>
+            </draggable>
+          </ul>
 
-        <div class="category-section-action">
-          <Button
-            style="border: 1px solid var(--black-1); height: 38px"
-            variant="primary"
-            @click="openCreateModal"
-            :style="{ fontSize: '1.4rem', marginRight: '1rem' }"
-          >
-            {{ "+" }}
-          </Button>
+          <div class="category-section-action">
+            <Button
+              style="border: 1px solid var(--black-1); height: 38px"
+              variant="primary"
+              @click="openCreateModal"
+              :style="{ fontSize: '1.4rem', marginRight: '1rem' }"
+            >
+              {{ "+" }}
+            </Button>
 
-          <Button
-            style="border: 1px solid var(--black-1); height: 38px"
-            variant="primary"
-            @click="enableSortingDesktop"
-            :style="{ background: enableSort ? 'var(--green-2)' : '' }"
-          >
-            {{ !enableSort ? "Sort" : "Done" }}
-          </Button>
+            <Button
+              style="border: 1px solid var(--black-1); height: 38px"
+              variant="primary"
+              @click="enableSortingDesktop"
+              :style="{ background: enableSort ? 'var(--green-2)' : '' }"
+            >
+              {{ !enableSort ? "Sort" : "Done" }}
+            </Button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <Drawer :direction="'bottom'" :title="Categories" :isOpen="isDrawerOpen" @close="toggleDrawer">
-    <ul
-      :style="{
-        height:
-          typeof panelHeight === 'number' ? `${panelHeight}px` : panelHeight,
-      }"
-      class="category-list"
-    >
-      <draggable
-        v-model="items"
-        item-key="id"
-        :animation="300"
-        ghost-class="ghost"
-        chosen-class="chosen"
-        :drag-class="'dragging'"
+    <Drawer :direction="'bottom'" :title="Categories" :isOpen="isDrawerOpen" @close="toggleDrawer">
+      <ul
+        :style="{
+          height:
+            typeof panelHeight === 'number' ? `${panelHeight}px` : panelHeight,
+        }"
+        class="category-list"
       >
-        <template #item="{ element, index }">
-          <li
-            :key="element.id"
-            :style="{
-              marginRight: index === items.length - 1 ? '150px' : '',
-              background: '#fff',
-            }"
-          >
-            {{ element.name }}
-          </li>
-        </template>
-      </draggable>
-    </ul>
-  </Drawer>
+        <draggable
+          v-model="items"
+          item-key="id"
+          :animation="300"
+          ghost-class="ghost"
+          chosen-class="chosen"
+          :drag-class="'dragging'"
+        >
+          <template #item="{ element, index }">
+            <li
+              :key="element.id"
+              :style="{
+                marginRight: index === items.length - 1 ? '150px' : '',
+                background: '#fff',
+              }"
+            >
+              {{ element.name }}
+            </li>
+          </template>
+        </draggable>
+      </ul>
+    </Drawer>
 
-  <Modal
-    v-if="modal.isOpen && modal.type === 'create-category'"
-    width="420px"
-    height="auto"
-    @close="closeModal"
-  >
-    <CategoryForm @close="closeModal" />
-  </Modal>
+    <Modal
+      v-if="modal.isOpen && modal.type === 'create-category'"
+      width="420px"
+      height="auto"
+      @close="closeModal"
+    >
+      <CategoryForm @close="closeModal" />
+    </Modal>
 
-  <Modal
-    v-if="modal.isOpen && modal.type === 'remove-category'"
-    width="420px"
-    height="auto"
-    @close="closeModal"
-  >
-    <ConfirmDelete @remove-item="handleRemove" @close="closeModal">
-      <div>
-        <p style="font-size: 0.95rem">All items inside {{ modal?.selectedItem?.name }} will be deleted.</p>
-      </div>
-    </ConfirmDelete>
-  </Modal>
+    <Modal
+      v-if="modal.isOpen && modal.type === 'remove-category'"
+      width="420px"
+      height="auto"
+      @close="closeModal"
+    >
+      <ConfirmDelete @remove-item="handleRemove" @close="closeModal">
+        <div>
+          <p style="font-size: 0.95rem">All items inside {{ modal?.selectedItem?.name }} will be deleted.</p>
+        </div>
+      </ConfirmDelete>
+    </Modal>
+  </div>
 </template>
 
 <script setup>

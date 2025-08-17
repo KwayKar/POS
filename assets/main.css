@@ -26,6 +26,7 @@ html {
 
   /* for text bold */
   --olive-gray: #616354;
+  --charcoal: #535252;
 
   --primary-hover-bg-color-1: #f3f5ef;
   
@@ -197,6 +198,14 @@ th:hover .th-sort-arrow {
   /* padding: 6px 16px 0px; */
 }
 
+.modal-footer {
+  display: flex;
+  justify-content: space-between;
+  border-radius: 0 0 8px 8px;
+  background: var(--primary-bg-color-1);
+  margin: 10px 20px 10px;
+}
+
 .form-group {
   margin-bottom: 1.2rem;
 }
@@ -206,10 +215,27 @@ th:hover .th-sort-arrow {
   font-size: 0.85rem;
 }
 
+.form-section-header {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: var(--black-2);
+}
+
+.form-section-header span {
+  font-size: 0.8rem;
+  color: #878585;
+}
+
+.label-description {
+  font-size: 0.85rem;
+  color: var(--gray-3);
+}
+
 .form-label {
   font-size: 0.88rem;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--charcoal);
 }
 
 .form-description {

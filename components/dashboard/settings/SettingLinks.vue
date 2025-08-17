@@ -101,6 +101,6 @@ const handleClick = (item) => {
 }
 
 .nav-item:hover {
-  color: #000;
+  color: var(--black-1);
 }
 </style>

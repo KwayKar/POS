@@ -6,8 +6,12 @@
       variantClass,
       sizeClass,
       applyShadow ? 'custom-btn-shadow' : '',
+      { 'is-disabled': isProcessing }  
     ]"
-    :style="{ backgroundColor: background, color: color }"
+    :style="{
+      backgroundColor: background,
+      color,
+    }"
     v-bind="$attrs"
   >
     <slot />
@@ -42,6 +46,7 @@ export default {
       type: Boolean,
       default: false,
     },
+    isProcessing: { type: Boolean, default: false },
   },
   computed: {
     variantClass() {
@@ -128,5 +133,10 @@ export default {
 
 .custom-btn-shadow {
   box-shadow: var(--box-shadow-2);
+}
+
+.is-disabled {
+  opacity: 0.5;
+  pointer-events: none;
 }
 </style>

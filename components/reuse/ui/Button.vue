@@ -108,7 +108,7 @@ export default {
 
 .custom-btn-primary:hover {
   border: 1px solid var(--black-2);
-  background-color: var(--white-2);
+  background-color: var(--white-2) !important;
   color: var(--black-1) !important;
 }
 

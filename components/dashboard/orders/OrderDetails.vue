@@ -1,5 +1,6 @@
 <template>
   <div>
+  <div>
     <div class="order-header" ref="headerRef">
       <div class="order-id">
         #{{ order?.id }}
@@ -65,8 +66,10 @@
             </tr>
           </thead>
           <tbody>
-            <template v-for="item in order.items" :key="item.id">
+            <template>
               <tr
+                v-for="item in items" 
+                :key="item.id"
                 :class="{
                   'has-customizations':
                     item.customizations && item.customizations.length,
@@ -241,6 +244,7 @@
   >
     <UpdateItemQty :qty="existingQty" />
   </Modal>
+  </div>
 </template>
 
 <script setup>

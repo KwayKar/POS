@@ -524,7 +524,7 @@ watch(isAddonsEnabled, (val) => {
 .form-label {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #4a4a4a;
+  color: var(--charcoal);
 }
 
 .form-input {

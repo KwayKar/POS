@@ -1,12 +1,14 @@
 import { useNuxtApp } from "nuxt/app";
 import { defineStore } from "pinia";
 import { useAdmin } from "~/stores/admin/useAdmin";
+import * as storeService from "~/services/storeService";
 
 export const useStoreLocation = defineStore("storeLocation", {
   state: () => ({
     storeList: [],
     types: [],
     locations: [],
+    selectedStore: null,
   }),
 
   getters: {
@@ -23,27 +25,15 @@ export const useStoreLocation = defineStore("storeLocation", {
   },
 
   actions: {
-    async fetchStoreList() {
-      const config = useRuntimeConfig();
-      const admin = useAdmin();
-      const { $firebaseAuth } = useNuxtApp();
-      const currentUser = $firebaseAuth.currentUser;
+    async fetchStoreList(estId, storeId) {
+      const res = await storeService.fetchStoreList(estId, storeId);
+      if (res) this.storeList = res;
+    },
 
-      if (!currentUser) {
-        throw new Error("No authenticated user found");
-      }
-
-      const idToken = await currentUser.getIdToken();
-      const res = await apiFetch(
-        `${config.public.apiBaseUrl}/stores?establishmentId=${admin.estId}&storeId=11325a15-2f9c-4d77-a2cf-7655f56a6661`,
-        {
-          headers: {
-            Authorization: `Bearer ${idToken}`,
-          },
-        }
-      );
-
-      this.storeList = res || [];
+    async fetchStoreById(storeId) {
+      const store = await storeService.fetchStoreById(storeId);
+      if (store) this.selectedStore = store;
+      return store;
     },
 
     async updateStoreById(id, payload) {
@@ -78,5 +68,29 @@ export const useStoreLocation = defineStore("storeLocation", {
         this.storeList[index] = { ...updatedItem };
       }
     },
+
+    async updateStoreInfo(id, payload) {
+      const { $firebaseAuth } = useNuxtApp();
+      const token = await $firebaseAuth.currentUser.getIdToken();
+      await storeService.updateStoreInfo(id, payload, token);
+    },
+
+    async updateStoreTax(id, taxInfo) {
+      const { $firebaseAuth } = useNuxtApp();
+      const token = await $firebaseAuth.currentUser.getIdToken();
+      await storeService.updateStoreTax(id, taxInfo, token);
+    },
+
+    async updateStoreOpeningHours(id, openingHours) {
+      const { $firebaseAuth } = useNuxtApp();
+      const token = await $firebaseAuth.currentUser.getIdToken();
+      await storeService.updateStoreOpeningHours(id, openingHours, token);
+    },
+
+    async updateStoreReceipt(id, receiptSettings) {
+      const { $firebaseAuth } = useNuxtApp();
+      const token = await $firebaseAuth.currentUser.getIdToken();
+      await storeService.updateStoreReceipt(id, receiptSettings, token);
+    }
   },
 });

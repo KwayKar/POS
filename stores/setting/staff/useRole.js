@@ -1,7 +1,6 @@
 import { useRuntimeConfig } from "nuxt/app";
 import { defineStore } from "pinia";
 import { useAdmin } from "~/stores/admin/useAdmin";
-import { generateId } from "~/utils/generateId";
 
 export const useRole = defineStore("role", {
   state: () => ({
