@@ -107,7 +107,7 @@ const handleClickOutside = (event) => {
 
 onMounted(() => {
   if (!selectedItem.value && props.modelValue) {
-    selectedItem.value = props.options.find(
+    selectedItem.value = props.options && props.options.find(
       (option) => option.value === props.modelValue
     );
   }

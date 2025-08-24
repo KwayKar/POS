@@ -173,7 +173,6 @@ const updateOrderItemsHeight = () => {
 onMounted(async () => {
   await nextTick();
 
-  console.log(localOrder);
   updateOrderItemsHeight();
   window.addEventListener("resize", updateOrderItemsHeight);
 

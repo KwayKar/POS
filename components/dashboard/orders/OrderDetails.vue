@@ -1,249 +1,252 @@
 <template>
   <div>
-  <div>
-    <div class="order-header" ref="headerRef">
-      <div class="order-id">
-        #{{ order?.id }}
-        <div class="order-total" v-if="!isKitchenStaff">
-          - {{ order.totalAmount }}
-        </div>
-      </div>
-      <div class="order-status">
-        <span :class="['status-btn', statusClass(order?.status)]">{{
-          order?.status
-        }}</span>
-      </div>
-    </div>
-
-    <div class="order-tags" ref="tagsRef">
-      <span class="tag" v-if="!isKitchenStaff">{{
-        formatOrderType(order?.orderType)
-      }}</span>
-      <span class="tag">{{ formatDate(order?.createdAt) }}</span>
-      <span class="tag">{{ order?.items?.length || 0 }} items</span>
-    </div>
-
-    <div
-      class="layout-container"
-      ref="containerRef"
-      :style="{ height: itemsWrapperHeight }"
-    >
-      <div v-if="order?.deliveryAddress" class="order-address">
-        <div style="display: flex">
-          <p>{{ order?.deliveryAddress }}</p>
-          <div class="edit-order-info" @click="openModal('delivery-address')">
-            <div class="order-info-icon">
-              <EditPencil />
-            </div>
-            <p>Edit</p>
+    <div>
+      <div class="order-header" ref="headerRef">
+        <div class="order-id">
+          #{{ order?.id }}
+          <div class="order-total" v-if="!isKitchenStaff">
+            - {{ order.totalAmount }}
           </div>
         </div>
-        <p style="margin-top: 12px">{{ order?.phoneNumber }}</p>
-      </div>
-
-      <div v-if="order?.note" class="order-note">
-        <div class="note-icon">
-          <Note size="20" fill="#555" />
-        </div>
-        <div>
-          <div class="note-title">Customer Note</div>
-          <div class="note-info">{{ order.note }}</div>
+        <div class="order-status">
+          <span :class="['status-btn', statusClass(order?.status)]">{{
+            order?.status
+          }}</span>
         </div>
       </div>
 
-      <div class="star-separator"></div>
+      <div class="order-tags" ref="tagsRef">
+        <span class="tag" v-if="!isKitchenStaff">{{
+          formatOrderType(order?.orderType)
+        }}</span>
+        <span class="tag">{{ formatDate(order?.createdAt) }}</span>
+        <span class="tag">{{ order?.items?.length || 0 }} items</span>
+      </div>
 
-      <div class="wrap-order-items">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Item Name</th>
-              <th>Quantity</th>
-              <th>Processed</th>
-              <th @click="onAddNewItem" style="width: 55px">
-                <div class="plus-sign"></div>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <template>
-              <tr
-                v-for="item in items" 
-                :key="item.id"
-                :class="{
-                  'has-customizations':
-                    item.customizations && item.customizations.length,
-                }"
-              >
-                <td :class="['item-name', { crossed: item.processed }]">
-                  {{ item?.title || item?.name }}
-                </td>
-                <td
-                  @click="() => updateItemQty(item.quantity)"
-                  style="padding-left: 15px; "
-                >
-                  <div
-                    :style="{
-                      width: '40%',
-                      height: '50%',
-                      border: isEditMode ? '1px solid #dedede' : '1px solid transparent',
-                      padding: '8px',
-                      textAlign: 'center',
-                      borderRadius: '8px'
-                    }"
-                  >
-                    {{ item.quantity }}
-                  </div>
-                </td>
-                <td>
-                  <Checkbox v-model="item.processed" :id="item.id"
-                    >Done</Checkbox
-                  >
-                </td>
-                <td style="padding: 0">
-                  <div class="wrap-remove-btn">
-                    <div
-                      v-if="isEditMode"
-                      class="remove-btn"
-                      @click="onConfirmRemoveItem(item, 'product')"
-                    >
-                      <div />
-                    </div>
-                    <div v-else style="width: 50px; padding: 0">
-                      <div />
-                    </div>
-                  </div>
-                </td>
+      <div
+        class="layout-container"
+        ref="containerRef"
+        :style="{ height: itemsWrapperHeight }"
+      >
+        <div v-if="order?.deliveryAddress" class="order-address">
+          <div style="display: flex">
+            <p>{{ order?.deliveryAddress }}</p>
+            <div class="edit-order-info" @click="openModal('delivery-address')">
+              <div class="order-info-icon">
+                <EditPencil />
+              </div>
+              <p>Edit</p>
+            </div>
+          </div>
+          <p style="margin-top: 12px">{{ order?.phoneNumber }}</p>
+        </div>
+
+        <div v-if="order?.note" class="order-note">
+          <div class="note-icon">
+            <Note size="20" fill="#555" />
+          </div>
+          <div>
+            <div class="note-title">Customer Note</div>
+            <div class="note-info">{{ order.note }}</div>
+          </div>
+        </div>
+
+        <div class="star-separator"></div>
+
+        <div class="wrap-order-items">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Item Name</th>
+                <th>Quantity</th>
+                <th>Processed</th>
+                <th @click="onAddNewItem" style="width: 55px">
+                  <div class="plus-sign"></div>
+                </th>
               </tr>
-
-              <tr
-                v-if="item?.customizations?.length"
-                :class="{
-                  'has-customizations': item.notes,
-                }"
-                :key="item.id + '-customs'"
-              >
-                <td
-                  colspan="4"
-                  class="customizations-cell"
-                  style="padding-left: 25px"
+            </thead>
+            <tbody>
+              <template v-for="item in items" :key="item.id">
+                <tr
+                  :class="{
+                    'has-customizations':
+                      item.customizations && item.customizations.length,
+                  }"
                 >
-                  <ul class="customizations-list">
-                    <li v-for="custom in item.customizations" :key="custom.id">
-                      <span class="custom-type">+ {{ custom.title }}</span>
-                      <span v-if="!isKitchenStaff && custom.price">
-                        ({{ formatCurrency(custom.price) }})</span
-                      >
+                  <td :class="['item-name', { crossed: item.processed }]">
+                    {{ item?.title || item?.name }}
+                  </td>
+                  <td
+                    @click="() => updateItemQty(item.quantity)"
+                    style="padding-left: 15px"
+                  >
+                    <div
+                      :style="{
+                        width: '40%',
+                        height: '50%',
+                        border: isEditMode
+                          ? '1px solid #dedede'
+                          : '1px solid transparent',
+                        padding: '8px',
+                        textAlign: 'center',
+                        borderRadius: '8px',
+                      }"
+                    >
+                      {{ item.quantity }}
+                    </div>
+                  </td>
+                  <td>
+                    <Checkbox v-model="item.processed" :id="item.id"
+                      >Done</Checkbox
+                    >
+                  </td>
+                  <td style="padding: 0">
+                    <div class="wrap-remove-btn">
                       <div
-                        v-if="isEditMode && custom.type === 'addon'"
+                        v-if="isEditMode"
                         class="remove-btn"
-                        style="width: 25px; height: 25px; margin-left: 12px"
-                        @click="onConfirmRemoveItem(custom, 'addon')"
+                        @click="onConfirmRemoveItem(item, 'product')"
                       >
                         <div />
                       </div>
-                    </li>
-                  </ul>
-                </td>
-              </tr>
+                      <div v-else style="width: 50px; padding: 0">
+                        <div />
+                      </div>
+                    </div>
+                  </td>
+                </tr>
 
-              <tr v-if="item?.notes" :key="item.id + '-notes'">
-                <td
-                  colspan="4"
-                  class="customizations-cell"
-                  style="padding-left: 10px; width: 55px"
+                <tr
+                  v-if="item?.customizations?.length"
+                  :class="{
+                    'has-customizations': item?.notes,
+                  }"
+                  :key="item.id + '-customs'"
                 >
-                  <div class="item-note">
-                    <strong>Note</strong> - {{ item?.notes }}
-                  </div>
-                </td>
-              </tr>
-            </template>
-          </tbody>
-        </table>
+                  <td
+                    colspan="4"
+                    class="customizations-cell"
+                    style="padding-left: 25px"
+                  >
+                    <ul class="customizations-list">
+                      <li
+                        v-for="custom in item.customizations"
+                        :key="custom.id"
+                      >
+                        <span class="custom-type">+ {{ custom.title }}</span>
+                        <span v-if="!isKitchenStaff && custom.price">
+                          ({{ formatCurrency(custom.price) }})</span
+                        >
+                        <div
+                          v-if="isEditMode && custom.type === 'addon'"
+                          class="remove-btn"
+                          style="width: 25px; height: 25px; margin-left: 12px"
+                          @click="onConfirmRemoveItem(custom, 'addon')"
+                        >
+                          <div />
+                        </div>
+                      </li>
+                    </ul>
+                  </td>
+                </tr>
+
+                <tr v-if="item?.notes" :key="item.id + '-notes'">
+                  <td
+                    colspan="4"
+                    class="customizations-cell"
+                    style="padding-left: 10px; width: 55px"
+                  >
+                    <div class="item-note">
+                      <strong>Note</strong> - {{ item?.notes }}
+                    </div>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="order-btn-section" ref="btnRef">
+        <OrderStatus
+          :isEditMode="isEditMode"
+          :orderStatus="order.status"
+          @edit-mode-toggle="handleEditToggle"
+        />
       </div>
     </div>
 
-    <div class="order-btn-section" ref="btnRef">
-      <OrderStatus
-        :isEditMode="isEditMode"
-        :orderStatus="order.status"
-        @edit-mode-toggle="handleEditToggle"
-      />
-    </div>
-  </div>
-
-  <Modal
-    v-if="modal.isOpen && modal.type === 'payment-method'"
-    width="420px"
-    height="auto"
-    @close="closeModal"
-  >
-    <UpdatePayment :isOpen="modal.isOpen" @close="closeModal" />
-  </Modal>
-
-  <Modal
-    v-if="modal.isOpen && modal.type === 'delivery-address'"
-    width="460px"
-    height="auto"
-    @close="closeModal"
-  >
-    <UpdateDeliveryAddress
-      :address="order?.deliveryAddress"
-      :phoneNumber="order?.phoneNumber"
-      :isOpen="modal.isOpen"
+    <Modal
+      v-if="modal.isOpen && modal.type === 'payment-method'"
+      width="420px"
+      height="auto"
       @close="closeModal"
-    />
-  </Modal>
+    >
+      <UpdatePayment :isOpen="modal.isOpen" @close="closeModal" />
+    </Modal>
 
-  <Modal
-    v-if="modal.isOpen && modal.type === 'order-status'"
-    width="420px"
-    height="auto"
-    @close="closeModal"
-  >
-    <UpdateOrderStatus :isOpen="modal.isOpen" @close="closeModal" />
-  </Modal>
+    <Modal
+      v-if="modal.isOpen && modal.type === 'delivery-address'"
+      width="460px"
+      height="auto"
+      @close="closeModal"
+    >
+      <UpdateDeliveryAddress
+        :address="order?.deliveryAddress"
+        :phoneNumber="order?.phoneNumber"
+        :isOpen="modal.isOpen"
+        @close="closeModal"
+      />
+    </Modal>
 
-  <Modal
-    v-if="modal.isOpen && modal.type === 'confirm-delete'"
-    width="420px"
-    height="auto"
-    @close="closeModal"
-  >
-    <ConfirmDelete @remove-item="handleRemove" @close="closeModal">
-      <div>
-        <p style="font-size: 0.95rem">
-          Are you sure to remove
-          <strong>"{{ confirmDelete.title }}"</strong> from the order?
-        </p>
+    <Modal
+      v-if="modal.isOpen && modal.type === 'order-status'"
+      width="420px"
+      height="auto"
+      @close="closeModal"
+    >
+      <UpdateOrderStatus :isOpen="modal.isOpen" @close="closeModal" />
+    </Modal>
 
-        <p style="font-size: 15px; color: var(--gray-3); margin-top: 23px">
-          This will also update the total amount of the order.
-        </p>
-      </div>
-    </ConfirmDelete>
-  </Modal>
+    <Modal
+      v-if="modal.isOpen && modal.type === 'confirm-delete'"
+      width="420px"
+      height="auto"
+      @close="closeModal"
+    >
+      <ConfirmDelete @remove-item="handleRemove" @close="closeModal">
+        <div>
+          <p style="font-size: 0.95rem">
+            Are you sure to remove
+            <strong>"{{ confirmDelete.title }}"</strong> from the order?
+          </p>
 
-  <Modal
-    v-if="modal.isOpen && modal.type === 'add-new-items'"
-    @close="closeModal"
-    :width="modalWidth"
-    :height="modalHeight + 'px'"
-    :minHeight="'400px'"
-    :isFullScreenMobile="true"
-  >
-    <ProductListForNewOrder @close="closeModal" />
-  </Modal>
+          <p style="font-size: 15px; color: var(--gray-3); margin-top: 23px">
+            This will also update the total amount of the order.
+          </p>
+        </div>
+      </ConfirmDelete>
+    </Modal>
 
-  <Modal
-    v-if="modal.isOpen && modal.type === 'update-item-qty'"
-    width="360px"
-    height="auto"
-    @close="closeModal"
-  >
-    <UpdateItemQty :qty="existingQty" />
-  </Modal>
+    <Modal
+      v-if="modal.isOpen && modal.type === 'add-new-items'"
+      @close="closeModal"
+      :width="modalWidth"
+      :height="modalHeight + 'px'"
+      :minHeight="'400px'"
+      :isFullScreenMobile="true"
+    >
+      <ProductListForNewOrder @close="closeModal" />
+    </Modal>
+
+    <Modal
+      v-if="modal.isOpen && modal.type === 'update-item-qty'"
+      width="360px"
+      height="auto"
+      @close="closeModal"
+    >
+      <UpdateItemQty :qty="existingQty" />
+    </Modal>
   </div>
 </template>
 
@@ -274,13 +277,13 @@ const modal = ref({
   isOpen: false,
   type: "",
 });
-const selectedNewProduct = ref([]);
 // layouts ref
 const containerRef = ref(null);
 const headerRef = ref(null);
 const tagsRef = ref(null);
 const btnRef = ref(null);
 const itemsWrapperHeight = ref(0);
+const items = computed(() => props.order?.items || []);
 
 // for actions
 const isEditMode = ref(false);

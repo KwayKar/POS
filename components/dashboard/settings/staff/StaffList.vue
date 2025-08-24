@@ -84,10 +84,12 @@ import StaffInfo from "./StaffInfo.vue";
 import Button from "~/components/reuse/ui/Button.vue";
 import { useStoreLocation } from "../../../../stores/storeLocation/useStoreLocation";
 import { useRole } from "~/stores/setting/staff/useRole";
+import { useAdmin } from "../../../../stores/admin/useAdmin";
 
 const staffStore = useStaff();
 const roleStore = useRole();
 const locationStore = useStoreLocation();
+const adminStore = useAdmin();
 
 const panelRefHeight = ref(null);
 const windowWidth = ref(0);
@@ -129,7 +131,7 @@ onMounted(async () => {
 
   await staffStore.fetchStaffList();
   await roleStore.fetchRoles();
-  await locationStore.fetchStoreList();
+  await locationStore.fetchStoreList(adminStore.estId, adminStore.storeId);
 
   window.addEventListener("resize", updatePanelSize);
 });
@@ -181,7 +183,6 @@ const closeModal = () => {
   margin: 22px;
   border-radius: 12px;
   border: 0.5px solid #dedede;
-  overflow-y: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }

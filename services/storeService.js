@@ -3,7 +3,7 @@ import { apiFetch } from "../utils/apiFetch";
 
 export async function fetchStoreList(estId, storeId) {
   const config = useRuntimeConfig();
-  return await apiFetch(`${config.public.apiBaseUrl}/stores?establishmentId=${estId}&storeId=${storeId}`);
+  return await apiFetch(`${config.public.apiBaseUrl}/stores?establishmentId=${estId}`);
 }
 
 export async function fetchStoreById(storeId) {

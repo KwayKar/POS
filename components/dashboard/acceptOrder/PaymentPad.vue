@@ -101,6 +101,7 @@ const submitItem = async () => {
         posStore.cart &&
         posStore.cart.reduce((sum, item) => sum + item.total, 0),
       notes: "No ketchup",
+      status: 'Confirmed',
       orderItems: posStore.cart.map((item) => {
         const rawItem = toRaw(item);
       

@@ -48,6 +48,10 @@
           </p>
         </div>
 
+        <p v-if="errors.submit" class="text-red-500 text-s mt-1">
+          {{ errors.submit }} 
+        </p>
+
         <div class="submit-btn">
           <SubmitButton @click="handleSubmit" :applyShadow="true">
             <span v-if="loading" class="spinner">Processing</span>
@@ -69,6 +73,8 @@ import { ref, reactive } from "vue";
 import Input from "~/components/reuse/ui/Input.vue";
 import SubmitButton from "~/components/reuse/ui/SubmitButton.vue";
 import { signInWithEmailAndPassword } from "firebase/auth";
+import { useAdmin } from "../../stores/admin/useAdmin";
+import { useRouter } from 'vue-router';
 const { $firebaseAuth } = useNuxtApp();
 
 const isSignUp = ref(false);
@@ -81,10 +87,13 @@ const form = reactive({
 const errors = reactive({
   email: "",
   password: "",
+  submit: ""
 });
 
 const loading = ref(false);
 const config = useRuntimeConfig();
+const adminStore = useAdmin();
+const router = useRouter();
 
 const validateForm = () => {
   errors.email = "";
@@ -114,13 +123,17 @@ const handleSubmit = async () => {
   loading.value = true;
   const { email, password } = form;
 
+  errors.email = "";
+  errors.password = "";
+  errors.submit = "";
+
   try {
     const userCredential = await signInWithEmailAndPassword($firebaseAuth, email, password);
     const user = userCredential.user;
     const firebaseUid = user.uid;
     const idToken = await user.getIdToken();
 
-    await apiFetch(`${config.public.apiBaseUrl}/auth/staff/login`, {
+    const res = await apiFetch(`${config.public.apiBaseUrl}/auth/staff/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -129,8 +142,16 @@ const handleSubmit = async () => {
       body: { firebaseUid },
     });
 
+    if (res.success) {
+      adminStore.setStaffData(res.staff);
+      localStorage.setItem('staff', JSON.stringify(res.staff));
+      router.push("/dashboard/orders");
+    } else {
+      errors.submit = "Something went wrong. Please contact support if the error persist."
+    }
   } catch (error) {
-    console.error("Login error:", error.message);
+    // console.error("Login error:", error.message);
+    errors.submit = "Something went wrong. Please contact support if the error persist."
   } finally {
     loading.value = false;
   }

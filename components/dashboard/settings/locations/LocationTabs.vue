@@ -22,6 +22,7 @@
       <div v-if="activeTab === 'store'">
         <StoreInfoForm
           :selectedStoreId="props.selectedStoreId"
+          :selectedStore="props.selectedStore"
           :panelHeight="{ panelHeight }"
           @close="closeModal"
         />
@@ -77,6 +78,9 @@ const props = defineProps({
   },
   selectedStoreId: {
     type: String,
+  },
+  selectedStore: {
+    type: Object,
   },
 });
 

@@ -51,7 +51,7 @@
             </client-only>
           </div>
         </div>
-        
+
         <table class="table">
           <thead class="tableHeader bg-gray-100">
             <tr>
@@ -83,41 +83,42 @@
             class="table-body"
             :style="{ height: tbodyHeight }"
           >
-            <template v-if="!isLoading">
-              <tr
-                v-for="order in filteredOrders"
-                :key="order.id"
-                @click="openDrawer(order)"
-              >
-                <td class="row-cell">
-                  <div>{{ order?.id }}</div>
-                  <span>{{ formatDate(order?.createdAt) }}</span>
-                </td>
-                <td class="row-cell">{{ order?.orderType }}</td>
-                <td class="row-cell">
-                  <div
-                    :class="['status', order.status.toLowerCase()]"
-                    style="text-transform: capitalize"
-                  >
-                    {{ capitalize(order?.status) }}
-                  </div>
-                </td>
-                <td class="row-cell">
-                  <div>{{ order?.totalAmount }}</div>
-                  <span>{{ order?.paymentMethod.method }}</span>
-                </td>
-              </tr>
-              <tr v-if="isLoading" key="loading">
-                <td colspan="4" class="px-6 py-7 text-center text-gray-400">
-                  Loading ...
-                </td>
-              </tr>
-              <tr v-else-if="filteredOrders?.length === 0 && !isLoading" key="no-order">
-                <td colspan="4" class="px-6 py-7 text-center text-gray-500">
-                  No order available
-                </td>
-              </tr>
-            </template>
+            <tr
+              v-for="order in filteredOrders"
+              :key="order.id"
+              @click="openDrawer(order)"
+            >
+              <td class="row-cell">
+                <div>{{ order?.id }}</div>
+                <span>{{ formatDate(order?.createdAt) }}</span>
+              </td>
+              <td class="row-cell">{{ order?.orderType }}</td>
+              <td class="row-cell">
+                <div
+                  :class="['status', order.status.toLowerCase()]"
+                  style="text-transform: capitalize"
+                >
+                  {{ capitalize(order?.status) }}
+                </div>
+              </td>
+              <td class="row-cell">
+                <div>{{ order?.totalAmount }}</div>
+                <span>{{ order?.paymentMethod.method }}</span>
+              </td>
+            </tr>
+            <tr v-if="isLoading" key="loading">
+              <td colspan="4" class="px-6 py-7 text-center text-gray-400">
+                Loading ...
+              </td>
+            </tr>
+            <tr
+              v-else-if="filteredOrders?.length === 0 && !isLoading"
+              key="no-order"
+            >
+              <td colspan="4" class="px-6 py-7 text-center text-gray-500">
+                No order available
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -377,12 +378,9 @@ const drawerWidth = computed(() => {
     return `${windowWidth.value}px`;
   }
 });
-
-
 </script>
 
 <style scoped>
-
 .order-details {
   display: flex;
   flex-wrap: wrap;

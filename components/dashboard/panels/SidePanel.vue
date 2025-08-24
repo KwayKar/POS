@@ -15,65 +15,90 @@
       <span class="text-xs mt-1">{{ item.title }}</span>
     </button>
 
-    <SettingsModal v-if="setting.displayModal" @close="showSettingModal = false" />
+    <SettingsModal
+      v-if="setting.displayModal"
+      @close="showSettingModal = false"
+    />
+
+    <Modal
+      v-if="showMenuModal"
+      width="440px"
+      height="530px"
+      @close="closeMenuModal"
+    >
+      <MenuList @close="closeMenuModal" />
+    </Modal>
   </nav>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
-import NavSvgIcon from './NavSvgIcon.vue'
-import SettingsModal from '../settings/SettingsModal.vue'
-import { useSetting } from '~/stores/setting/useSetting'
+import { ref, computed, onMounted, onUnmounted } from "vue";
+import { useRouter } from "vue-router";
+import NavSvgIcon from "./NavSvgIcon.vue";
+import SettingsModal from "../settings/SettingsModal.vue";
+import { useSetting } from "~/stores/setting/useSetting";
+import MenuList from "../menuList/MenuList.vue";
+import Modal from "~/components/reuse/ui/Modal.vue";
 
-const router = useRouter()
-const userRole = ref('manager')
+const router = useRouter();
+const userRole = ref("manager");
+const showMenuModal = ref(false);
 
 const navigationItems = {
   manager: [
-    { title: 'Order', icon: 'ShoppingCartOutlined', path: '/orders' },
-    { title: 'Customers', icon: 'People', path: '/customers' },
-    { title: 'Orders', icon: 'Receipt', path: '/all-orders' },
-    { title: 'Loyalty', icon: 'Loyalty', path: '/loyalty' },
-    { title: 'Setting', icon: 'Setting', path: '/setting' },
+    { title: "Order", icon: "ShoppingCartOutlined", path: "/orders" },
+    { title: "Customers", icon: "People", path: "/customers" },
+    { title: "Orders", icon: "Receipt", path: "/all-orders" },
+    { title: "Menus", icon: "Menu", path: "/" },
+    { title: "Loyalty", icon: "Loyalty", path: "/loyalty" },
+    { title: "Setting", icon: "Setting", path: "/setting" },
   ],
   waiter: [
-    { title: 'Order', icon: 'ShoppingCartOutlined', path: '/orders' },
-    { title: 'Customers', icon: 'People', path: '/customers' },
+    { title: "Order", icon: "ShoppingCartOutlined", path: "/orders" },
+    { title: "Customers", icon: "People", path: "/customers" },
   ],
   cashier: [
-    { title: 'Orders', icon: 'Receipt', path: '/all-orders' },
-    { title: 'Loyalty', icon: 'Loyalty', path: '/loyalty' },
+    { title: "Orders", icon: "Receipt", path: "/all-orders" },
+    { title: "Loyalty", icon: "Loyalty", path: "/loyalty" },
   ],
-}
+};
 
-const filteredNavigation = computed(() => navigationItems[userRole.value] || [])
+const filteredNavigation = computed(
+  () => navigationItems[userRole.value] || []
+);
 
 const isDesktop = ref(false);
 
 const checkScreen = () => {
-  isDesktop.value = window.matchMedia('(min-width: 1024px)').matches
-}
+  isDesktop.value = window.matchMedia("(min-width: 1024px)").matches;
+};
 
 onMounted(() => {
   checkScreen();
-  window.addEventListener('resize', checkScreen)
-})
+  window.addEventListener("resize", checkScreen);
+});
 onUnmounted(() => {
-  window.removeEventListener('resize', checkScreen)
-})
+  window.removeEventListener("resize", checkScreen);
+});
 
 const setting = useSetting();
 
 function handleNavClick(item) {
-  if (item.title === 'Setting') {
+  if (item.title === "Setting") {
     if (isDesktop.value) {
       setting.displaySettingModal();
     } else {
-      router.push(item.path)
+      router.push(item.path);
     }
-  } else {
-    router.push(item.path)
   }
+  else if (item.title === "Menus") {
+    showMenuModal.value = true;
+  } else {
+    router.push(item.path);
+  }
+}
+
+function closeMenuModal() {
+  showMenuModal.value = false;
 }
 </script>

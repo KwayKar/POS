@@ -139,6 +139,11 @@ label {
   -ms-overflow-style: none;
 }
 
+.table-body::after {
+  content: "";
+  display: block;
+  height: 50px; /* extra padding at bottom */
+}
 
 .table th {
   text-align: left;

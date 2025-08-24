@@ -117,12 +117,18 @@ import ApplyDiscount from "./ApplyDiscount.vue";
 import { usePosStore } from "~/stores/pos/usePOS";
 import HoldOrderList from "./HoldOrderList.vue";
 import PaymentPad from "./PaymentPad.vue";
+import { useStoreLocation } from "~/stores/storeLocation/useStoreLocation";
+import { storeToRefs } from "pinia";
+import { useOrder } from "~/stores/order/useOrder";
 
 const props = defineProps({
   pricingInfo: Object,
 });
 
 const posStore = usePosStore();
+const storeStore = useStoreLocation();
+const orderStore = useOrder();
+const { selectedStore } = storeToRefs(storeStore);
 
 const emit = defineEmits(["openModal"]);
 
@@ -131,7 +137,11 @@ const panelOpen = ref(false);
 const windowWidth = ref("0");
 
 const submitOrder = async () => {
-  openModal("payment")
+  if (selectedStore.value.paymentConfig?.defaultPaymentType === "upfront") {
+    openModal("payment");
+  } else {
+    await orderStore.submitOrderFromCart();
+  }
 };
 
 const toggleHold = () => {

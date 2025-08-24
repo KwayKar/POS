@@ -85,9 +85,11 @@ import { useCategory } from "~/stores/product/category/useCategory";
 import { useMenu } from "~/stores/menu/useMenu";
 import { calculateOrderTotal } from "~/utils/calculateOrderTotal";
 import { useAdmin } from "~/stores/admin/useAdmin";
+import { useStoreLocation } from "~/stores/storeLocation/useStoreLocation";
 
 const productStore = useProduct();
 const posStore = usePosStore();
+const storeStore = useStoreLocation();
 const categoryStore = useCategory();
 // const categories = computed(() => categoryStore.getCategoryList);
 // const items = computed(() => productStore.items || []); 
@@ -133,10 +135,11 @@ const calculateItemListWidth = () => {
   windowWidth.value = window.innerWidth;
 };
 
-onMounted(() => {
+onMounted(async() => {
   // productStore.fetchProducts();
   // categoryStore.fetchCategories();
   menuStore.fetchItems(adminStore.menuId);
+  await storeStore.fetchStoreById(adminStore.storeId);
 
   calculateItemListWidth();
   window.addEventListener("resize", calculateItemListWidth);

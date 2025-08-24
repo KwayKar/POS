@@ -52,6 +52,14 @@
         </div>
       </div>
 
+      <div class="form-group" style="margin-bottom: 54px;">
+        <h4 class="section-title">Payment Flow</h4>
+        <div class="toggle-wrapper">
+          <label class="toggle-label">Allow customer to pay later after ordering</label>
+          <Toggle v-model="payLaterToggle" />
+        </div>
+      </div>
+
       <h4 class="section-title">Address Information</h4>
       <div class="form-grid">
         <!-- Physical Address -->
@@ -144,6 +152,7 @@ import Input from "~/components/reuse/ui/Input.vue";
 import Select from "~/components/reuse/ui/Select.vue";
 import SubmitButton from "~/components/reuse/ui/SubmitButton.vue";
 import { useStoreLocation } from "../../../../stores/storeLocation/useStoreLocation";
+import Toggle from "~/components/reuse/ui/Toggle.vue";
 
 const props = defineProps({
   panelHeight: {
@@ -153,6 +162,9 @@ const props = defineProps({
   selectedStoreId: {
     type: String,
   },
+  selectedStore: {
+    type: Object,
+  },
 });
 
 const emit = defineEmits(["close"]);
@@ -160,7 +172,7 @@ const emit = defineEmits(["close"]);
 const formError = ref("");
 const isSubmitting = ref(false);
 const storeStore = useStoreLocation();
-const selectedStore = computed(() => storeStore.selectedStore);
+// const selectedStore = computed(() => storeStore.selectedStore);
 
 const store = ref({
   name: "",
@@ -174,6 +186,10 @@ const store = ref({
   email: "",
   type: "",
   timeZone: "",
+  paymentConfig: {
+    defaultPaymentType: "upfront", // "upfront" | "later"
+    allowPartialPayment: false
+  }
 });
 
 const storeTypes = [
@@ -224,6 +240,10 @@ const handleSubmit = async () => {
         lng: store.value.longitude,
       },
     },
+    paymentConfig: {
+      defaultPaymentType: store.value.paymentConfig?.defaultPaymentType || "upfront",
+      allowPartialPayment: store.value.paymentConfig?.allowPartialPayment || false
+    },
   };
 
   try {
@@ -237,8 +257,8 @@ const handleSubmit = async () => {
 };
 
 onMounted(() => {
-  if (selectedStore.value?.name) {
-    const s = selectedStore.value;
+  if (props.selectedStoreId && props.selectedStore?.name) {
+    const s = props.selectedStore;
 
     store.value = {
       name: s.name || "",
@@ -252,8 +272,19 @@ onMounted(() => {
       email: s.email || "",
       type: s.storeType || "",
       timeZone: s.timezone || "",
+      paymentConfig: s.paymentConfig || {
+        defaultPaymentType: "upfront",
+        allowPartialPayment: false,
+      },
     };
   }
+});
+
+const payLaterToggle = computed({
+  get: () => store.value.paymentConfig?.defaultPaymentType === "later",
+  set: (val) => {
+    store.value.paymentConfig.defaultPaymentType = val ? "later" : "upfront";
+  },
 });
 </script>
 
@@ -283,5 +314,20 @@ onMounted(() => {
   .form-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+}
+
+
+.toggle-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem; 
+}
+
+
+.toggle-label {
+  font-size: 0.875rem;
+  color: #555;
+  margin-right: 30px;
 }
 </style>

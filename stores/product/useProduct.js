@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { ref, computed } from "vue";
+import { ref } from "vue";
 import { useAdmin } from "@/stores/admin/useAdmin";
 import { useRuntimeConfig } from "nuxt/app";
 import { apiFetch } from "~/utils/apiFetch";
@@ -211,7 +211,7 @@ export const useProduct = defineStore("product", () => {
     clothing: clothingItems,
   };
 
-  const fetchProducts = async ({ page = 1, limit = 25 }) => {
+  const fetchProducts = async ({ page = 1, limit = 25 } = {}) => {
     loading.value = true;
     error.value = null;
 

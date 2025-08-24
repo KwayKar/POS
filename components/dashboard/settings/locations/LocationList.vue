@@ -1,65 +1,67 @@
 <template>
-  <div>
-    <div ref="panelRefHeight" style="height: 100%">
-      <div class="header-section">
-        <h3 class="header3">Store List</h3>
-        <Button
-          @click="onSelectStore()"
-          :applyShadow="true"
-          :style="{ height: '40px' }"
-          variant="primary"
-        >
-          Create
-        </Button>
-      </div>
-
-      <div
-        class="store-list"
-        :style="{
-          height:
-            typeof panelHeight === 'number' ? `${panelHeight}px` : panelHeight,
-        }"
+  <div ref="panelRefHeight" style="height: 100%">
+    <div class="header-section">
+      <h3 class="header3">Store List</h3>
+      <Button
+        @click="onSelectStore()"
+        :applyShadow="true"
+        :style="{ height: '40px' }"
+        variant="primary"
       >
-        <div
-          v-for="store in storeStore.storeList"
-          :key="store.id"
-          class="store-row"
-          @click="onSelectStore(store.id)"
-        >
-          <div class="store-left">
-            <div class="avatar">
-              {{ store.name?.charAt(0).toUpperCase() }}
-            </div>
-            <div class="store-info">
-              <p class="store-name">{{ store.name }}</p>
-              <p class="store-address">{{ store.address?.street || "No address" }}{{ store.address?.city ? ", " + store.address.city : "" }}</p>
-            </div>
-          </div>
+        Create
+      </Button>
+    </div>
 
-          <div class="store-extra desktop-only">
-            {{ store.establishment?.name || "N/A" }}
+    <div
+      class="store-list"
+      :style="{
+        height:
+          typeof panelHeight === 'number' ? `${panelHeight}px` : panelHeight,
+      }"
+    >
+      <div
+        v-for="store in storeStore.storeList"
+        :key="store.id"
+        class="store-row"
+        @click="onSelectStore(store.id)"
+      >
+        <div class="store-left">
+          <div class="avatar">
+            {{ store.name?.charAt(0).toUpperCase() }}
           </div>
+          <div class="store-info">
+            <p class="store-name">{{ store.name }}</p>
+            <p class="store-address">
+              {{ store.address?.street || "No address"
+              }}{{ store.address?.city ? ", " + store.address.city : "" }}
+            </p>
+          </div>
+        </div>
 
-          <div class="edit-icon desktop-only">
-            <EditPencil />
-          </div>
+        <div class="store-extra desktop-only">
+          {{ store.establishment?.name || "N/A" }}
+        </div>
+
+        <div class="edit-icon desktop-only">
+          <EditPencil />
         </div>
       </div>
     </div>
-
-    <Modal
-      v-if="modal.isOpen && modal.type === 'store-info'"
-      :width="modalWidth"
-      :height="modalHeight"
-      @close="closeModal"
-    >
-      <LocationTabs
-        :panelHeight="modalHeight"
-        :selectedStoreId="selectedStore.id"
-        @close="closeModal"
-      />
-    </Modal>
   </div>
+
+  <Modal
+    v-if="modal.isOpen && modal.type === 'store-info'"
+    :width="modalWidth"
+    :height="modalHeight"
+    @close="closeModal"
+  >
+    <LocationTabs
+      :panelHeight="modalHeight"
+      :selectedStoreId="selectedStore.id"
+      :selectedStore="selectedStore"
+      @close="closeModal"
+    />
+  </Modal>
 </template>
 
 <script setup>
@@ -100,17 +102,21 @@ const onSelectStore = async (id) => {
   };
 
   if (id && id.trim() !== "") {
-    selectedStore.value = await storeStore.storeList.find(
+    selectedStore.value = (await storeStore.storeList.find(
       (store) => store.id === id
-    ) || { ...emptyStore };
+    )) || { ...emptyStore };
   } else {
     selectedStore.value = { ...emptyStore };
   }
-  modal.value = {
-    isOpen: true,
-    type: "store-info",
-    mode: id ? "edit" : "create",
-  };
+
+  setTimeout(() => {
+    modal.value = {
+      isOpen: true,
+      type: "store-info",
+      mode: id ? "edit" : "create",
+    };
+  }, 50)
+  
 };
 
 const updatePanelSize = () => {
@@ -121,6 +127,7 @@ const updatePanelSize = () => {
 
 onMounted(async () => {
   await storeStore.fetchStoreList(adminStore.estId, adminStore.storeId);
+
   await nextTick();
   updatePanelSize();
   window.addEventListener("resize", updatePanelSize);
@@ -181,6 +188,7 @@ const closeModal = () => {
   border-radius: 12px;
   border: 0.5px solid #dedede;
   scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .store-list::-webkit-scrollbar {

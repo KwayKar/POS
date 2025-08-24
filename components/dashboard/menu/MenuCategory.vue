@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div style="width: 100%">
     <div class="category-layout">
       <div
         class="category-sidebar"

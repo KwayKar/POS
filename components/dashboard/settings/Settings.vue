@@ -16,6 +16,7 @@ import BrandTheme from "./shopInfo/BrandTheme.vue";
 import StaffList from "./staff/StaffList.vue";
 import RoleList from "./roles/RoleList.vue";
 import LocationList from "./locations/LocationList.vue";
+import MenuList from "../menuList/MenuList.vue";
 
 const setting = useSetting();
 
@@ -33,6 +34,8 @@ const currentComponent = computed(() => {
       return StaffList
     case 'Roles':
       return RoleList
+    case 'MenuList':
+      return MenuList
     default:
       return null
   }

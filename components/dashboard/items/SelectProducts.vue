@@ -111,8 +111,8 @@ function updatePanelHeight() {
   panelHeight.value = mobileScreen ? window.innerHeight : props.height - 140;
 }
 
-onMounted(() => {
-  productStore.fetchProducts();
+onMounted(async() => {
+  await productStore.fetchProducts();
 
   selectedItems.value = [...props.initialSelected];
   updateGridClass();

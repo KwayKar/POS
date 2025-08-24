@@ -1,6 +1,5 @@
 import { useNuxtApp } from "nuxt/app";
 import { defineStore } from "pinia";
-import { useAdmin } from "~/stores/admin/useAdmin";
 import * as storeService from "~/services/storeService";
 
 export const useStoreLocation = defineStore("storeLocation", {
@@ -47,6 +46,14 @@ export const useStoreLocation = defineStore("storeLocation", {
         }
       );
 
+      // also update selectedStore if it's the same store
+      if (this.selectedStore?.id === id) {
+        this.selectedStore = {
+          ...this.selectedStore,
+          ...payload,
+        };
+      }
+
       if (error.value) {
         throw error.value;
       }
@@ -73,12 +80,37 @@ export const useStoreLocation = defineStore("storeLocation", {
       const { $firebaseAuth } = useNuxtApp();
       const token = await $firebaseAuth.currentUser.getIdToken();
       await storeService.updateStoreInfo(id, payload, token);
+
+      const index = this.storeList.findIndex((store) => store.id === id);
+      if (index !== -1) {
+        this.storeList[index] = {
+          ...this.storeList[index],
+          ...payload,
+        };
+      }
+
+      // also update selectedStore if it's the same store
+      if (this.selectedStore?.id === id) {
+        this.selectedStore = {
+          ...this.selectedStore,
+          ...payload,
+        };
+      }
     },
 
     async updateStoreTax(id, taxInfo) {
       const { $firebaseAuth } = useNuxtApp();
       const token = await $firebaseAuth.currentUser.getIdToken();
       await storeService.updateStoreTax(id, taxInfo, token);
+
+      // also update selectedStore if it's the same store
+      if (this.selectedStore?.id === id) {
+        this.selectedStore = {
+          ...this.selectedStore,
+          taxInfo,
+        };
+      }
+      // location.reload();
     },
 
     async updateStoreOpeningHours(id, openingHours) {
@@ -91,6 +123,14 @@ export const useStoreLocation = defineStore("storeLocation", {
       const { $firebaseAuth } = useNuxtApp();
       const token = await $firebaseAuth.currentUser.getIdToken();
       await storeService.updateStoreReceipt(id, receiptSettings, token);
+
+      // also update selectedStore if it's the same store
+      if (this.selectedStore?.id === id) {
+        this.selectedStore = {
+          ...this.selectedStore,
+          receiptSettings,
+        };
+      }
     }
   },
 });

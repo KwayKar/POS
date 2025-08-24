@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { apiFetch } from "~/utils/apiFetch";
 import { useAdmin } from "../admin/useAdmin";
+import { usePosStore } from "../pos/usePOS";
 
 export const useOrder = defineStore("order", {
   state: () => ({
@@ -83,7 +84,7 @@ export const useOrder = defineStore("order", {
         if (page === 1) {
           this.orders = mappedOrders;
         } else {
-          this.orders = [...this.orders, ...mappedOrders];
+          this.orders.push(...mappedOrders);
         }
 
         return mappedOrders;
@@ -101,6 +102,64 @@ export const useOrder = defineStore("order", {
     setOrderType(type) {
       this.orderType = type
     },
+    // by cart
+    async submitOrderFromCart() {
+      const adminStore = useAdmin();
+      const posStore = usePosStore();
+      const config = useRuntimeConfig();
+      
+      const payload = {
+        storeId: adminStore.storeId,
+        orderType: this.orderType, // "EATIN",
+        total:
+          posStore.cart &&
+          posStore.cart.reduce((sum, item) => sum + item.total, 0),
+        notes: "No ketchup",
+        status: 'Confirmed',
+        orderItems: posStore.cart.map((item) => {
+          const rawItem = toRaw(item);
+        
+          return {
+            productId: rawItem.item.id,
+            quantity: rawItem.quantity,
+            price: rawItem.unitPrice,
+            status: 'CONFIRMED',
+            notes: rawItem.preferences,
+            ...(rawItem.size && { size: rawItem.size.label }), // or sizeId if you store it
+            customizations: [
+              ...(rawItem.addons?.map((a) => ({
+                type: "addon",
+                id: a.id,
+                title: a.title,
+                price: a.price,
+                quantity: a.quantity ?? 1,
+              })) || []),
+              ...(rawItem.choices?.map((c) => ({
+                type: "choice",
+                id: c.id,
+                title: c.title,
+              })) || []),
+              ...(rawItem.removals?.map((r) => ({
+                type: "removal",
+                id: r.id,
+                title: r.title,
+              })) || []),
+            ],
+          };
+        }),
+      };
+
+      await apiFetch(`${config.public.apiBaseUrl}/stores/${adminStore.storeId}/orders`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: payload,
+      });
+
+      posStore.clearCart();
+    },
+    // adding by item
     async addNewItemsToOrder(rawItem) {
       const order = this.orders.find((o) => o.id === this.selectedOrderID);
 

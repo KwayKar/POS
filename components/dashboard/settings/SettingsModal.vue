@@ -63,14 +63,6 @@ const closeModal = () => {
   setting.displaySettingModal();
 };
 
-watch(
-  () => setting.displayModal,
-  (val) => {
-    console.log("displayModal changed:", val);
-  },
-  { immediate: true }
-);
-
 </script>
 
 <style scoped></style>

@@ -17,8 +17,22 @@ export async function apiFetch(
   { method = "GET", body = null, headers = {}, params = {}, auth = true } = {}
 ) {
   const { $firebaseAuth } = useNuxtApp();
-  const currentUser = $firebaseAuth.currentUser;
-  const token = currentUser ? await currentUser.getIdToken() : null;
+  const nuxtApp = useNuxtApp(); 
+
+  let token = auth ? nuxtApp.$authToken : null;
+  
+  if (auth) {
+    if ($firebaseAuth.currentUser) {
+      token = await $firebaseAuth.currentUser.getIdToken(true);
+    } else {
+      token = await new Promise((resolve) => {
+        const unsubscribe = onAuthStateChanged($firebaseAuth, async (user) => {
+          unsubscribe();
+          resolve(user ? await user.getIdToken(true) : null);
+        });
+      });
+    }
+  }
 
   const queryString = buildQueryString(params);
   const fetchUrl = `${url}${queryString}`;
@@ -27,9 +41,7 @@ export async function apiFetch(
     method,
     headers: {
       ...(headers || {}),
-      ...(token && auth !== false
-        ? { Authorization: `Bearer ${token}` }
-        : {}),
+      ...(token && auth !== false ? { Authorization: `Bearer ${token}` } : {}),
     },
   };
 

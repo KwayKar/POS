@@ -43,7 +43,6 @@ import CustomizationForm from "~/components/dashboard/products/customizations/Cu
 import MenuCategory from "~/components/dashboard/menu/MenuCategory.vue";
 import MenuItems from "~/components/dashboard/menu/MenuItems.vue";
 import { ref } from 'vue';
-import { useRestaurant } from "~/stores/shop/useRestaurant";
 import { useMenu } from "~/stores/menu/useMenu";
 
 const modal = ref({
