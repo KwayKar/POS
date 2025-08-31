@@ -35,6 +35,13 @@
         />
       </div>
 
+      <div v-if="activeTab === 'tables'">
+        <StoreTables
+          :selectedStoreId="props.selectedStoreId"
+          @close="closeModal"
+        />
+      </div>
+
       <div v-if="activeTab === 'tax'">
         <StoreTaxInfo
           @close="closeModal"
@@ -57,7 +64,8 @@ import StoreInfoForm from "./StoreInfoForm.vue";
 import StoreOpeningHours from "./StoreOpeningHours.vue";
 import StoreReceipt from "./StoreReceipt.vue";
 import StoreTaxInfo from "./StoreTaxInfo.vue";
-import { useStoreLocation } from "../../../../stores/storeLocation/useStoreLocation";
+import { useStoreLocation } from "~/stores/storeLocation/useStoreLocation";
+import StoreTables from "./StoreTables.vue";
 
 const storeStore = useStoreLocation();
 
@@ -65,6 +73,7 @@ const activeTab = ref("store");
 const tabs = [
   { key: "store", label: "Store Info" },
   { key: "opening-hours", label: "Opening Hours" },
+  { key: "tables", label: "Tables" },
   { key: "tax", label: "Tax" },
   { key: "receipt", label: "Receipt" },
 ];

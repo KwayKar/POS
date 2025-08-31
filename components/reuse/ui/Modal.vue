@@ -10,7 +10,7 @@
         ]"
         :style="computedModalStyles"
       >
-        <div class="close-button" @click="close">
+        <div v-if="props.displayCloseBtn" class="close-button" @click="close">
           <Icons icon="Cross" fillColor="var(--black-1)" />
         </div>
 
@@ -39,6 +39,7 @@ const props = defineProps({
   minHeight: { type: [String, Number], default: "0px" },
   isFullScreenMobile: { type: Boolean, default: false },
   animateOnDisplay: { type: Boolean, default: false },
+  displayCloseBtn: { type: Boolean, default: true }
 });
 
 const emit = defineEmits(["close"]);

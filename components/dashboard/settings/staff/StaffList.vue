@@ -82,9 +82,9 @@ import Modal from "~/components/reuse/ui/Modal.vue";
 import { useStaff } from "~/stores/setting/staff/useStaff";
 import StaffInfo from "./StaffInfo.vue";
 import Button from "~/components/reuse/ui/Button.vue";
-import { useStoreLocation } from "../../../../stores/storeLocation/useStoreLocation";
+import { useStoreLocation } from "~/stores/storeLocation/useStoreLocation";
 import { useRole } from "~/stores/setting/staff/useRole";
-import { useAdmin } from "../../../../stores/admin/useAdmin";
+import { useAdmin } from "~/stores/admin/useAdmin";
 
 const staffStore = useStaff();
 const roleStore = useRole();

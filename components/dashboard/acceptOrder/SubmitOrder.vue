@@ -63,7 +63,7 @@
         <div class="flex">
           <button
             class="btn-secondary flex flex-col items-center w-20"
-            @click="togglePanel"
+            @click="openTableList()"
           >
             <Icons icon="Table" scale="'1.2'" />
             <span class="text-sm mt-1">Table</span>
@@ -102,10 +102,19 @@
 
   <Modal
     v-if="modal.isOpen && modal.type === 'unhold'"
-    :width="modalWidth"
+    :width="holdCartModalWidth"
     @close="closeModal"
   >
     <HoldOrderList @close="closeModal" />
+  </Modal>
+
+  <Modal
+    v-if="modal.isOpen && modal.type === 'assign-table'"
+    :width="tableListModalWidth"
+    :minHeight="'500px'"
+    @close="closeModal"
+  >
+    <AssignTable :floors="floors" @close="closeModal" />
   </Modal>
 </template>
 
@@ -120,27 +129,38 @@ import PaymentPad from "./PaymentPad.vue";
 import { useStoreLocation } from "~/stores/storeLocation/useStoreLocation";
 import { storeToRefs } from "pinia";
 import { useOrder } from "~/stores/order/useOrder";
+import { apiFetch } from "~/utils/apiFetch";
+import { useRuntimeConfig } from "nuxt/app";
+import { useAdmin } from "~/stores/admin/useAdmin";
+import AssignTable from "./AssignTable.vue";
 
 const props = defineProps({
   pricingInfo: Object,
 });
+const config = useRuntimeConfig();
 
 const posStore = usePosStore();
 const storeStore = useStoreLocation();
 const orderStore = useOrder();
+const admin = useAdmin();
 const { selectedStore } = storeToRefs(storeStore);
 
 const emit = defineEmits(["openModal"]);
 
 const modal = ref({ isOpen: false, type: "" });
-const panelOpen = ref(false);
+const panelOpen = ref(true);
 const windowWidth = ref("0");
+const floors = ref([]);
+
+const orders = computed(() => posStore.cartItems);
 
 const submitOrder = async () => {
-  if (selectedStore.value.paymentConfig?.defaultPaymentType === "upfront") {
-    openModal("payment");
-  } else {
-    await orderStore.submitOrderFromCart();
+  if (orders.value.length > 0) {
+    if (selectedStore.value.paymentConfig?.defaultPaymentType === "upfront") {
+      openModal("payment");
+    } else {
+      await orderStore.submitOrderFromCart();
+    }
   }
 };
 
@@ -156,6 +176,10 @@ const togglePanel = () => {
   panelOpen.value = !panelOpen.value;
 };
 
+const openTableList = () => {
+  openModal("assign-table");
+}
+
 const openModal = (type) => {
   modal.value = { isOpen: true, type };
   emit("openModal", type);
@@ -169,18 +193,33 @@ const updateWindowWidth = () => {
   windowWidth.value = window.innerWidth;
 };
 
-onMounted(() => {
+onMounted(async() => {
   updateWindowWidth();
   window.addEventListener("resize", updateWindowWidth);
+
+  try {
+    const res = await apiFetch(`${config.public.apiBaseUrl}/stores/${admin.storeId}/tables`);    
+    floors.value = res || [];
+  } catch (error) {
+    floors.value = [];
+  }
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("resize", updateWindowWidth);
 });
 
-const modalWidth = computed(() => {
+const holdCartModalWidth = computed(() => {
   if (windowWidth.value > 1200) {
     return "540px";
+  } else {
+    return `${windowWidth.value - 120}px`;
+  }
+});
+
+const tableListModalWidth = computed(() => {
+  if (windowWidth.value > 1200) {
+    return "650px";
   } else {
     return `${windowWidth.value - 120}px`;
   }

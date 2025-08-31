@@ -115,6 +115,7 @@ export default {
 .custom-btn-secondary {
   background-color: var(--white-1);
   color: var(--primary-text-color-1);
+  border: 1px solid var(--gray-1);
 }
 .custom-btn-secondary:hover {
   background-color: var(--black-2);

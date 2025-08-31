@@ -16,7 +16,6 @@ export const useMenuList = defineStore('menuStore', () => {
 
     try {
       const data = await apiFetch(`${config.public.apiBaseUrl}/menus`);
-      console.log(data);
       menus.value = data;
     } catch (err) {
       error.value = "Failed to load products";

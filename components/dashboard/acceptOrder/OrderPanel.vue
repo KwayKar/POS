@@ -175,10 +175,10 @@ onMounted(async () => {
 
   updateOrderItemsHeight();
   window.addEventListener("resize", updateOrderItemsHeight);
+});
 
-  onUnmounted(() => {
-    window.removeEventListener("resize", updateOrderItemsHeight);
-  });
+onUnmounted(() => {
+  window.removeEventListener("resize", updateOrderItemsHeight);
 });
 </script>
 
@@ -244,7 +244,7 @@ h4 {
 }
 
 p strong {
-  color: #fff;
+  color: var(--white-1);
 }
 
 .text-m {

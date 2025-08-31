@@ -53,7 +53,7 @@
         </p>
 
         <div class="submit-btn">
-          <SubmitButton @click="handleSubmit" :applyShadow="true">
+          <SubmitButton @click="handleSubmit" :style="{opacity: loading ? 0.7 : 1}" :applyShadow="true">
             <span v-if="loading" class="spinner">Processing</span>
             <span v-else>{{ "Login" }}</span>
           </SubmitButton>
@@ -66,6 +66,49 @@
       </p>
     </div>
   </div>
+
+  <Modal
+    v-if="modal.isOpen"
+    width="440px"
+    height="500px"
+    @close="() => {}"
+    :displayCloseBtn="false"
+  >
+    <div class="modal-title">
+      Select Store
+    </div>
+
+    <div class="store-list">
+      <div
+        v-for="store in stores"
+        :key="store.id"
+        :to="`/dashboard/menus/${store.id}`"
+        class="store-item"
+        :class="{ 'selected': selectedStore?.id === store.id }"
+        @click="onSelectStore(store)"
+      >
+        <div class="store-info">
+          <h4 class="store-title">{{ store.name }}</h4>
+          <p class="store-location">{{ store.address?.street }} {{ store?.address?.city }} {{ store.address?.postcode }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="gap"></div>
+
+    <div class="button-wrapper">
+      <Button
+        style="border: 1px solid var(--gray-2); height: 46px; width: 90%"
+        class="category-btn"
+        variant="primary"
+        :applyShadow="true"
+        @click="setDefaultStore"
+      >
+        Set as Default
+      </Button>
+    </div>
+  </Modal>
+
 </template>
 
 <script setup>
@@ -75,6 +118,8 @@ import SubmitButton from "~/components/reuse/ui/SubmitButton.vue";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useAdmin } from "../../stores/admin/useAdmin";
 import { useRouter } from 'vue-router';
+import Modal from "~/components/reuse/ui/Modal.vue";
+import Button from "~/components/reuse/ui/Button.vue";
 const { $firebaseAuth } = useNuxtApp();
 
 const isSignUp = ref(false);
@@ -83,12 +128,16 @@ const form = reactive({
   email: "",
   password: "",
 });
-
 const errors = reactive({
   email: "",
   password: "",
   submit: ""
 });
+const modal = reactive({
+  isOpen: false,
+});
+const selectedStore = ref(null);
+const stores = ref([]);
 
 const loading = ref(false);
 const config = useRuntimeConfig();
@@ -116,9 +165,20 @@ const validateForm = () => {
   return !errors.email && !errors.password;
 };
 
+const onSelectStore = (store) => {
+  selectedStore.value = store;
+};
+
+const setDefaultStore = () => {
+  adminStore.setActiveStore(selectedStore.value);
+  localStorage.setItem('activeStore', JSON.stringify(selectedStore.value));
+  router.push("/dashboard/orders");
+}
+
 const handleSubmit = async () => {
 
   if (!validateForm()) return;
+  if (loading.value) return;
 
   loading.value = true;
   const { email, password } = form;
@@ -143,9 +203,21 @@ const handleSubmit = async () => {
     });
 
     if (res.success) {
+      const staff = res.staff;
+
       adminStore.setStaffData(res.staff);
       localStorage.setItem('staff', JSON.stringify(res.staff));
-      router.push("/dashboard/orders");
+
+      if (staff.stores.length > 1 && !staff.defaultStoreId) {
+        modal.isOpen = true;
+        stores.value = staff.stores;
+      } else {
+        const activeStore = staff.stores[0];
+        adminStore.setActiveStore(activeStore);
+
+        localStorage.setItem('activeStore', JSON.stringify(activeStore));
+        router.push("/dashboard/orders");
+      }
     } else {
       errors.submit = "Something went wrong. Please contact support if the error persist."
     }
@@ -205,5 +277,62 @@ const handleSubmit = async () => {
 .submit-btn > button {
   width: 100%;
   height: 40px;
+}
+
+
+.store-list {
+  margin: 20px;
+  max-height: 380px;
+  min-height: 324px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.store-item {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--pale-gray-2);
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: var(--white-1);
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+.store-item:last-child {
+  margin-bottom: 24px;
+}
+.store-item.selected {
+  background: #e6fdf0ab;
+  border: 1px solid var(--green-2);
+}
+
+.store-info {
+  flex: 1;
+}
+
+.store-title {
+  margin: 0;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--black-2);
+}
+
+.store-location {
+  margin: 4px 0 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.button-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+.gap {
+  width: 100%;
+  height: 1px;
+  background: #c1c1c1;
 }
 </style>

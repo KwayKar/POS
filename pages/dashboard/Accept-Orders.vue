@@ -78,27 +78,19 @@ import OrderPanel from "~/components/dashboard/acceptOrder/OrderPanel.vue";
 import Modal from "~/components/reuse/ui/Modal.vue";
 import DashboardLayout from "~/layouts/DashboardLayout.vue";
 import ItemList from "~/components/dashboard/items/ItemList.vue";
-import { useProduct } from "~/stores/product/useProduct";
 import SubmitButton from "~/components/reuse/ui/SubmitButton.vue";
 import { usePosStore } from "~/stores/pos/usePOS";
-import { useCategory } from "~/stores/product/category/useCategory";
 import { useMenu } from "~/stores/menu/useMenu";
 import { calculateOrderTotal } from "~/utils/calculateOrderTotal";
 import { useAdmin } from "~/stores/admin/useAdmin";
 import { useStoreLocation } from "~/stores/storeLocation/useStoreLocation";
 
-const productStore = useProduct();
 const posStore = usePosStore();
 const storeStore = useStoreLocation();
-const categoryStore = useCategory();
-// const categories = computed(() => categoryStore.getCategoryList);
-// const items = computed(() => productStore.items || []); 
-
-const localOrder = computed(() => posStore.cartItems);
-
 const menuStore = useMenu();
 const adminStore = useAdmin();
 
+const localOrder = computed(() => posStore.cartItems);
 const categories = computed(() => menuStore.categories);
 const items = computed(() => menuStore.products || []); 
 
@@ -112,12 +104,10 @@ const modal = reactive({
   isOpen: false,
   type: null,
 });
-
 const orderForm = reactive({
   quantity: 1,
   preferences: null,
 });
-
 const panelWidth = reactive({
   windowPanel: 0,
   navPanel: 99,
@@ -136,9 +126,7 @@ const calculateItemListWidth = () => {
 };
 
 onMounted(async() => {
-  // productStore.fetchProducts();
-  // categoryStore.fetchCategories();
-  menuStore.fetchItems(adminStore.menuId);
+  await menuStore.fetchItems(adminStore.menuId);
   await storeStore.fetchStoreById(adminStore.storeId);
 
   calculateItemListWidth();
@@ -238,4 +226,5 @@ const modalWidth = computed(() => {
   font-weight: 600;
   border: none;
 }
+
 </style>

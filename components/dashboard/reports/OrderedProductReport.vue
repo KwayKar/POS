@@ -7,7 +7,7 @@
           <Input
             type="text"
             v-model="searchQuery"
-            placeholder="Search orders..."
+            placeholder="Search items..."
             style="height: 34px; border: 0.5px solid #232323"
           />
         </div>
@@ -15,37 +15,33 @@
 
       <div class="filter-right">
         <!-- Status Filter -->
-        <Select
-          v-if="showSelect"
-          v-model="selectedStore"
-          :options="storeOptions"
-          @update:modelValue="handleStatusChange"
-          style="
-            padding: 0 14px;
-            height: 36px;
-            font-size: 14px;
-            min-width: 200px;
-            border: 1px solid var(--gray-2);
-          "
-        />
+        <div>
+          <Select
+            v-if="showSelect"
+            v-model="selectedStore"
+            :options="statusOptions"
+            @update:modelValue="handleOrderTypeChange"
+            style="
+              padding: 0 14px;
+              height: 38px;
+              font-size: 14px;
+              width: 200px;
+              border: 1px solid var(--gray-2);
+            "
+          />
+        </div>
 
-        <!-- Date Filter -->
         <client-only>
-          <VDatePicker
-            v-model.range="selectedDate"
-            mode="range"
-            :popover="{ visibility: 'click' }"
-          >
-            <template #default="{ inputValue, togglePopover }">
-              <input
-                :value="formatDateRange(inputValue)"
-                @click="togglePopover"
-                readonly
-                placeholder="Select Date Range"
-                class="date-input"
-              />
-            </template>
-          </VDatePicker>
+          <VueDatePicker
+            v-model="selectedDate"
+            range
+            :clear-button="false"
+            :auto-apply="true"
+            :format="'yyyy-MM-dd'"
+            placeholder="Select Date Range"
+            class="datepicker-wrapper"
+            input-class="datepicker-input"
+          />
         </client-only>
       </div>
     </div>
@@ -53,7 +49,7 @@
     <table class="table">
       <thead class="tableHeader bg-gray-100">
         <tr>
-          <th class="tableHeaderCol" @click="sortBy('name')">
+          <th class="tableHeaderCol" @click="sortBy('title')">
             Product
             <div
               class="th-sort-arrow"
@@ -64,7 +60,7 @@
               <Icons icon="DropDownArrow" fillColor="black" scale="1.5" />
             </div>
           </th>
-          <th class="tableHeaderCol" @click="sortBy('quantitySold')">
+          <th class="tableHeaderCol" @click="sortBy('unitsSold')">
             Quantity Sold
             <div
               class="th-sort-arrow"
@@ -75,7 +71,7 @@
               <Icons icon="DropDownArrow" fillColor="black" scale="1.5" />
             </div>
           </th>
-          <th class="tableHeaderCol" @click="sortBy('totalSales')">
+          <th class="tableHeaderCol" @click="sortBy('revenue')">
             Product Revenue
             <div
               class="th-sort-arrow"
@@ -86,7 +82,7 @@
               <Icons icon="DropDownArrow" fillColor="black" scale="1.5" />
             </div>
           </th>
-          <th class="tableHeaderCol" @click="sortBy('dateSold')">
+          <th class="tableHeaderCol" @click="sortBy('percentageOfTotalSales')">
             % of Total Sales
             <div
               class="th-sort-arrow"
@@ -99,7 +95,7 @@
           </th>
         </tr>
       </thead>
-      
+
       <tbody ref="tbodyRef" class="table-body" :style="{ height: tbodyHeight }">
         <template v-if="!isLoading">
           <tr
@@ -113,9 +109,9 @@
             <td class="px-6 py-3">{{ formatCurrency(product?.revenue) }}</td>
             <td class="px-6 py-3">{{ product?.percentageOfTotalSales }}%</td>
           </tr>
-          <tr v-if="topProducts.length === 0">
+          <tr v-if="topProducts.length === 0 && !isLoading">
             <td colspan="4" class="px-6 py-3 text-center text-gray-500">
-              No products sold this month.
+              No products to show.
             </td>
           </tr>
           <tr v-if="isLoading" key="loading">
@@ -145,7 +141,8 @@ import Select from "~/components/reuse/ui/Select.vue";
 import { useAdmin } from "~/stores/admin/useAdmin";
 import { useAnalyticsStore } from "~/stores/report/useReport";
 import { formatCurrency } from "~/utils/formatCurrency";
-import { formatDateRange } from "~/utils/formatDateRange";
+import VueDatePicker from "@vuepic/vue-datepicker";
+import "@vuepic/vue-datepicker/dist/main.css";
 
 const adminStore = useAdmin();
 const storeId = adminStore.storeId;
@@ -153,21 +150,19 @@ const storeId = adminStore.storeId;
 // Sorting Logic
 const sortKey = ref(null);
 const sortOrder = ref("asc");
-const selectedDate = ref({
-  start: null,
-  end: null,
-});
+const selectedDate = ref([null, null]);
 const showSelect = ref(false);
 const selectedStore = ref("");
+const filteredProducts = ref([]);
+const startStr = ref(null);
+const endStr = ref(null);
+const limit = 35;
 
-const storeOptions = [
+const statusOptions = [
   { label: "All", value: "" },
-  { label: "Pending", value: "pending" },
-  { label: "Processing", value: "processing" },
-  { label: "Ready to Deliver", value: "ready" },
-  { label: "Dispatched", value: "dispatched" },
-  { label: "Completed", value: "completed" },
-  { label: "Canceled", value: "canceled" },
+  { label: "Delivery", value: "delivery" },
+  { label: "Takeaway", value: "takeaway" },
+  { label: "Eatin", value: "eatin" },
 ];
 
 const analytics = useAnalyticsStore();
@@ -176,26 +171,30 @@ const isLoading = analytics.loading;
 const topProducts = computed(() => analytics.topProducts ?? []);
 
 const sortedProducts = computed(() => {
-  if (!sortKey.value) return filteredProducts.value; // Use .value for computed refs
-  return [...filteredProducts.value].sort((a, b) => {
-    // Use .value for computed refs
-    let modifier = sortOrder.value === "asc" ? 1 : -1;
-    // Ensure that a[sortKey.value] and b[sortKey.value] exist and are comparable
-    // Add type checks or default values if they might be undefined
+  const list = [...filteredProducts.value]; // make a copy
+  if (!sortKey.value) return list;
+
+  const modifier = sortOrder.value === "asc" ? 1 : -1;
+  return list.sort((a, b) => {
     const valA = a[sortKey.value];
     const valB = b[sortKey.value];
 
     if (valA === valB) return 0;
-    if (valA === null || valA === undefined) return modifier * -1; // Nulls last for asc
-    if (valB === null || valB === undefined) return modifier * 1; // Nulls last for asc
+    if (valA == null) return -modifier;
+    if (valB == null) return modifier;
 
-    if (typeof valA === "string" && typeof valB === "string") {
-      return valA.localeCompare(valB) * modifier;
-    }
-
+    if (typeof valA === "string") return valA.localeCompare(valB) * modifier;
     return (valA > valB ? 1 : -1) * modifier;
   });
 });
+
+watch(
+  () => topProducts.value,
+  (newProducts) => {
+    filteredProducts.value = [...newProducts];
+  },
+  { immediate: true }
+);
 
 const sortBy = (key) => {
   if (sortKey.value === key) {
@@ -209,37 +208,73 @@ const sortBy = (key) => {
 // Searching by input
 const searchQuery = ref("");
 const loading = ref(false);
-const filteredProducts = computed(() => topProducts.value);
 
-const fetchFilteredProducts = (query) => {
-  // loading.value = true;
-  // setTimeout(() => {
-  //   // Simulate API delay
-  filteredProducts.value = soldProducts.value.filter(
-    (product) =>
-      product.name.toLowerCase().includes(query.toLowerCase()) ||
-      product.id.toString().includes(query)
-  );
-  //   loading.value = false;
-  // }, 500);
+const fetchFilteredProducts = async (query) => {
+  try {
+    const data = await analytics.fetchTopProducts({
+      storeId,
+      startDate: startStr.value,
+      endDate: endStr.value,
+      limit,
+      search: query.toLowerCase(),
+    });
+    filteredProducts.value = data.topProducts;
+  } catch (error) {}
 };
 
 let debounceTimeout;
 watch(searchQuery, (newVal) => {
   clearTimeout(debounceTimeout);
   debounceTimeout = setTimeout(() => {
-    fetchFilteredProducts(newVal);
+    if (startStr.value && endStr.value) {
+      fetchFilteredProducts(newVal);
+    }
   }, 300);
 });
 
+watch(selectedDate, async ([start, end]) => {
+  if (!start || !end) return;
+
+  // Format dates as strings if your API expects that
+  startStr.value = start.toISOString().split("T")[0];
+  endStr.value = end.toISOString().split("T")[0];
+
+  try {
+    await analytics.fetchTopProducts({
+      storeId,
+      startDate: startStr.value,
+      endDate: endStr.value,
+      limit,
+    });
+  } catch (error) {
+    // console.error(error);
+  }
+});
+
 // Filtering
-const handleStoreChange = (value) => {
+const handleOrderTypeChange = async (value) => {
   selectedStore.value = value;
+  try {
+    await analytics.fetchTopProducts({
+      storeId,
+      startDate: startStr.value,
+      endDate: endStr.value,
+      limit,
+      orderType: value,
+    });
+  } catch (error) {
+    // console.error(error);
+  }
 };
 
 onMounted(async () => {
-  const start = "2025-06-01";
-  const end = "2025-08-22";
+  const endDate = new Date();
+  const startDate = new Date();
+  startDate.setMonth(startDate.getMonth() - 2); // past 4 months
+  selectedDate.value = [startDate, endDate];
+
+  startStr.value = startDate.toISOString().split("T")[0];
+  endStr.value = endDate.toISOString().split("T")[0];
 
   try {
     // select cannot open - clashing with v-calendar unless wait for a sec
@@ -247,7 +282,12 @@ onMounted(async () => {
       showSelect.value = true;
     }, 50);
 
-    await analytics.fetchTopProducts(storeId, start, end, 5);
+    await analytics.fetchTopProducts({
+      storeId,
+      startDate: startStr.value,
+      endDate: endStr.value,
+      limit,
+    });
 
     const container = document.querySelector(".table-body");
     if (container) {
@@ -285,6 +325,10 @@ function updateTbodyHeight() {
   const desiredHeight = windowHeight - offsetTop; // 20px for bottom padding/margin
   tbodyHeight.value = `${desiredHeight}px`;
 }
+
+function handleResize() {
+  windowWidth.value = window.innerWidth;
+};
 
 onUnmounted(() => {
   window.removeEventListener("resize", handleResize);
@@ -357,4 +401,18 @@ onUnmounted(() => {
   background-color: var(--table-stripe);
 }
 
+.datepicker-wrapper {
+  width: 260px;
+}
+
+.datepicker-input {
+  padding: 0 12px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.datepicker-wrapper >>> input {
+  border-radius: 6px;
+  border: 1px solid var(--gray-2);
+}
 </style>

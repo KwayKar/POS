@@ -25,18 +25,12 @@
           >
             Orders
           </CategoryBtn>
-          <CategoryBtn
-            @click="activeSection = 'shops'"
-            :active="activeSection === 'shops'"
-          >
-            Shops
-          </CategoryBtn>
         </div>
 
         <div>
           <OrderedProductReport v-if="activeSection === 'products'" />
           <OrderReport v-else-if="activeSection === 'orders'" />
-          <ShopsRevenueReport v-else-if="activeSection === 'shops'" />
+          <!-- <ShopsRevenueReport v-else-if="activeSection === 'shops'" /> -->
         </div>
       </div>
     </DashboardLayout>
@@ -49,7 +43,7 @@ import OrderedProductReport from "~/components/dashboard/reports/OrderedProductR
 import DashboardLayout from "~/layouts/DashboardLayout.vue";
 import Button from "~/components/reuse/ui/Button.vue";
 import CategoryBtn from "~/components/reuse/ui/CategoryBtn.vue";
-import ShopsRevenueReport from "~/components/dashboard/reports/ShopsRevenueReport.vue";
+// import ShopsRevenueReport from "~/components/dashboard/reports/ShopsRevenueReport.vue";
 import OrderReport from "~/components/dashboard/reports/OrderReport.vue";
 import { useAnalyticsStore } from "~/stores/report/useReport";
 import { useAdmin } from "~/stores/admin/useAdmin";
@@ -64,21 +58,29 @@ defineProps({
 
 const adminStore = useAdmin();
 const storeId = adminStore.storeId;
-const orgId = '6542372f-749f-4dc9-95d4-d1078035c50e'
-const start = '2025-06-01'
-const end = '2025-06-30'
+const orgId = adminStore.estId;
+const startStr = ref(null);
+const endStr = ref(null);
+
+const endDate = new Date();
+const startDate = new Date();
+startDate.setMonth(startDate.getMonth() - 3); // past 4 months
+
+startStr.value = startDate.toISOString().split("T")[0];
+endStr.value = endDate.toISOString().split("T")[0];
 
 const analytics = useAnalyticsStore();
 
-
 // Run once on client mount
 onMounted(async () => {
-  await analytics.fetchRevenueReport(storeId, '2025-06-01', '2025-08-22');
-  await analytics.fetchOrdersReport(storeId, '2025-06-01', '2025-08-22');
-  const revenueByStore = await analytics.fetchStoreRevenue(storeId, start, end)
-  const totalSalesByStore = await analytics.fetchTotalSales(storeId, start, end)
-  await analytics.fetchTopProducts(storeId, start, end, 5)
-  await analytics.fetchOrganizationRevenue(orgId, start, end)
+  await analytics.fetchRevenueReport(storeId, startStr.value, endStr.value);
+  await analytics.fetchOrdersReport(storeId, startStr.value, endStr.value);
+  
+  await analytics.fetchStoreRevenue(storeId, startStr.value, endStr.value)
+  await analytics.fetchTotalSales(storeId, startStr.value, endStr.value)
+  
+  await analytics.fetchTopProducts({storeId, startDate: startStr.value, endDate: endStr.value, limit: 5})
+  await analytics.fetchOrganizationRevenue(orgId, startStr.value, endStr.value)
   activeSection.value = 'products'
 })
 </script>

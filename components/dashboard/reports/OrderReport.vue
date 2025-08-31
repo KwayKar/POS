@@ -20,6 +20,7 @@
 import Tabs from "~/components/reuse/ui/Tabs.vue";
 import BarChart from "./charts/BarChart.vue";
 import LineChart from "./charts/LineChart.vue";
+
 </script>
 
 <style scoped>

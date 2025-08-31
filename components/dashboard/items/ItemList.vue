@@ -1,8 +1,8 @@
 <template>
   <div
     ref="containerRef"
-    class="min-h-screen flex flex-col"
-    style="min-height: 100vh; display: flex; flex-direction: column"
+    class="flex flex-col"
+    style="height: 100vh; position: relative; display: flex; flex-direction: column"
   >
     <div class="wrap-category-list p-4 pb-0 shrink-0">
       <CategoryList
@@ -40,13 +40,22 @@
         </div>
       </div>
     </div>
+
+    <transition name="pop-up">
+      <div v-if="orderMessage?.success !== null"
+        :class="['message-label', orderMessage.success ? 'success' : 'error']">
+        {{ orderMessage.label }}
+      </div>
+    </transition>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import CategoryList from "./CategoryList.vue";
+import { useOrder } from "~/stores/order/useOrder";
 
+const orderStore = useOrder();
 const props = defineProps({
   items: {
     type: Array,
@@ -70,6 +79,20 @@ const selectedCategory = ref("all");
 const containerWidth = ref(0);
 const containerRef = ref(null);
 const scrollEl = ref(null);
+
+const orderMessage = computed(() => orderStore.message || { success: null, label: '' });
+watch(
+  () => orderStore.message,
+  (newVal) => {
+    if (!newVal || !newVal.label) return;
+    if (scrollTimeout) clearTimeout(scrollTimeout);
+
+    scrollTimeout = setTimeout(() => {
+      orderStore.resetMessage();
+    }, 3000);
+  },
+  { deep: true }
+);
 
 let resizeObserver;
 
@@ -204,5 +227,58 @@ function selectItem(item, type) {
 .item-title {
   font-weight: 600;
   color: var(--forest-green);
+}
+
+
+.message-label {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+
+  background: #f2f2ff;
+  border: 1px solid #478aff;
+  border-radius: 8px;
+  padding: 8px 26px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #5c67ac;
+}
+
+.message-label.success {
+  background: var(--transparent-green-1);
+  border: 1px solid var(--green-1);
+  color: var(--white-1);
+}
+
+.message-label.error {
+  background: #f47777b0;
+  border: 1px solid var(--red-1);;
+  color: var(--white-1);
+}
+
+/* pop-up animation */
+.pop-up-enter-from {
+  transform: translate(-50%, 50%);
+  opacity: 0;
+}
+.pop-up-enter-to {
+  transform: translate(-50%, 0);
+  opacity: 1;
+}
+.pop-up-enter-active {
+  transition: all 0.4s ease-out;
+}
+
+.pop-up-leave-from {
+  transform: translate(-50%, 0);
+  opacity: 1;
+}
+.pop-up-leave-to {
+  transform: translate(-50%, 50%);
+  opacity: 0;
+}
+.pop-up-leave-active {
+  transition: all 0.4s ease-in;
 }
 </style>

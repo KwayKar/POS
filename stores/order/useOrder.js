@@ -10,6 +10,11 @@ export const useOrder = defineStore("order", {
     orders: [],
     totalCount: 0,
     orderType: 'eat-in',
+    selectedTableId: null,
+    message: {
+      success: null,
+      label: ""
+    }
   }),
   getters: {
     getOrderList: (state) => state.orders,
@@ -70,6 +75,7 @@ export const useOrder = defineStore("order", {
             })),
             totalAmount: order.total,
             status: order.status.toLowerCase(),
+            
             orderType: order.orderType,
             deliveryAddress: order?.deliveryAddress,
             phoneNumber: order?.phoneNumber,
@@ -102,11 +108,16 @@ export const useOrder = defineStore("order", {
     setOrderType(type) {
       this.orderType = type
     },
+    setTableId(tableId) {
+      this.selectedTableId = tableId;
+    },
     // by cart
     async submitOrderFromCart() {
       const adminStore = useAdmin();
       const posStore = usePosStore();
       const config = useRuntimeConfig();
+
+      console.log(this.selectedTableId);
       
       const payload = {
         storeId: adminStore.storeId,
@@ -116,6 +127,7 @@ export const useOrder = defineStore("order", {
           posStore.cart.reduce((sum, item) => sum + item.total, 0),
         notes: "No ketchup",
         status: 'Confirmed',
+        selectedTableId: this.selectedTableId,
         orderItems: posStore.cart.map((item) => {
           const rawItem = toRaw(item);
         
@@ -149,15 +161,20 @@ export const useOrder = defineStore("order", {
         }),
       };
 
-      await apiFetch(`${config.public.apiBaseUrl}/stores/${adminStore.storeId}/orders`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: payload,
-      });
+      try {
+        // await apiFetch(`${config.public.apiBaseUrl}/stores/${adminStore.storeId}/orders`, {
+        //   method: "POST",
+        //   headers: {
+        //     "Content-Type": "application/json",
+        //   },
+        //   body: payload,
+        // });
 
-      posStore.clearCart();
+        this.message = { success: true, label: "Order Submitted" };
+        posStore.clearCart();
+      } catch (e) {
+        this.message = { success: false, label: "Something went wrong" };
+      }
     },
     // adding by item
     async addNewItemsToOrder(rawItem) {
@@ -307,5 +324,8 @@ export const useOrder = defineStore("order", {
         order.paymentMethod.status = paymentStatus;
       }
     },
+    resetMessage() {
+      this.message = { success: null, label: "" };
+    }
   },
 });

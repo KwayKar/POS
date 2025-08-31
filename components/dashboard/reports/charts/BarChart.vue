@@ -3,7 +3,16 @@
     <div class="header">
       <h2 class="flex text-xl font-semibold mb-4">{{ title }}</h2>
       <div class="wrap-select-box">
-        <Select v-model="selectedCategory" :options="categories" />
+        <client-only>
+          <VueDatePicker
+            v-model="analyticsStore.selectedDate"
+            range
+            :clear-button="false"
+            :auto-apply="true"
+            format="yyyy-MM-dd"
+            placeholder="Select Date Range"
+          />
+        </client-only>
       </div>
     </div>
     <BarChart :chart-data="chartData" :chart-options="chartOptions" />
@@ -23,8 +32,10 @@ import {
   LinearScale,
   BarController,
 } from "chart.js";
-import Select from "~/components/reuse/ui/Select.vue";
 import { useAnalyticsStore } from "~/stores/report/useReport";
+import VueDatePicker from "@vuepic/vue-datepicker";
+import "@vuepic/vue-datepicker/dist/main.css";
+import { useAdmin } from "~/stores/admin/useAdmin";
 
 defineProps({
   title: {
@@ -32,14 +43,10 @@ defineProps({
     default: "Trends",
   },
 });
+const analyticsStore = useAnalyticsStore();
+const adminStore = useAdmin();
 
-const categories = [
-  { label: "Past 2 Weeks", value: "2-weeks" },
-  { label: "Past Month", value: "1-month" },
-];
-
-// const selectedCategory = ref("2-weeks");
-const selectedCategory = ref(["2025-06", "2025-07", "2025-08"]);
+const storeId = adminStore.storeId;
 
 ChartJS.register(
   Title,
@@ -75,23 +82,20 @@ const barThickness = computed(() => {
 });
 
 const chartData = computed(() => {
-  const analyticsStore = useAnalyticsStore();
-  const months = analyticsStore.revenueReport || [];
-  
-  const selectedMonths = selectedCategory.value;
-
-  const filtered = months.filter((entry) =>
-    selectedMonths.includes(entry.month.slice(0, 7)) 
+  const months = toRaw(analyticsStore.revenueReport) || [];
+  const sortedMonths = months.sort(
+    (a, b) => new Date(a.month) - new Date(b.month)
   );
+  const last4Months = sortedMonths.slice(-4);
 
-  const labels = filtered.map((entry) =>
+  const labels = last4Months.map((entry) =>
     new Date(entry.month).toLocaleString("default", {
       month: "short",
       year: "numeric",
     })
   );
 
-  const revenues = filtered.map((entry) => entry.revenue);
+  const revenues = months.map((entry) => entry.revenue);
 
   return {
     labels,
@@ -104,7 +108,7 @@ const chartData = computed(() => {
       },
     ],
   };
-})
+});
 
 const chartOptions = {
   responsive: true,
@@ -120,6 +124,44 @@ const chartOptions = {
     },
   },
 };
+
+watch(
+  () => analyticsStore.selectedDate,
+  async ([start, end]) => {
+    if (!start || !end) return;
+
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+
+    const startStr = startDate.toISOString().split("T")[0];
+    const endStr = endDate.toISOString().split("T")[0];
+    console.log("Fetched revenue:", startStr); 
+
+    analyticsStore.setDateRange(startDate, endDate);
+
+    await analyticsStore.fetchRevenueReport(storeId, startStr, endStr);
+  },
+  { deep: true } 
+);
+
+
+onMounted(async () => {
+  const [start, end] = analyticsStore.selectedDate || [];
+  if (!start || !end) return;
+
+  const startStr = new Date(start).toISOString().split("T")[0];
+  const endStr = new Date(end).toISOString().split("T")[0];
+
+  // Set the date range in store
+  analyticsStore.setDateRange(new Date(start), new Date(end));
+
+  // Fetch chart-specific data
+  if (ChartType === "bar") {
+    await analyticsStore.fetchRevenueReport(storeId, startStr, endStr);
+  } else {
+    await analyticsStore.fetchOrdersReport(storeId, startStr, endStr);
+  }
+});
 </script>
 
 <style scoped>

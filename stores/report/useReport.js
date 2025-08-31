@@ -1,23 +1,41 @@
-import { defineStore } from 'pinia'
-import { useRuntimeConfig } from 'nuxt/app';
-import { apiFetch } from '~/utils/apiFetch';
+import { defineStore } from "pinia";
+import { useRuntimeConfig } from "nuxt/app";
+import { apiFetch } from "~/utils/apiFetch";
 
-export const useAnalyticsStore = defineStore('analytics', {
-  state: () => ({
-    revenue: null,
-    totalSales: null,
-    topProducts: [],
-    orgRevenue: [],
-    revenueReport: [],
-    ordersReport: [],
-    loading: false,
-    error: null,
-    dateRange: {
-      start: null,
-      end: null,
-    },
-  }),
+export const useAnalyticsStore = defineStore("analytics", {
+  state: () => {
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setMonth(startDate.getMonth() - 4); // 4 months ago
 
+    let savedDate = null;
+    if (process.client) {
+      const raw = localStorage.getItem("selectedDate");
+      if (raw) {
+        try {
+          savedDate = JSON.parse(raw);
+        } catch (e) {
+          console.error("Failed to parse saved date:", e);
+        }
+      }
+    }
+
+    return {
+      selectedDate: savedDate || [startDate, endDate],
+      revenue: null,
+      totalSales: null,
+      topProducts: [],
+      orgRevenue: [],
+      revenueReport: [],
+      ordersReport: [],
+      loading: false,
+      error: null,
+      dateRange: {
+        start: startDate,
+        end: endDate,
+      },
+    };
+  },
   actions: {
     setDateRange(start, end) {
       this.dateRange.start = start;
@@ -29,28 +47,17 @@ export const useAnalyticsStore = defineStore('analytics', {
       this.loading = true;
       this.error = null;
       try {
-        // const response = await axios.get(
-        //   `${config.public.apiBaseUrl}/analytics/stores/${storeId}/revenue/monthly`,
-        //   {
-        //     params: { start, end },
-        //   }
-        // );
-        this.revenueReport =  [
-        {
-            "month": "2025-06-01T00:00:00.000Z",
-            "revenue": 4680
-        },
-        {
-            "month": "2025-07-01T00:00:00.000Z",
-            "revenue": 4200
-        },
-        {
-            "month": "2025-08-01T00:00:00.000Z",
-            "revenue": 3000
-        }
-    ]
-
-        // response.data.monthlyRevenue;
+        const response = await apiFetch(
+          `${config.public.apiBaseUrl}/analytics/stores/${storeId}/revenue/monthly?start=${start}&end=${end}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        console.log(response);
+        this.revenueReport = response.monthlyRevenue;
       } catch (err) {
         this.error = err;
       } finally {
@@ -63,27 +70,16 @@ export const useAnalyticsStore = defineStore('analytics', {
       this.loading = true;
       this.error = null;
       try {
-        // const response = await axios.get(
-        //   `${config.public.apiBaseUrl}/analytics/stores/${storeId}/orders/monthly`,
-        //   {
-        //     params: { start, end },
-        //   }
-        // );
-        this.ordersReport =  [
-        {
-            "month": "2025-06-01T00:00:00.000Z",
-            "revenue": 4680
-        },
-        {
-            "month": "2025-07-01T00:00:00.000Z",
-            "revenue": 4200
-        },
-        {
-            "month": "2025-08-01T00:00:00.000Z",
-            "revenue": 3000
-        }
-    ]
-        // response.data;
+        const response = await apiFetch(
+          `${config.public.apiBaseUrl}/analytics/stores/${storeId}/orders/monthly?start=${start}&end=${end}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        this.ordersReport = response.monthlyOrder;
       } catch (err) {
         this.error = err;
       } finally {
@@ -94,77 +90,104 @@ export const useAnalyticsStore = defineStore('analytics', {
     async fetchStoreRevenue(storeId, start, end) {
       const config = useRuntimeConfig();
 
-      this.loading = true
-      this.error = null
+      this.loading = true;
+      this.error = null;
       try {
-        const url = new URL(`${config.public.apiBaseUrl}/analytics/stores/${storeId}/revenue`);
-        url.searchParams.append('start', start);
-        url.searchParams.append('end', end);
+        const url = new URL(
+          `${config.public.apiBaseUrl}/analytics/stores/${storeId}/revenue`
+        );
+        url.searchParams.append("start", start);
+        url.searchParams.append("end", end);
 
         const data = await apiFetch(url.toString());
-        this.revenue = data.value.revenue
+        this.revenue = data.value.revenue;
       } catch (err) {
-        this.error = err
+        this.error = err;
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
     async fetchTotalSales(storeId, start, end) {
       const config = useRuntimeConfig();
-      
-      this.loading = true
-      this.error = null
+
+      this.loading = true;
+      this.error = null;
       try {
-        const url = new URL(`${config.public.apiBaseUrl}/analytics/stores/${storeId}/total-sales`);
-        url.searchParams.append('start', start);
-        url.searchParams.append('end', end);
+        const url = new URL(
+          `${config.public.apiBaseUrl}/analytics/stores/${storeId}/total-sales`
+        );
+        url.searchParams.append("start", start);
+        url.searchParams.append("end", end);
 
         const data = await apiFetch(url.toString());
         this.totalSales = data.totalSales;
       } catch (err) {
-        this.error = err
+        this.error = err;
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
-    async fetchTopProducts(storeId, start, end, limit = 5) {
+    async fetchTopProducts({
+      storeId,
+      startDate,
+      endDate,
+      limit = 35,
+      search = "",
+      orderType = "",
+    }) {
       const config = useRuntimeConfig();
 
-      this.loading = true
-      this.error = null
+      this.loading = true;
+      this.error = null;
+
+      const params = {
+        start: startDate,
+        end: endDate,
+        limit,
+      };
+
+      if (search && String(search).trim() !== "") {
+        params.search = search;
+      }
+      if (orderType && String(orderType).trim() !== "") {
+        params.orderType = orderType;
+      }
       try {
-        const data = await apiFetch(`${config.public.apiBaseUrl}/analytics/stores/${storeId}/top-products`, {
-          params: { start, end, limit }
-        });
-        this.topProducts = data.products
+        const data = await apiFetch(
+          `${config.public.apiBaseUrl}/analytics/stores/${storeId}/top-products`,
+          {
+            params,
+          }
+        );
+        this.topProducts = data.products;
       } catch (err) {
-        this.error = err
+        this.error = err;
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
     async fetchOrganizationRevenue(orgId, start, end) {
       const config = useRuntimeConfig();
-      
-      this.loading = true
-      this.error = null
+
+      this.loading = true;
+      this.error = null;
       try {
         const { data, error } = await useFetch(
           `${config.public.apiBaseUrl}/analytics/org/${orgId}/stores-revenue`,
           {
             query: { start, end },
           }
-        )
-        if (error.value) throw error.value
-        this.orgRevenue = data.value
+        );
+        if (error.value) throw error.value;
+        this.orgRevenue = data.value;
       } catch (err) {
-        this.error = err
+        this.error = err;
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
   },
-})
+});

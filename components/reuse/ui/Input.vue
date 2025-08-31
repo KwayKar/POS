@@ -8,6 +8,7 @@
     :min="type === 'number' ? min : null"
     :max="type === 'number' ? max : null"
     :inputmode="type === 'number' ? 'numeric' : null"
+    :readonly="readonly"
     @input="$emit('input', $event.target.value)"
   />
 </template>
@@ -38,6 +39,10 @@ export default {
     max: {
       type: [Number, String],
       default: null,
+    },
+    readonly: {
+      type: Boolean,
+      default: false,
     },
   },
   computed: {
@@ -71,6 +76,12 @@ input:focus {
   border: 1px solid rgb(107, 179, 107);
   outline: none;
   box-shadow: none;
+}
+
+input[readonly] {
+  background-color: #f9fafb;
+  color: #6b7280; 
+  cursor: not-allowed;
 }
 
 input:disabled {

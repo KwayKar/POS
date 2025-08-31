@@ -3,7 +3,16 @@
     <div class="header">
       <h2 class="flex text-xl font-semibold mb-4">{{ title }}</h2>
       <div class="wrap-select-box">
-        <Select v-model="selectedCategory" :options="categories" />
+         <client-only>
+          <VueDatePicker
+            v-model="analyticsStore.selectedDate"
+            range
+            :clear-button="false"
+            :auto-apply="true"
+            format="yyyy-MM-dd"
+            placeholder="Select Date Range"
+          />
+        </client-only>
       </div>
     </div>
     <LineChart :chart-data="chartData" :chart-options="chartOptions" />
@@ -11,7 +20,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { computed } from "vue";
 import { LineChart } from "vue-chart-3";
 import {
   Chart as ChartJS,
@@ -24,8 +33,11 @@ import {
   LinearScale,
   LineController,
 } from "chart.js";
-import Select from "~/components/reuse/ui/Select.vue";
 import { useAnalyticsStore } from "~/stores/report/useReport";
+import "@vuepic/vue-datepicker/dist/main.css";
+import { useAdmin } from "~/stores/admin/useAdmin";
+import VueDatePicker from "@vuepic/vue-datepicker";
+import "@vuepic/vue-datepicker/dist/main.css";
 
 defineProps({
   title: {
@@ -33,14 +45,8 @@ defineProps({
     default: "Trends",
   },
 });
-
-const categories = [
-  { label: "Past 2 Weeks", value: "2-weeks" },
-  { label: "Past Month", value: "1-month" },
-];
-
-const selectedCategory = ref(["2025-06", "2025-07", "2025-08"]);
-// ref("2-weeks");
+const analyticsStore = useAnalyticsStore();
+const adminStore = useAdmin();
 
 ChartJS.register(
   Title,
@@ -54,28 +60,20 @@ ChartJS.register(
 );
 
 const chartData = computed(() => {
-  const analyticsStore = useAnalyticsStore();
-const report = analyticsStore.ordersReport || [];
+  const report = analyticsStore.ordersReport || [];
 
-const selectedPeriods = selectedCategory.value; // e.g. ['2025-06-01']
-const isDaily = selectedPeriods.length && selectedPeriods[0].length === 10;
+  const sorted = [...report].sort(
+    (a, b) => new Date(a.month) - new Date(b.month)
+  );
+  const last4 = sorted.slice(-4);
 
-const filtered = report.filter((entry) => {
-  const rawPeriod = entry.period || entry.date || entry.month; // flexible
-  const period = rawPeriod?.slice(0, isDaily ? 10 : 7);
-  return selectedPeriods.includes(period);
-});
-
-const labels = filtered.map((entry) =>
-  new Date(entry.period).toLocaleString("default", {
-    ...(isDaily
-      ? { day: "numeric", month: "short" }
-      : { month: "short", year: "numeric" }),
-  })
-);
-
-const revenues = filtered.map((entry) => entry.revenue);
-
+  const labels = last4.map((e) =>
+    new Date(e.month).toLocaleString("default", {
+      month: "short",
+      year: "numeric",
+    })
+  );
+  const revenues = last4.map((e) => e.totalOrders);
 
   return {
     labels,
@@ -84,7 +82,7 @@ const revenues = filtered.map((entry) => entry.revenue);
         label: "Sales (USD)",
         backgroundColor: "#68a182",
         borderColor: "#68a182",
-        tension: 0.3, 
+        tension: 0.3,
         fill: false,
         data: revenues,
       },
@@ -110,6 +108,24 @@ const chartOptions = {
     },
   },
 };
+
+watch(
+  () => analyticsStore.selectedDate,
+  async ([start, end]) => {
+    if (!start || !end) return;
+
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+
+    const startStr = startDate.toISOString().split("T")[0];
+    const endStr = endDate.toISOString().split("T")[0];
+
+    analyticsStore.setDateRange(startDate, endDate);
+
+    await analyticsStore.fetchOrdersReport(adminStore.storeId, startStr, endStr);
+  },
+  { deep: true } 
+);
 </script>
 
 <style scoped>

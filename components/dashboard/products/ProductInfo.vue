@@ -157,7 +157,7 @@
       <Button
         @click="() => emit('remove-item', selectedItem.id)"
         style="
-          border: 1px solid var(--black-1);
+          border: 1px solid #ababab;
           background: var(--red-1);
           color: var(--white-1);
           height: 40px;
