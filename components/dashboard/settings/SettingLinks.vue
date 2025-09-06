@@ -30,14 +30,13 @@ import Robot from '~/assets/icons/robot.vue';
 import { useSetting } from '~/stores/setting/useSetting';
 
 const navigations = {
-  Account: ["Preferences", "Shop Info", "Staff"],
-  Stores: ["Locations", "Staff", "Roles"],
+  Account: ["User Profile", "Organization", "Staff"],
   Brands: ["Themes"],
   Upgrade: ["Upgrade Plan", "Billing"],
 };
 const iconMap = {
-  Preferences: Brand,
-  "Shop Info": Info,
+  "User Profile": Brand,
+  "Organization": Info,
   "Locations": Robot,
   "Staff": Robot,
   "Roles": Robot,
@@ -63,11 +62,13 @@ const handleClick = (item) => {
 <style scoped>
 .nav-panel {
   width: 270px;
+  height: 100%;
   padding: 1.5rem 1rem 0;
   border-right: 1px solid #dedede;
   background: var(--white-1);
   border-top-left-radius: 12px;
   border-bottom-left-radius: 12px;
+  z-index: 12;
 }
 
 .nav-section + .nav-section {

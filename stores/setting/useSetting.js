@@ -1,9 +1,24 @@
+import { useRuntimeConfig } from "nuxt/app";
 import { defineStore } from "pinia";
+import { apiFetch } from "~/utils/apiFetch";
+import { useAdmin } from "../admin/useAdmin";
+import { useStaff } from "./staff/useStaff";
 
 export const useSetting = defineStore("setting", {
   state: () => ({
     displayModal: false,
-    activeSection: 'Account Info',
+    activeSection: 'User Profile',
+    currentUser: {
+      name: '',
+      email: '',
+      phoneNumber: '',
+      staffStores: [],
+      role: ''
+    },
+    orgInfo: {
+      name: "",
+      stores: [], 
+    },
     accountInfo: {
       organizationName: "",
       location: "",
@@ -28,6 +43,23 @@ export const useSetting = defineStore("setting", {
   }),
 
   actions: {
+    async loadInitialData() {
+      const staffStore = useStaff();
+      const adminStore = useAdmin();
+      const config = useRuntimeConfig();
+
+      try {
+        const [user, org] = await Promise.all([
+          staffStore.getStaffById(adminStore.userId),
+          apiFetch(`${config.public.apiBaseUrl}/establishments/${adminStore.estId}`)
+        ]);
+
+        this.currentUser = user;
+        this.orgInfo = org;
+      } catch (err) {
+      }
+    },
+
     updateAccountInfo(data) {
       this.accountInfo = { ...this.accountInfo, ...data };
     },

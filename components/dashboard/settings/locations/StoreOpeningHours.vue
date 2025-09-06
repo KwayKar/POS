@@ -143,8 +143,13 @@ const handleSubmit = async () => {
 .store-hours-form {
   width: 100%;
   padding: 24px 24px 0;
-  max-height: 540px;
+  height: 540px;
   overflow-y: auto;
+}
+@media only screen and (max-width: 1000px) {
+  .store-hours-form {
+    height: 80vh;
+  }
 }
 
 .section-title {

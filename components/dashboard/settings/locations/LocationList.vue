@@ -78,7 +78,7 @@ const adminStore = useAdmin();
 
 const panelRefHeight = ref(null);
 const windowWidth = ref(0);
-const panelHeight = ref("auto");
+const panelHeight = ref("100%");
 const selectedStore = ref({});
 const modal = ref({
   isOpen: false,
@@ -163,7 +163,7 @@ const modalWidth = computed(() => {
   if (windowWidth.value > 1200) {
     return "870px";
   } else if (windowWidth.value < 900) {
-    return `${windowWidth.value - 50}px`;
+    return `${windowWidth.value - 30}px`;
   }
 });
 

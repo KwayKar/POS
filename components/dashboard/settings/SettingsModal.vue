@@ -1,6 +1,6 @@
 <template>
   <Modal
-    v-if="displayModal"
+    v-if="true"
     :width="modalWidth"
     :height="modalHeight"
     :minHeight="'400px'"
@@ -12,19 +12,13 @@
 </template>
 
 <script setup>
-//   import { storeToRefs } from "pinia";
-//   import { useMenu } from "~/stores/menu/useMenu";
 import Modal from "~/components/reuse/ui/Modal.vue";
 import Settings from "./Settings.vue";
 import { useSetting } from "~/stores/setting/useSetting";
 
-//   const menu = useMenu();
-//   const { items, selectedCategory, selectedItems } = storeToRefs(menu);
-
 const windowHeight = ref(0);
 const windowWidth = ref(0);
 const setting = useSetting();
-const { displayModal } = storeToRefs(setting);
 
 const updatePanelSize = () => {
   windowWidth.value = window.innerWidth;

@@ -1,6 +1,7 @@
-import { useNuxtApp } from "nuxt/app";
+import { useNuxtApp, useRuntimeConfig } from "nuxt/app";
 import { defineStore } from "pinia";
 import * as storeService from "~/services/storeService";
+import { apiFetch } from "~/utils/apiFetch";
 
 export const useStoreLocation = defineStore("storeLocation", {
   state: () => ({
@@ -8,6 +9,8 @@ export const useStoreLocation = defineStore("storeLocation", {
     types: [],
     locations: [],
     selectedStore: null,
+    displayModal: false,
+    activeSection: 'Locations', // tab 
   }),
 
   getters: {
@@ -38,8 +41,8 @@ export const useStoreLocation = defineStore("storeLocation", {
     async updateStoreById(id, payload) {
       const config = useRuntimeConfig();
 
-      const { data, error } = await apiFetch(
-        `${config.public.apiBaseUrl}/store/${id}`,
+      const { error } = await apiFetch(
+        `${config.public.apiBaseUrl}/stores/${id}`,
         {
           method: "PUT",
           body: payload,
@@ -63,8 +66,16 @@ export const useStoreLocation = defineStore("storeLocation", {
       this.storeList.push(item);
     },
 
-    removeStore(id) {
+    async removeStore(id) {
       this.storeList = this.storeList.filter((store) => store.id !== id);
+      const config = useRuntimeConfig();
+
+      await apiFetch(
+        `${config.public.apiBaseUrl}/stores/${id}`,
+        {
+          method: "DELETE",
+        }
+      );
     },
 
     editStore(updatedItem) {
@@ -131,6 +142,14 @@ export const useStoreLocation = defineStore("storeLocation", {
           receiptSettings,
         };
       }
-    }
+    },
+
+    setActiveSection(section) {
+      this.activeSection = section;
+    },
+
+    displayStoreModal() {
+      this.displayModal = !this.displayModal;
+    },
   },
 });

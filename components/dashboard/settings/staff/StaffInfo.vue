@@ -56,9 +56,15 @@
     </div>
   </div>
 
+  <div>
+    <p v-if="formError" class="text-red-500 mt-2 ml-6">{{ formError }}</p>
+  </div>
+
   <div class="modal-footer">
-    <div>
-      <p v-if="formError" class="text-red-500 mt-2">{{ formError }}</p>
+    <div class="flex justify-end my-2">
+      <Button variant="danger" @click="onConfirmDelete" :apply-shadow="true">
+        Delete
+      </Button>
     </div>
 
     <div class="flex justify-end my-2">
@@ -67,6 +73,19 @@
       </SubmitButton>
     </div>
   </div>
+
+  <Modal
+    v-if="modal.isOpen && modal.type === 'remove-staff'"
+    width="420px"
+    height="auto"
+    @close="closeModal"
+  >
+    <ConfirmDelete @remove-item="handleRemove" @close="closeModal">
+      <div>
+        <p style="font-size: 0.95rem">Are you sure you want to delete {{ modal?.selectedItem?.name }}?</p>
+      </div>
+    </ConfirmDelete>
+  </Modal>
 </template>
 
 <script setup>
@@ -79,6 +98,9 @@ import { useStaff } from "~/stores/setting/staff/useStaff";
 import { useRole } from "../../../../stores/setting/staff/useRole";
 import { useStoreLocation } from "../../../../stores/storeLocation/useStoreLocation";
 import MultiSelect from "~/components/reuse/ui/MultiSelect.vue";
+import Button from "~/components/reuse/ui/Button.vue";
+import Modal from "~/components/reuse/ui/Modal.vue";
+import ConfirmDelete from "~/components/reuse/ui/ConfirmDelete.vue";
 
 const props = defineProps({
   mode: {
@@ -94,6 +116,11 @@ const props = defineProps({
 const emit = defineEmits(["close"]);
 const formError = ref("");
 const loading = ref(false);
+const modal = ref({
+  type: null,
+  isOpen: false,
+  selectedItem: null
+});
 
 const staffStore = useStaff();
 const roleStore = useRole();
@@ -148,12 +175,34 @@ onMounted(() => {
     staff.value.storeIds = (staff.value.staffStores || []).map((s) => s.storeId);
   }
 });
+
+const onConfirmDelete = () => {
+  modal.value = {
+    type: "remove-staff",
+    isOpen: true,
+    selectedItem: props.item
+  };
+}
+
+const handleRemove = () => {
+  staffStore.removeStaff(modal.value.selectedItem?.id);
+  closeModal();
+  emit("close");
+}
+
+const closeModal = () => {
+  modal.value = {
+    type: null,
+    isOpen: false,
+    selectedItem: null
+  };
+};
 </script>
 
 <style scoped>
 .staff-form {
   width: 100%;
-  padding: 20px;
+  padding: 10px 20px 20px;
 }
 
 .form-grid {

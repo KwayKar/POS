@@ -24,6 +24,7 @@ export const useAnalyticsStore = defineStore("analytics", {
       selectedDate: savedDate || [startDate, endDate],
       revenue: null,
       totalSales: null,
+      storeList: [],
       topProducts: [],
       orgRevenue: [],
       revenueReport: [],
@@ -135,7 +136,6 @@ export const useAnalyticsStore = defineStore("analytics", {
       endDate,
       limit = 35,
       search = "",
-      orderType = "",
     }) {
       const config = useRuntimeConfig();
 
@@ -151,17 +151,15 @@ export const useAnalyticsStore = defineStore("analytics", {
       if (search && String(search).trim() !== "") {
         params.search = search;
       }
-      if (orderType && String(orderType).trim() !== "") {
-        params.orderType = orderType;
-      }
       try {
-        const data = await apiFetch(
+        const res = await apiFetch(
           `${config.public.apiBaseUrl}/analytics/stores/${storeId}/top-products`,
           {
             params,
           }
         );
-        this.topProducts = data.products;
+        this.storeList = res.stores;
+        this.topProducts = res.products;
       } catch (err) {
         this.error = err;
       } finally {

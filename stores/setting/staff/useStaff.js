@@ -8,13 +8,6 @@ export const useStaff = defineStore("staff", {
     roles: [],
     stores: []
   }),
-
-  getters: {
-    getStaffById: (state) => (id) => {
-      return state.staffList.find((staff) => staff.id === id);
-    },
-  },
-
   actions: {
     async fetchStaffList() {
       const config = useRuntimeConfig();
@@ -25,6 +18,14 @@ export const useStaff = defineStore("staff", {
       );
      
       this.staffList = res || [];
+    },
+     async getStaffById(id) {
+      const config = useRuntimeConfig();
+      const res = await apiFetch(`${config.public.apiBaseUrl}/staff/${id}`, {
+        method: "GET",
+      })
+      this.staff = res;
+      return res;
     },
     async addStaff(item) {
       try {
@@ -60,17 +61,19 @@ export const useStaff = defineStore("staff", {
       const res = await apiFetch(`${config.public.apiBaseUrl}/staff/${updatedItem.id}`, {
         method: "PUT",
         body: {
-          name: updatedItem.name,
-          email: updatedItem.email,
-          phoneNumber: updatedItem.phoneNumber,
-          roleId: updatedItem.roleId,
-          storeIds: updatedItem.storeIds
+          ...updatedItem
         }
-      })
+      });
+
+      if (!res || res.error) {
+        throw new Error(res?.error || "Failed to update");
+      }
 
       if (index !== -1) {
         this.staffList[index] = res;
       };
+
+      return res;
     },
   },
 });

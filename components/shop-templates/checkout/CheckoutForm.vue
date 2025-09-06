@@ -1,5 +1,5 @@
 <template>
-  <div :style="formContainerStyle">
+  <div :style="formContainerStyle" style="height: 100%">
     <h3 class="header3">Shop Info</h3>
     <form
       @submit.prevent="handleSubmit"
@@ -72,7 +72,6 @@ const handleSubmit = () => {
 const formContainerStyle = computed(() => {
 
   // :style="{ height: formHeight , overflowY: 'scroll'}"
-  console.log(props.enableOverflow)
   if (props.enableOverflow) {
     return {
       padding: '2rem',
@@ -130,13 +129,6 @@ onMounted(async () => {
     grid-column: span 2;
   }
 }
-
-label {
-  display: block;
-  margin-bottom: 4px;
-  font-weight: 500;
-}
-
 .switch-btn {
   display: flex;
   align-items: center;

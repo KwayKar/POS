@@ -35,7 +35,6 @@ import {
 import { useAnalyticsStore } from "~/stores/report/useReport";
 import VueDatePicker from "@vuepic/vue-datepicker";
 import "@vuepic/vue-datepicker/dist/main.css";
-import { useAdmin } from "~/stores/admin/useAdmin";
 
 defineProps({
   title: {
@@ -44,9 +43,6 @@ defineProps({
   },
 });
 const analyticsStore = useAnalyticsStore();
-const adminStore = useAdmin();
-
-const storeId = adminStore.storeId;
 
 ChartJS.register(
   Title,
@@ -83,19 +79,24 @@ const barThickness = computed(() => {
 
 const chartData = computed(() => {
   const months = toRaw(analyticsStore.revenueReport) || [];
-  const sortedMonths = months.sort(
-    (a, b) => new Date(a.month) - new Date(b.month)
-  );
-  const last4Months = sortedMonths.slice(-4);
+  const [start, end] = analyticsStore.selectedDate || [];
+  if (!start || !end) return { labels: [], datasets: [] };
 
-  const labels = last4Months.map((entry) =>
-    new Date(entry.month).toLocaleString("default", {
-      month: "short",
-      year: "numeric",
-    })
-  );
+  const startDate = new Date(start);
+  const endDate = new Date(end);
 
-  const revenues = months.map((entry) => entry.revenue);
+  // Filter by selected date range
+  const filtered = months.filter((entry) => {
+    const entryDate = new Date(entry.month);
+    return entryDate >= startDate && entryDate <= endDate;
+  });
+
+  const sorted = filtered.sort((a, b) => new Date(a.month) - new Date(b.month));
+
+  const labels = sorted.map((entry) =>
+    new Date(entry.month).toLocaleString("default", { month: "short", year: "numeric" })
+  );
+  const revenues = sorted.map((entry) => entry.revenue);
 
   return {
     labels,
@@ -124,44 +125,6 @@ const chartOptions = {
     },
   },
 };
-
-watch(
-  () => analyticsStore.selectedDate,
-  async ([start, end]) => {
-    if (!start || !end) return;
-
-    const startDate = new Date(start);
-    const endDate = new Date(end);
-
-    const startStr = startDate.toISOString().split("T")[0];
-    const endStr = endDate.toISOString().split("T")[0];
-    console.log("Fetched revenue:", startStr); 
-
-    analyticsStore.setDateRange(startDate, endDate);
-
-    await analyticsStore.fetchRevenueReport(storeId, startStr, endStr);
-  },
-  { deep: true } 
-);
-
-
-onMounted(async () => {
-  const [start, end] = analyticsStore.selectedDate || [];
-  if (!start || !end) return;
-
-  const startStr = new Date(start).toISOString().split("T")[0];
-  const endStr = new Date(end).toISOString().split("T")[0];
-
-  // Set the date range in store
-  analyticsStore.setDateRange(new Date(start), new Date(end));
-
-  // Fetch chart-specific data
-  if (ChartType === "bar") {
-    await analyticsStore.fetchRevenueReport(storeId, startStr, endStr);
-  } else {
-    await analyticsStore.fetchOrdersReport(storeId, startStr, endStr);
-  }
-});
 </script>
 
 <style scoped>
@@ -175,7 +138,5 @@ onMounted(async () => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
-}
-.wrap-select-box {
 }
 </style>

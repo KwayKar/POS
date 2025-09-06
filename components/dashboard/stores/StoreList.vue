@@ -4,7 +4,10 @@
       <h1>Store List</h1>
       <button class="create-btn" @click="openModal('create')">Create Store</button>
     </div>
-    <ul class="item-list">
+    <ul class="item-list" :style="{
+        height:
+          typeof panelHeight === 'number' ? `${panelHeight}px` : panelHeight,
+      }">
       <StoreItem
         v-for="store in stores.stores"
         :key="store.id"
@@ -13,12 +16,6 @@
         @delete="confirmDelete"
       />
     </ul>
-    <!-- <n-data-table
-      :columns="columns"
-      :data="stores.stores"
-      :bordered="true"
-      striped
-    /> -->
 
     <Modal v-if="modal.isOpen" :width="'540px'" @close="closeModal">
       <StoreForm
@@ -59,6 +56,7 @@ const stores = useStore();
 // const manageStore = useStore();
 const selectedStore = ref(null);
 const modal = ref({ isOpen: false, type: "" });
+const panelHeight = ref("auto");
 
 const openModal = (type, store = null) => {
   modal.value = { isOpen: true, type };
@@ -88,11 +86,21 @@ const confirmDelete = (id) => {
   modal.value = { isOpen: true, type: "confirm-delete" };
 };
 
-const removeStore = () => {
-  if (selectedStore.value) {
-    stores.removeStore(selectedStore.value);
-  }
-  closeModal();
+onMounted(async () => {
+  await nextTick();
+  updatePanelSize();
+
+  window.addEventListener("resize", updatePanelSize);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("resize", updatePanelSize);
+});
+
+const updatePanelSize = () => {
+  windowWidth.value = window.innerWidth;
+  const totalHeight = panelRefHeight.value.offsetHeight;
+  panelHeight.value = `${totalHeight - 72}px`;
 };
 </script>
 

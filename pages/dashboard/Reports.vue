@@ -11,6 +11,7 @@
     <DashboardLayout>
       <div
         class="custom-container"
+        :style="`height: ${height - 64}px`"
       >
         <div class="report-filter-section">
           <CategoryBtn
@@ -47,6 +48,7 @@ import CategoryBtn from "~/components/reuse/ui/CategoryBtn.vue";
 import OrderReport from "~/components/dashboard/reports/OrderReport.vue";
 import { useAnalyticsStore } from "~/stores/report/useReport";
 import { useAdmin } from "~/stores/admin/useAdmin";
+import { useWindowSize } from "~/composables/useWindowSize";
 
 const activeSection = ref("");
 defineProps({
@@ -61,6 +63,8 @@ const storeId = adminStore.storeId;
 const orgId = adminStore.estId;
 const startStr = ref(null);
 const endStr = ref(null);
+
+const { height } = useWindowSize();
 
 const endDate = new Date();
 const startDate = new Date();
@@ -91,7 +95,7 @@ onMounted(async () => {
   margin: 0 32px;
   flex: 1;
   flex-direction: column; 
-  width: 100%;
+  overflow: hidden;
 }
 @media screen and (max-width: 600px) {
   .custom-container {
@@ -120,17 +124,4 @@ onMounted(async () => {
   }
 }
 
-.chart-container {
-  width: 100%;
-  gap: 32px;
-}
-.chart-wrapper {
-  background: #f4f5ee;
-  width: 100%;
-  height: auto;
-  padding: 14px;
-  box-sizing: border-box;
-  border-radius: 15px;
-  border: 1px solid #a4a4a2;
-}
 </style>

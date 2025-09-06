@@ -295,6 +295,11 @@ const payLaterToggle = computed({
   height: 540px;
   overflow-y: scroll;
 }
+@media only screen and (max-width: 1000px) {
+  .store-form {
+    height: 80vh;
+  }
+}
 
 .section-title {
   font-size: 1.05rem;

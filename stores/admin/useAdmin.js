@@ -1,7 +1,7 @@
 export const useAdmin = defineStore("admin", {
   state: () => ({
     businessType: "restaurant",
-    userId: "1a364150-e45a-4eee-89e7-025e2e53968f",
+    userId: "9c9ecff6-3033-4368-a7b0-156aecc83d1e",
     storeId: '11325a15-2f9c-4d77-a2cf-7655f56a6661',
     storeName: '',
     // 'a7834682-f2b7-4eda-8c01-95716f00f656',

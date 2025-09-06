@@ -19,8 +19,8 @@
           <Select
             v-if="showSelect"
             v-model="selectedStore"
-            :options="statusOptions"
-            @update:modelValue="handleOrderTypeChange"
+            :options="storeList"
+            @update:modelValue="handleStoreChange"
             style="
               padding: 0 14px;
               height: 38px;
@@ -169,6 +169,12 @@ const analytics = useAnalyticsStore();
 const isLoading = analytics.loading;
 // const topProducts = analytics.topProducts;
 const topProducts = computed(() => analytics.topProducts ?? []);
+const storeList = computed(() =>
+  (analytics.storeList ?? []).map((store) => ({
+    label: store.name,
+    value: store.id,
+  }))
+);
 
 const sortedProducts = computed(() => {
   const list = [...filteredProducts.value]; // make a copy
@@ -252,15 +258,14 @@ watch(selectedDate, async ([start, end]) => {
 });
 
 // Filtering
-const handleOrderTypeChange = async (value) => {
+const handleStoreChange = async (value) => {
   selectedStore.value = value;
   try {
     await analytics.fetchTopProducts({
-      storeId,
+      storeId: value,
       startDate: startStr.value,
       endDate: endStr.value,
       limit,
-      orderType: value,
     });
   } catch (error) {
     // console.error(error);

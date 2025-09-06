@@ -107,7 +107,7 @@ export const useTable = defineStore("table", {
         const config = useRuntimeConfig();
 
         if (admin.businessType === "restaurant") {
-          await apiFetch(`${config.public.apiBaseUrl}/tables/${id}`, {
+          await apiFetch(`${config.public.apiBaseUrl}/stores/${admin.storeId}/floors/${id}`, {
             method: "DELETE",
           });
         }
@@ -177,6 +177,8 @@ export const useTable = defineStore("table", {
         await apiFetch(`${config.public.apiBaseUrl}/stores/${admin.storeId}/floors/${this.selectedFloorID}/tables/${tableId}`, {
           method: "DELETE",
         });
+
+        this.selectedFloorID = this.floors[0]?.id || null;
       } catch (error) {
       }
     },

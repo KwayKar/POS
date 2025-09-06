@@ -3,6 +3,7 @@
     <div class="form-group" style="width: 100%; margin-bottom: 0">
       <div class="floor-section">
         <label for="category" class="form-label">Floors</label>
+       
         <button
           @click="openAddFloorModal"
           class="text-gray-500 hover:text-black"

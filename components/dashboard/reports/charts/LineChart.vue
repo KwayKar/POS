@@ -35,7 +35,6 @@ import {
 } from "chart.js";
 import { useAnalyticsStore } from "~/stores/report/useReport";
 import "@vuepic/vue-datepicker/dist/main.css";
-import { useAdmin } from "~/stores/admin/useAdmin";
 import VueDatePicker from "@vuepic/vue-datepicker";
 import "@vuepic/vue-datepicker/dist/main.css";
 
@@ -46,7 +45,6 @@ defineProps({
   },
 });
 const analyticsStore = useAnalyticsStore();
-const adminStore = useAdmin();
 
 ChartJS.register(
   Title,
@@ -61,19 +59,24 @@ ChartJS.register(
 
 const chartData = computed(() => {
   const report = analyticsStore.ordersReport || [];
+  const [start, end] = analyticsStore.selectedDate || [];
+  if (!start || !end) return { labels: [], datasets: [] };
 
-  const sorted = [...report].sort(
-    (a, b) => new Date(a.month) - new Date(b.month)
-  );
-  const last4 = sorted.slice(-4);
+  const startDate = new Date(start);
+  const endDate = new Date(end);
 
-  const labels = last4.map((e) =>
-    new Date(e.month).toLocaleString("default", {
-      month: "short",
-      year: "numeric",
-    })
+  // Filter by selected date range
+  const filtered = report.filter((entry) => {
+    const entryDate = new Date(entry.month);
+    return entryDate >= startDate && entryDate <= endDate;
+  });
+
+  const sorted = filtered.sort((a, b) => new Date(a.month) - new Date(b.month));
+
+  const labels = sorted.map((entry) =>
+    new Date(entry.month).toLocaleString("default", { month: "short", year: "numeric" })
   );
-  const revenues = last4.map((e) => e.totalOrders);
+  const revenues = sorted.map((entry) => entry.totalOrders);
 
   return {
     labels,
@@ -109,23 +112,6 @@ const chartOptions = {
   },
 };
 
-watch(
-  () => analyticsStore.selectedDate,
-  async ([start, end]) => {
-    if (!start || !end) return;
-
-    const startDate = new Date(start);
-    const endDate = new Date(end);
-
-    const startStr = startDate.toISOString().split("T")[0];
-    const endStr = endDate.toISOString().split("T")[0];
-
-    analyticsStore.setDateRange(startDate, endDate);
-
-    await analyticsStore.fetchOrdersReport(adminStore.storeId, startStr, endStr);
-  },
-  { deep: true } 
-);
 </script>
 
 <style scoped>

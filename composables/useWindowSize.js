@@ -1,12 +1,14 @@
 import { ref, onMounted, onUnmounted } from "vue";
 
 export function useWindowSize() {
-  const width = ref(window.innerWidth);
-  const height = ref(window.innerHeight);
+  const width = ref(0);
+  const height = ref(0);
 
   const updateSize = () => {
-    width.value = window.innerWidth;
-    height.value = window.innerHeight;
+    if (typeof window !== "undefined") {
+      width.value = window.innerWidth;
+      height.value = window.innerHeight;
+    }
   };
 
   onMounted(() => {

@@ -15,6 +15,14 @@
           </li>
         </ul>
       </div>
+
+      <Button
+        @click="onConfirmDelete"
+        variant="danger"
+        :style="{ height: '38px' }"
+      >
+        Delete Store
+      </Button>
     </div>
 
     <!-- Right Content Area -->
@@ -43,9 +51,7 @@
       </div>
 
       <div v-if="activeTab === 'tax'">
-        <StoreTaxInfo
-          @close="closeModal"
-        />
+        <StoreTaxInfo @close="closeModal" />
       </div>
 
       <div v-if="activeTab === 'receipt'">
@@ -56,6 +62,19 @@
       </div>
     </div>
   </div>
+
+  <Modal
+    v-if="modal.isOpen && modal.type === 'delete-store'"
+    width="420px"
+    height="auto"
+    @close="closeModal"
+  >
+    <ConfirmDelete @remove-item="onDeleteStore" @close="closeModal">
+      <div>
+        <p style="font-size: 0.95rem">Are you sure you want to delete {{ modal?.selectedItem?.name }}?</p>
+      </div>
+    </ConfirmDelete>
+  </Modal>
 </template>
 
 <script setup>
@@ -66,8 +85,12 @@ import StoreReceipt from "./StoreReceipt.vue";
 import StoreTaxInfo from "./StoreTaxInfo.vue";
 import { useStoreLocation } from "~/stores/storeLocation/useStoreLocation";
 import StoreTables from "./StoreTables.vue";
+import Button from "~/components/reuse/ui/Button.vue";
+import Modal from "~/components/reuse/ui/Modal.vue";
+import ConfirmDelete from "~/components/reuse/ui/ConfirmDelete.vue";
 
 const storeStore = useStoreLocation();
+const emit = defineEmits(["close"]);
 
 const activeTab = ref("store");
 const tabs = [
@@ -78,7 +101,11 @@ const tabs = [
   { key: "receipt", label: "Receipt" },
 ];
 
-const emit = defineEmits(["close"]);
+const modal = ref({
+  type: null,
+  isOpen: false,
+  selectedItem: null
+});
 
 const props = defineProps({
   panelHeight: {
@@ -93,6 +120,11 @@ const props = defineProps({
   },
 });
 
+const onDeleteStore = () => {
+  storeStore.removeStore(props.selectedStoreId);
+  closeModal();
+} 
+
 const closeModal = () => {
   emit("close");
 };
@@ -102,6 +134,14 @@ onMounted(async () => {
     await storeStore.fetchStoreById(props.selectedStoreId);
   }
 });
+
+const onConfirmDelete = () => {
+  modal.value = {
+    type: "delete-store",
+    isOpen: true,
+    selectedItem: props.selectedStore
+  };
+}
 </script>
 
 <style scoped>
@@ -126,6 +166,11 @@ onMounted(async () => {
   background: var(--white-1, #fff);
   border-top-left-radius: 12px;
   border-bottom-left-radius: 12px;
+
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+  padding-bottom: 24px;
 }
 
 .nav-section + .nav-section {
@@ -200,7 +245,7 @@ onMounted(async () => {
 @media only screen and (max-width: 768px) {
   .tab-content {
     flex: 1;
-    padding: 1rem;
+    padding: 0rem;
     background: var(--primary-bg-color-1);
     overflow-y: auto;
     max-height: 89vh;

@@ -26,7 +26,7 @@ html {
 
   /* for text bold */
   --olive-gray: #616354;
-  --charcoal: #535252;
+  --charcoal: #636161;
 
   --primary-hover-bg-color-1: #f3f5ef;
   
@@ -251,9 +251,15 @@ th:hover .th-sort-arrow {
 }
 
 .error-message {
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: var(--red-1);
+}
+
+.success-message {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--green-2);
 }
 
 .modal-submit-section {

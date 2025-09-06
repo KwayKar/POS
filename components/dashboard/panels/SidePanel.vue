@@ -15,10 +15,7 @@
       <span class="text-xs mt-1">{{ item.title }}</span>
     </button>
 
-    <SettingsModal
-      v-if="setting.displayModal"
-      @close="showSettingModal = false"
-    />
+    <SettingsModal v-if="setting.displayModal" />
 
     <Modal
       v-if="showMenuModal"
@@ -28,6 +25,8 @@
     >
       <MenuList @close="closeMenuModal" />
     </Modal>
+
+    <StoreModal v-if="store.displayModal" />
   </nav>
 </template>
 
@@ -39,6 +38,8 @@ import SettingsModal from "../settings/SettingsModal.vue";
 import { useSetting } from "~/stores/setting/useSetting";
 import MenuList from "../menuList/MenuList.vue";
 import Modal from "~/components/reuse/ui/Modal.vue";
+import StoreModal from "../stores/StoreModal.vue";
+import { useStoreLocation } from "~/stores/storeLocation/useStoreLocation";
 
 const router = useRouter();
 const userRole = ref("manager");
@@ -46,11 +47,16 @@ const showMenuModal = ref(false);
 
 const navigationItems = {
   manager: [
-    { title: "Order", icon: "ShoppingCartOutlined", path: "/orders" },
+    {
+      title: "Order",
+      icon: "ShoppingCartOutlined",
+      path: "/dashboard/accept-orders",
+    },
     { title: "Customers", icon: "People", path: "/customers" },
-    { title: "Orders", icon: "Receipt", path: "/all-orders" },
+    { title: "Orders", icon: "Receipt", path: "/dashboard/orders" },
     { title: "Menus", icon: "Menu", path: "/" },
-    { title: "Loyalty", icon: "Loyalty", path: "/loyalty" },
+    { title: "Stores", icon: "Store", path: "/stores" },
+    { title: "Loyalty", icon: "Loyalty", path: "/dashboard/promotions" },
     { title: "Setting", icon: "Setting", path: "/setting" },
   ],
   waiter: [
@@ -82,6 +88,7 @@ onUnmounted(() => {
 });
 
 const setting = useSetting();
+const store = useStoreLocation();
 
 function handleNavClick(item) {
   if (item.title === "Setting") {
@@ -90,8 +97,13 @@ function handleNavClick(item) {
     } else {
       router.push(item.path);
     }
-  }
-  else if (item.title === "Menus") {
+  } else if (item.title === "Stores") {
+    if (isDesktop.value) {
+      store.displayStoreModal();
+    } else {
+      router.push(item.path);
+    }
+  } else if (item.title === "Menus") {
     showMenuModal.value = true;
   } else {
     router.push(item.path);
